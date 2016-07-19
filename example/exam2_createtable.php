@@ -64,7 +64,7 @@ echo "First row:\n";
 print_r($st->fetchOne());
 
 echo "extremes_min:\n";
-print_r($st->extremes_min());
+print_r($st->extremesMin());
 
 echo "totals:\n";
 print_r($st->totals());

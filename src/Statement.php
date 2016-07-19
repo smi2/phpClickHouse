@@ -130,21 +130,33 @@ class Statement
 
         return true;
     }
+
     /**
-     * @return mixed
+     * @return array
+     * @throws \Exception
      */
     public function extremes()
     {
         $this->init();
         return $this->extremes;
     }
-    public function extremes_min()
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function extremesMin()
     {
         $this->init();
         if (empty($this->extremes['min'])) return [];
         return $this->extremes['min'];
     }
-    public function extremes_max()
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function extremesMax()
     {
         $this->init();
         if (empty($this->extremes['max'])) return [];

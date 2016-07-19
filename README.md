@@ -56,7 +56,7 @@ $statement->countAll()
 // fetch one row
 $statement->fetchOne()
 //get extremes min
-print_r($statement->extremes_min());
+print_r($statement->extremesMin());
 //totals row
 print_r($statement->totals());
 //result all
