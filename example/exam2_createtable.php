@@ -10,9 +10,9 @@ $db=new ClickHouseDB\Client($config);
 echo "\n-----\ntry write:create_table\n";
 $db->database('default');
 //------------------------------------------------------------------------------
-echo "Tables EXISTS:".json_encode($db->show_tables())."\n";
+echo "Tables EXISTS:".json_encode($db->showTables())."\n";
 $db->write("DROP TABLE IF EXISTS summing_url_views");
-echo "Tables EXISTS:".json_encode($db->show_tables())."\n";
+echo "Tables EXISTS:".json_encode($db->showTables())."\n";
 
 $db->write(
 '
@@ -27,7 +27,7 @@ v_55 Int32
 ) ENGINE = SummingMergeTree(event_date, (site_id, url_hash, event_time, event_date), 8192)
 '
 );
-echo "Table EXISTSs:".json_encode($db->show_tables())."\n";
+echo "Table EXISTSs:".json_encode($db->showTables())."\n";
 
 /*
 Table EXISTSs:[{"name":"summing_url_views"}]
@@ -136,7 +136,7 @@ print_r($st->rowsAsTree('event_date.url_hash'));
 )
  */
 $db->write("DROP TABLE IF EXISTS summing_url_views");
-echo "Tables EXISTS:".json_encode($db->show_tables())."\n";
+echo "Tables EXISTS:".json_encode($db->showTables())."\n";
 /*
 Tables EXISTS:[]
  */

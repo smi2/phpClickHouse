@@ -89,7 +89,7 @@ class Client
     /**
      * @return array
      */
-    public function show_processlist()
+    public function showProcesslist()
     {
         return $this->select('SHOW PROCESSLIST')->rows();
     }
@@ -97,7 +97,7 @@ class Client
     /**
      * @return array
      */
-    public function show_databases()
+    public function showDatabases()
     {
         return $this->select('show databases')->rows();
     }
@@ -105,7 +105,7 @@ class Client
     /**
      * @return array
      */
-    public function show_tables()
+    public function showTables()
     {
         return $this->select('SHOW TABLES')->rows();
     }
@@ -149,7 +149,7 @@ class Client
 
         return $this->transport()->write($sql);
     }
-    public function insert_batch_files($table_name,$file_names,$columns_array)
+    public function insertBatchFiles($table_name, $file_names, $columns_array)
     {
         $result=[];
 

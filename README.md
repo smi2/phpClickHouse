@@ -10,7 +10,7 @@ $db->database('default');
 
 Show tables:
 ```php
-print_r($db->show_tables());
+print_r($db->showTables());
 ```
 
 Create table:
@@ -118,7 +118,7 @@ $file_data_names=[
     '/tmp/clickHouseDB_test.5.data',
 ];
 // insert all files
-$stat=$db->insert_batch_files('summing_url_views',
+$stat=$db->insertBatchFiles('summing_url_views',
    $file_data_names,
    ['event_time','site_key','site_id','views','v_00','v_55']
 );

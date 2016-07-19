@@ -20,7 +20,7 @@ v_55 Int32
 ) ENGINE = SummingMergeTree(event_date, (site_id, url_hash, event_time, event_date), 8192)
 '
 );
-echo "Table EXISTSs:".json_encode($db->show_tables())."\n";
+echo "Table EXISTSs:".json_encode($db->showTables())."\n";
 // --------------------------------  CREATE csv file ----------------------------------------------------------------
 
 function makeSomeDataFile($file_name,$size=10)
@@ -88,7 +88,7 @@ foreach ($file_data_names as $file_name)
 echo "insert ONE file:\n";
 
 $time_start=microtime(true);
-$stat=$db->insert_batch_files('summing_url_views',['/tmp/clickHouseDB_test.1.data'],['event_time','url_hash','site_id','views','v_00','v_55']);
+$stat=$db->insertBatchFiles('summing_url_views',['/tmp/clickHouseDB_test.1.data'],['event_time','url_hash','site_id','views','v_00','v_55']);
 echo "use time:".round(microtime(true)-$time_start,2)."\n";
 
 print_r($db->select('select sum(views) from summing_url_views')->rows());
@@ -96,7 +96,7 @@ print_r($db->select('select sum(views) from summing_url_views')->rows());
 echo "insert ALL file async:\n";
 
 $time_start=microtime(true);
-$stat=$db->insert_batch_files('summing_url_views',$file_data_names,['event_time','url_hash','site_id','views','v_00','v_55']);
+$stat=$db->insertBatchFiles('summing_url_views',$file_data_names,['event_time','url_hash','site_id','views','v_00','v_55']);
 echo "use time:".round(microtime(true)-$time_start,2)."\n";
 
 
