@@ -18,9 +18,6 @@ class Client
         $this->_connect_username=$connect_params['username'];
         $this->_connect_password=$connect_params['password'];
         $this->_connect_uri='http://'.$connect_params['host'].':'.$connect_params['port'].'/';
-
-
-    
     }
 
     /**

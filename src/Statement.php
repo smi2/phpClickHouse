@@ -7,12 +7,8 @@ namespace ClickHouseDB;
  */
 class Statement
 {
-    private $_count_rows=-1;
-    private $_meta_rows=[];
-    private $_sql='';
     private $_rawData;
     private $_http_code=-1;
-    private $_time=-1;
     private $_request=null;
     private $_init=false;
 
@@ -20,25 +16,22 @@ class Statement
      * @var Query
      */
     private $query;
-    private $sql=false;
-
     /**
-     * @var \stdClass
+     * @var string
      */
-    private $result;
-
+    private $sql=false;
     /**
-     * @var
+     * @var array
      */
     private $meta;
 
     /**
-     * @var
+     * @var array
      */
     private $data;
 
     /**
-     * @var
+     * @var array
      */
     private $totals;
 
@@ -70,9 +63,13 @@ class Statement
     public function __construct(\Curler\Request $request)
     {
         $this->_request=$request;
-        $this->query=$this->_request->extendinfo('query');
-        $this->sql=$this->_request->extendinfo('sql');
+        $this->query=$this->_request->getExtendinfo('query');
+        $this->sql=$this->_request->getExtendinfo('sql');
 
+    }
+    public function sql()
+    {
+        return $this->sql;
     }
     public function error()
     {

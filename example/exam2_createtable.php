@@ -114,7 +114,6 @@ print_r($st->totals());
 
 echo "Tree Path [event_date.url_hash]:\n";
 print_r($st->rowsAsTree('event_date.url_hash'));
-
 /*
 (
     [2016-07-18] => Array
@@ -126,7 +125,6 @@ print_r($st->rowsAsTree('event_date.url_hash'));
                     [sum(views)] => 12
                     [avg(views)] => 12
                 )
-
             [HASH1] => Array
                 (
                     [event_date] => 2016-07-18
@@ -134,9 +132,7 @@ print_r($st->rowsAsTree('event_date.url_hash'));
                     [sum(views)] => 22
                     [avg(views)] => 22
                 )
-
         )
-
 )
  */
 $db->write("DROP TABLE IF EXISTS summing_url_views");

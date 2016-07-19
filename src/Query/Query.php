@@ -80,9 +80,30 @@ class Query
                 $this->sql=str_ireplace('{'.$key.'}',$valueSet,$this->sql);
             }
         }
+        $this->sql=$this->prepareQueryConditionsIfElse($this->sql,$this->bindings);
         return $this->sql;
     }
+    private function prepareQueryConditionsIfElse($template,$markers)
+    {
+        //2. process if/else conditions
+        $template = preg_replace_callback('#\{if\s(.+?)}(.+?)\{else}(.+?)\{/if}#sui', function($matches) use ($markers) {
 
+            list($condition, $variable, $content_true,$content_false) = $matches;
+            if(isset($markers[$variable]) && $markers[$variable])
+                return $content_true;
+            else
+                return $content_false;
+        }, $template);
+
+        //3. process if conditions
+        $template = preg_replace_callback('#\{if\s(.+?)}(.+?)\{/if}#sui', function($matches) use ($markers) {
+            list($condition, $variable, $content) = $matches;
+            if(isset($markers[$variable]) && $markers[$variable])
+                return $content;
+        }, $template);
+        return $template;
+
+    }
     /**
      *
      * @return string

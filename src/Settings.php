@@ -8,9 +8,9 @@ class Settings
      */
     private $client=false;
     private $settings=[];
-    const ALWAYS_SETS=[
-        'extremes','readonly','max_rows_to_read','max_execution_time','database'
-    ];
+//    const ALWAYS_SETS=[
+//        'extremes','readonly','max_rows_to_read','max_execution_time','database'
+//    ];
 
     public function __construct(\ClickHouseDB\Transport\Http $client)
     {
