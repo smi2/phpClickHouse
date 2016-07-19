@@ -180,6 +180,8 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
  - Write docs
  - Fix array insert in row
  - Normal exception
+ - add/use composer ?
+ - drop include ?
 
 License
 ----
