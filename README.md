@@ -125,6 +125,17 @@ $stat=$db->insertBatchFiles('summing_url_views',
    ['event_time','site_key','site_id','views','v_00','v_55']
 );
 ```
+### Parallelizing errors
+
+selectAsync without executeAsync
+
+```php
+$select=$db->selectAsync('SELECT * FROM summing_url_views LIMIT 1');
+$insert=$db->insertBatchFiles('summing_url_views',['/tmp/clickHouseDB_test.1.data'],['event_time']);
+// 'Exception' with message 'Queue must be empty, before insertBatch,need executeAsync'
+```
+
+
 
 ### Simple sql conditions & template
 
