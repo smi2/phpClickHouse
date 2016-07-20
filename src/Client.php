@@ -151,6 +151,14 @@ class Client
 
         return $this->transport()->write($sql);
     }
+
+    /**
+     * @param $table_name
+     * @param $file_names
+     * @param $columns_array
+     * @return array
+     * @throws \Exception
+     */
     public function insertBatchFiles($table_name, $file_names, $columns_array)
     {
         if ($this->getCountPendingQueue()>0)
@@ -181,7 +189,7 @@ class Client
                 $result[$fileName]->error();
             }
         }
-        return true;
+        return $result;
 
     }
 }

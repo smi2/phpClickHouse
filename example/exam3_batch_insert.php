@@ -55,7 +55,7 @@ print_r($db->select('select sum(views) from summing_url_views')->rows());
 echo "insert ALL file async:\n";
 
 $time_start=microtime(true);
-$stat=$db->insertBatchFiles('summing_url_views',$file_data_names,['event_time','url_hash','site_id','views','v_00','v_55']);
+$result_insert=$db->insertBatchFiles('summing_url_views',$file_data_names,['event_time','url_hash','site_id','views','v_00','v_55']);
 echo "use time:".round(microtime(true)-$time_start,2)."\n";
 
 
@@ -66,6 +66,11 @@ echo "use time:".round(microtime(true)-$time_start,2)."\n";
 
 print_r($db->select('select sum(views) from summing_url_views')->rows());
 
+// ------------------------------------------------------------------------------------------------
+foreach ($file_data_names as $fileName)
+{
+    echo $fileName." : ".$result_insert[$fileName]->totalTimeRequest()."\n";
+}
 // ------------------------------------------------------------------------------------------------
 /*
 Table EXISTSs:[{"name":"summing_url_views"}]

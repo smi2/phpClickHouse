@@ -147,6 +147,16 @@ class Statement
     }
 
     /**
+     * @return mixed
+     */
+    public function totalTimeRequest()
+    {
+        $this->init();
+        return $this->_request->response()->total_time();
+
+    }
+
+    /**
      * @return array
      * @throws \Exception
      */
