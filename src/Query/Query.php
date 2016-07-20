@@ -44,8 +44,6 @@ class Query
      */
     protected function prepareQueryBindings()
     {
-        $keys = [];
-        $values = [];
         foreach ($this->bindings as $key=>$value)
         {
             $valueSet=null;

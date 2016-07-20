@@ -120,18 +120,18 @@ class CurlerRolling
      */
     public function execLoopWait($usleep=10000)
     {
+        // @todo rewrite wait
         $c=0;
         // add all tasks
         do
         {
             $this->exec();
             usleep($usleep);
-//            echo date('H:i:s').$this->getInfo()."\n";
-            $loop=sizeof($this->activeRequests);
+            $loop=$this->countActive();
             $c++;
             if ($c>100000) break;
         } while ($loop);
-
+        return true;
     }
 
 
@@ -150,7 +150,10 @@ class CurlerRolling
             }
         return $headers;
     }
-
+    public function countPending()
+    {
+        return sizeof($this->pendingRequests);
+    }
     /**
      * @return int
      */
@@ -254,17 +257,12 @@ class CurlerRolling
             }
             $this->completedRequestCount++;
 
-//            echo "\t\tDONE:[$task_id]\n";
             // remove the curl handle that just completed
             curl_multi_remove_handle($this->handlerMulti(), $done['handle']);
 
             // if something was requeued, this will get it running/update our loop check values
             $status = curl_multi_exec($this->handlerMulti(), $active);
-
-
         }
-
-
         // see if there is anything to read
         curl_multi_select($this->handlerMulti(), 0.01);
     }

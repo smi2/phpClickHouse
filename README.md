@@ -66,7 +66,7 @@ print_r($st->rows());
 Select result as tree:
 ```php
 $statement=$db->select('SELECT event_date,site_key,sum(views),avg(views) FROM summing_url_views WHERE site_id<3333 GROUP BY event_date,url_hash WITH TOTALS');
-print_r($st->rowsAsTree('event_date.site_key'));
+print_r($statement->rowsAsTree('event_date.site_key'));
 /*
 (
     [2016-07-18] => Array

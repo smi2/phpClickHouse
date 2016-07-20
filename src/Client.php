@@ -1,8 +1,6 @@
 <?php
 namespace ClickHouseDB;
 
-use Curler\Curler;
-
 class Client
 {
     /**
@@ -132,6 +130,10 @@ class Client
         return array_map($quote, $row);
     }
 
+    public function getCountPendingQueue()
+    {
+        return $this->transport()->getCountPendingQueue();
+    }
     public function insert($table,  $values,$columns = [])
     {
         $sql = 'INSERT INTO ' . $table;
@@ -151,6 +153,12 @@ class Client
     }
     public function insertBatchFiles($table_name, $file_names, $columns_array)
     {
+        if ($this->getCountPendingQueue()>0)
+        {
+            throw new \Exception("Queue must be empty, before insertBatch,need executeAsync");
+        }
+
+
         $result=[];
 
         foreach ($file_names as $fileName)
@@ -163,7 +171,7 @@ class Client
         }
         
         // exec
-        $exec=$this->transport()->executeAsync();
+        $exec=$this->executeAsync();
 
         // fetch resutl
         foreach ($file_names as $fileName)

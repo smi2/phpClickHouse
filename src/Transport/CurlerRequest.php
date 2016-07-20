@@ -55,7 +55,7 @@ class Request
     }
     public function sslVeryfi()
     {
-        die('sslVeryfi');
+        die('@todo sslVeryfi');
 //        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 //        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
@@ -328,8 +328,16 @@ class Request
      */
     public function response()
     {
-        if (! $this->resp) throw new \Exception('cant fetch response - is empty');
+        if (!$this->resp) throw new \Exception('cant fetch response - is empty');
         return $this->resp;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isResponseExists()
+    {
+        return ($this->resp?true:false);
     }
 
     /**

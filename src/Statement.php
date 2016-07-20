@@ -92,6 +92,11 @@ class Statement
     {
         if ($this->_init) return false;
 
+        if (!$this->_request->isResponseExists())
+        {
+            throw new \Exception('Not have response');
+        }
+
         $this->_http_code=$this->_request->response()->http_code();
         if ($this->_http_code!==200)
         {

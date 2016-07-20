@@ -12,10 +12,6 @@ class Http
     private $username = null;
     private $password = null;
     private $_verbose=false;
-    /**
-     * @var int
-     */
-    private $timeout = 0;
 
     /**
      * @var \Curler\CurlerRolling
@@ -66,7 +62,7 @@ class Http
      * @return \Curler\Request
      * @throws \Exception
      */
-    private function makeRequet(\ClickHouseDB\Query $query,$urlParams=[])
+    private function makeRequest(\ClickHouseDB\Query $query, $urlParams=[])
     {
         $req_id=false;
 
@@ -82,7 +78,41 @@ class Http
         $new->url($url)->auth($this->username,$this->password)->POST()->parameters_json($sql)->extendinfo($extendinfo);
         $new->verbose($this->_verbose);
         return $new;
+    }
 
+    /**
+     * @param $sql
+     * @param $file_name
+     * @return \ClickHouseDB\Statement
+     */
+    public function writeAsyncCSV($sql, $file_name)
+    {
+        $query = new \ClickHouseDB\Query($sql);
+        $request=new \Curler\Request();
+        $url=$this->getUrl(['readonly'=>0,'query'=>$query->toSql()]);
+
+        $extendinfo=['sql'=>$sql,'query'=>$query];
+
+        $request->url($url)->auth($this->username,$this->password)->POST()->extendinfo($extendinfo);
+        $request->verbose($this->_verbose);
+
+        $request->setCallbackFunction(
+            function (\Curler\Request $request)
+            {
+                fclose($request->getInfileHandle());
+            }
+        );
+        $request->setInfile($file_name);
+        $this->curler->addQueLoop($request);
+
+        return new \ClickHouseDB\Statement($request);
+    }
+
+
+
+    public function getCountPendingQueue()
+    {
+        return $this->curler->countPending();
     }
     /**
      * @param \ClickHouseDB\Query $query
@@ -91,10 +121,8 @@ class Http
      */
     public function getRequestRead(\ClickHouseDB\Query $query)
     {
-        $urlParams=[
-            'readonly'=>1,'extremes'=>1
-        ];
-        return $this->makeRequet($query,$urlParams);
+        $urlParams=[  'readonly'=>1,'extremes'=>1 ];
+        return $this->makeRequest($query,$urlParams);
 
     }
     /**
@@ -105,7 +133,7 @@ class Http
     public function getRequestWrite(\ClickHouseDB\Query $query)
     {
         $urlParams=['readonly'=>0];
-        return $this->makeRequet($query,$urlParams);
+        return $this->makeRequest($query,$urlParams);
     }
 
     /**
@@ -162,34 +190,6 @@ class Http
     {
         $request=$this->prepareWrite($sql,$bindings);
         $code=$this->curler->execOne($request);
-
-        return new \ClickHouseDB\Statement($request);
-    }
-
-
-
-
-
-    public function writeAsyncCSV($sql, $file_name)
-    {
-        $query = new \ClickHouseDB\Query($sql);
-        $request=new \Curler\Request();
-        $url=$this->getUrl(['readonly'=>0,'query'=>$query->toSql()]);
-
-        $extendinfo=['sql'=>$sql,'query'=>$query];
-
-        $request->url($url)->auth($this->username,$this->password)->POST()->extendinfo($extendinfo);
-        $request->verbose($this->_verbose);
-
-        $request->setCallbackFunction(
-            function (\Curler\Request $request)
-            {
-                fclose($request->getInfileHandle());
-            }
-        );
-        $request->setInfile($file_name);
-        $this->curler->addQueLoop($request);
-
         return new \ClickHouseDB\Statement($request);
     }
 
