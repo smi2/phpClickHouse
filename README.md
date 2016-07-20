@@ -60,7 +60,9 @@ print_r($statement->extremesMin());
 //totals row
 print_r($statement->totals());
 //result all
-print_r($st->rows());
+print_r($statement->rows());
+//totalTimeRequest
+print_r($statement->totalTimeRequest());
 ```
 
 Select result as tree:
@@ -171,6 +173,8 @@ FORMAT JSON
 $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','value'=>1]);
 // SELECT 1 as ping WHERE ping="1"
 ```
+
+
 
 
 ### Todos
