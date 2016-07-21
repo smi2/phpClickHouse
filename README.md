@@ -141,11 +141,16 @@ see example/exam5_error_async.php
 ### Find active host and check cluster
 
 We use in the smi2, DNS Round-Robin.
+
 Set host =  "clickhouse.smi2.ru" is A record  => [ xdb1.ch1.smi2.ru,xdb1.ch2.smi2.ru,xdb1.ch3.smi2.ru....]
 
 function findActiveHostAndCheckCluster() - ping all IPs in DNS record
+
 then random() select from active list
+
 if dev. server (one IP or host) - no check
+
+
 see example/exam6_check_cluster.php
 
 ```php
