@@ -8,9 +8,10 @@ namespace ClickHouseDB\Transport;
  */
 class Http
 {
-    private $uri = null;
     private $username = null;
     private $password = null;
+    private $host='';
+    private $port=0;
     private $_verbose=false;
 
     /**
@@ -22,15 +23,81 @@ class Http
      */
     private $_settings=false;
 
-    public function __construct($uri=null, $username = null, $password = null)
+    public function __construct($host,$port, $username, $password)
     {
-        $this->uri = $uri;
+        $this->setHost($host,$port);
+
         $this->username = $username;
         $this->password = $password;
         $this->_settings=new \ClickHouseDB\Settings($this);
         
         $this->curler=new \Curler\CurlerRolling();
         $this->curler->setSimultaneousLimit(10);
+    }
+
+
+    public function setHost($host,$port=-1)
+    {
+        if ($port>0)
+        {
+            $this->port=$port;
+        }
+        $this->host=$host;
+    }
+    public function getUri()
+    {
+        return 'http://'.$this->host.':'.$this->port;
+    }
+
+    public function checkServers($list_hosts,$time_out)
+    {
+
+        // @todo add WHERE database=XXXX
+
+
+        $query['query']='SELECT * FROM system.replicas FORMAT JSON';
+        $query['user']=$this->username;
+        $query['password']=$this->password;
+
+        $resultGoodHost=[];
+        $resultBadHost=[];
+
+        $statements=[];
+        foreach ($list_hosts as $host)
+        {
+            $request=new \Curler\Request();
+            $url='http://'.$host.":".$this->port.'?'.http_build_query($query);
+            $request->url($url)->GET()->verbose(false)->timeOut($time_out);
+            $this->curler->addQueLoop($request);
+            $statements[$host]=new \ClickHouseDB\Statement($request);
+        }
+        $this->curler->execLoopWait();
+
+        foreach ($statements as $host=>$statement)
+        {
+            if ($statement->isError())
+            {
+                $resultBadHost[$host]=1;
+                $statement->error();
+            }
+            else
+            {
+                $resultGoodHost[$host]=$statement->rows();
+            }
+        }
+
+        // @todo : use total_replicas + active_replicas - for check state ?
+        // total_replicas + active_replicas
+        return [$resultGoodHost,$resultBadHost];
+
+    }
+    /**
+     * @return array
+     */
+    public function getHostIPs()
+    {
+        return gethostbynamel($this->host);
+
     }
     /**
      * @return \ClickHouseDB\Settings
@@ -53,7 +120,7 @@ class Http
         {
             $settings=array_merge($settings,$params);
         }
-        return $this->uri.'?'.http_build_query($settings);
+        return $this->getUri().'?'.http_build_query($settings);
     }
 
     /**

@@ -10,12 +10,21 @@ class Client
   
     private $_connect_username=false;
     private $_connect_password=false;
+    private $_connect_host=false;
+    private $_connect_port=false;
     private $_connect_uri=false;
     public function __construct($connect_params)
     {
+        if (!isset($connect_params['username']))  throw  new \Exception('not set username');
+        if (!isset($connect_params['password']))  throw  new \Exception('not set password');
+        if (!isset($connect_params['port']))  throw  new \Exception('not set port');
+        if (!isset($connect_params['host']))  throw  new \Exception('not set host');
+
         $this->_connect_username=$connect_params['username'];
         $this->_connect_password=$connect_params['password'];
-        $this->_connect_uri='http://'.$connect_params['host'].':'.$connect_params['port'].'/';
+        $this->_connect_port=$connect_params['port'];
+        $this->_connect_host=$connect_params['host'];
+
     }
 
     /**
@@ -26,11 +35,48 @@ class Client
         if (!$this->_transport)
         {
             $this->_transport=new \ClickHouseDB\Transport\Http(
-                $this->_connect_uri,$this->_connect_username,$this->_connect_password
+                $this->_connect_host,$this->_connect_port,$this->_connect_username,$this->_connect_password
             );
         }
         return $this->_transport;
     }
+
+    /**
+     * @param int $max_time_out
+     * @param bool $changeHost
+     * @return array
+     * @throws \Exception
+     */
+    public function findActiveHostAndCheckCluster($max_time_out=2,$changeHost=true)
+    {
+        $hostsips=$this->transport()->getHostIPs();
+
+        if (sizeof($hostsips)>1)
+        {
+            list($resultGoodHost,$resultBadHost)=$this->transport()->checkServers($hostsips,$max_time_out);
+
+            if (!sizeof($resultGoodHost)) throw new \Exception("All host is down:".json_encode($resultBadHost));
+
+            // @todo : add make some
+
+            if ($changeHost && sizeof($resultGoodHost))
+            {
+                $selectHost=array_rand($resultGoodHost);
+                $this->transport()->setHost($selectHost);
+            }
+
+
+        }
+        else
+        {
+            return [[$this->_connect_host=>1],[],false];
+        }
+
+
+        return [$resultGoodHost,$resultBadHost,$selectHost];
+
+    }
+
     public function verbose()
     {
         return $this->transport()->verbose(true);
@@ -107,6 +153,7 @@ class Client
     {
         return $this->select('SHOW TABLES')->rows();
     }
+
 
 
     /**

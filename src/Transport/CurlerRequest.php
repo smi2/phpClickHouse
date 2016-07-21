@@ -248,6 +248,7 @@ class Request
     public function timeOut($seconds=10)
     {
         $this->options[CURLOPT_TIMEOUT]=$seconds;
+        $this->options[CURLOPT_CONNECTTIMEOUT]=$seconds;
         $this->keepAlive(round($seconds/2));
         return $this;
     }
@@ -309,6 +310,15 @@ class Request
     {
 
         return $this->execute('GET');
+    }
+
+    /**
+     *
+     * @return int
+     */
+    public function getDnsCache()
+    {
+        return 0;
     }
 
     /**
@@ -387,6 +397,7 @@ class Request
 
         }
 
+        $curl_opt[CURLOPT_DNS_CACHE_TIMEOUT] = $this->getDnsCache();
         $curl_opt[CURLOPT_URL] = $this->url;
 
 
