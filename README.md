@@ -134,6 +134,29 @@ $select=$db->selectAsync('SELECT * FROM summing_url_views LIMIT 1');
 $insert=$db->insertBatchFiles('summing_url_views',['/tmp/clickHouseDB_test.1.data'],['event_time']);
 // 'Exception' with message 'Queue must be empty, before insertBatch,need executeAsync'
 ```
+see example/exam5_error_async.php
+
+
+
+### Find active host and check cluster
+
+We use in the smi2, DNS Round-Robin.
+Set host =  "clickhouse.smi2.ru" is A record  => [ xdb1.ch1.smi2.ru,xdb1.ch2.smi2.ru,xdb1.ch3.smi2.ru....]
+
+function findActiveHostAndCheckCluster() - ping all IPs in DNS record
+then random() select from active list
+if dev. server (one IP or host) - no check
+see example/exam6_check_cluster.php
+
+```php
+$db=new ClickHouseDB\Client($config);
+$change_host=true;
+$time_out_second=1;
+list($resultGoodHost,$resultBadHost,$selectHost)=$db->findActiveHostAndCheckCluster($time_out_second,$change_host);
+echo "SelectHost:".$selectHost."\n";
+
+```
+
 
 
 
@@ -197,6 +220,7 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
  - Normal exception
  - add/use composer ?
  - drop include ?
+ - find ActiveHost & CheckCluster - how check cluster and replica ?
 
 License
 ----
