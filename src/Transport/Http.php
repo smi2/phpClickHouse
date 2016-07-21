@@ -49,7 +49,7 @@ class Http
         return 'http://'.$this->host.':'.$this->port;
     }
 
-    public function checkServers($list_hosts,$time_out)
+    public function checkServerReplicas($list_hosts,$time_out)
     {
 
         // @todo add WHERE database=XXXX
@@ -78,11 +78,31 @@ class Http
             if ($statement->isError())
             {
                 $resultBadHost[$host]=1;
-                $statement->error();
             }
             else
             {
-                $resultGoodHost[$host]=$statement->rows();
+                $result=$statement->rows();
+                $flag_bad=false;
+//                foreach ($result as $row)
+//                {
+//                    if (!isset($row['total_replicas']))  $flag_bad=true;
+//                    if (!isset($row['active_replicas']))  $flag_bad=true;
+//                    if ($row['total_replicas']!==$row['active_replicas'])  $flag_bad=true;
+//
+//                    if ($flag_bad) break;
+//                }
+
+
+                if ($flag_bad)
+                {
+                    $resultBadHost[$host]=$result;
+                }
+                else
+                {
+                    $resultGoodHost[$host]=$result;
+                }
+
+
             }
         }
 

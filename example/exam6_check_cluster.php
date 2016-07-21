@@ -33,4 +33,5 @@ echo "Bad Host:".json_encode(array_keys($resultBadHost))."\n";
 echo "SelectHost:".$selectHost."\n";
 
 
+print_r($resultBadHost);
 echo "\n\nUseTime:".round(microtime(true)-$start_time,3)."\n";

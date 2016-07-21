@@ -53,7 +53,7 @@ class Client
 
         if (sizeof($hostsips)>1)
         {
-            list($resultGoodHost,$resultBadHost)=$this->transport()->checkServers($hostsips,$max_time_out);
+            list($resultGoodHost,$resultBadHost)=$this->transport()->checkServerReplicas($hostsips,$max_time_out);
 
             if (!sizeof($resultGoodHost)) throw new \Exception("All host is down:".json_encode($resultBadHost));
 
@@ -64,8 +64,6 @@ class Client
                 $selectHost=array_rand($resultGoodHost);
                 $this->transport()->setHost($selectHost);
             }
-
-
         }
         else
         {
