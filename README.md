@@ -226,6 +226,7 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
  - add/use composer ?
  - drop include ?
  - find ActiveHost & CheckCluster - how check cluster and replica ?
+ - Внешние данные для обработки запроса в http
 
 License
 ----
