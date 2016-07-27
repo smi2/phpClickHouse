@@ -252,6 +252,6 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
 License
 ----
 
-GPL
+MIT
 
 
