@@ -1,6 +1,18 @@
 php ClickHouse wrapper
 ===================
 
+
+##Features
+
+* No dependency, only curl 
+* Select parallel queries (asynchronous)
+* Parallelizing bulk inserts from CSV file
+* Find active host and check cluster
+* Select WHERE IN ( _local csv file_ )
+* SQL conditions & template
+
+## Start
+
 Connect and select database:
 ```php
 $config=['host'=>'192.168.1.1','port'=>'8123','username'=>'default','password'=>''];
@@ -162,6 +174,15 @@ echo "SelectHost:".$selectHost."\n";
 
 ```
 
+### Select WHERE IN ( _local csv file_ )
+```php
+$file_name_data1="/tmp/temp_csv.txt"; // two column file [int,string]
+$whereIn=new \ClickHouseDB\WhereInFile();
+$whereIn->attachFile($file_name_data1,'namex',['site_id'=>'Int32','site_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
+$result=$db->select($sql,[],$whereIn);
+
+//see example/exam7_where_in.php
+```
 
 
 
@@ -226,7 +247,7 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
  - add/use composer ?
  - drop include ?
  - find ActiveHost & CheckCluster - how check cluster and replica ?
- - Внешние данные для обработки запроса в http
+
 
 License
 ----

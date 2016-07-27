@@ -144,26 +144,44 @@ class Http
     }
 
     /**
+     * @param $extendinfo
+     * @return \Curler\Request
+     */
+    private function newRequest($extendinfo)
+    {
+        $new=new \Curler\Request();
+        $new->auth($this->username,$this->password)->POST()->extendinfo($extendinfo);
+        $new->verbose($this->_verbose);
+        return $new;
+    }
+    /**
      * @param \ClickHouseDB\Query $query
      * @param $urlParams
      * @return \Curler\Request
      * @throws \Exception
      */
-    private function makeRequest(\ClickHouseDB\Query $query, $urlParams=[])
+    private function makeRequest(\ClickHouseDB\Query $query, $urlParams=[],$query_as_string=false)
     {
-        $req_id=false;
-
         $sql=$query->toSql();
-        $new=new \Curler\Request($req_id);
-        $url=$this->getUrl($urlParams);
 
+        if ($query_as_string)
+        {
+            $urlParams['query']=$sql;
+        }
+
+        $url=$this->getUrl($urlParams);
         $extendinfo=[
             'sql'=>$sql,
             'query'=>$query
         ];
 
-        $new->url($url)->auth($this->username,$this->password)->POST()->parameters_json($sql)->extendinfo($extendinfo);
-        $new->verbose($this->_verbose);
+        $new=$this->newRequest($extendinfo);
+        $new->url($url);
+
+        if (!$query_as_string)
+        {
+            $new->parameters_json($sql);
+        }
         return $new;
     }
 
@@ -180,8 +198,8 @@ class Http
 
         $extendinfo=['sql'=>$sql,'query'=>$query];
 
-        $request->url($url)->auth($this->username,$this->password)->POST()->extendinfo($extendinfo);
-        $request->verbose($this->_verbose);
+        $request=$this->newRequest($extendinfo);
+        $request->url($url);
 
         $request->setCallbackFunction(
             function (\Curler\Request $request)
@@ -206,10 +224,29 @@ class Http
      * @param bool $id
      * @return \Curler\Request
      */
-    public function getRequestRead(\ClickHouseDB\Query $query)
+    public function getRequestRead(\ClickHouseDB\Query $query,$whereInFile=null)
     {
         $urlParams=[  'readonly'=>1,'extremes'=>1 ];
-        return $this->makeRequest($query,$urlParams);
+        $query_as_string=false;
+        if ($whereInFile instanceof \ClickHouseDB\WhereInFile && $whereInFile->size())
+        {
+            // $request=$this->prepareSelectWhereIn($request,$whereInFile);
+            $structure=$whereInFile->fetchUrlParams();
+//            $structure=[];
+            $urlParams=array_merge($urlParams,$structure);
+            $query_as_string=true;
+        }
+        // makeRequest read
+        $request=$this->makeRequest($query,$urlParams,$query_as_string);
+
+        // attach files
+        if ($whereInFile instanceof \ClickHouseDB\WhereInFile && $whereInFile->size())
+        {
+
+            $request->attachFiles($whereInFile->fetchFiles());
+        }
+
+        return $request;
 
     }
     /**
@@ -228,11 +265,11 @@ class Http
      * @param $bindings
      * @return \Curler\Request
      */
-    private function prepareSelect($sql,$bindings)
+    private function prepareSelect($sql,$bindings,$whereInFile)
     {
         $query = new \ClickHouseDB\Query($sql, $bindings);
         $query->setFormat('JSON');
-        return $this->getRequestRead($query);
+        return $this->getRequestRead($query,$whereInFile);
 
     }
     /**
@@ -256,14 +293,29 @@ class Http
         return $this->curler->execLoopWait();
     }
 
+
+
+    /**
+     * @param $sql
+     * @param array $bindings
+     * @return \ClickHouseDB\Statement
+     * @throws \Exception
+     */
+    public function select($sql, array $bindings = [],$whereInFile=null)
+    {
+        $request=$this->prepareSelect($sql,$bindings,$whereInFile);
+        $code=$this->curler->execOne($request);
+
+        return new \ClickHouseDB\Statement($request);
+    }
     /**
      * @param $sql
      * @param array $bindings
      * @return \ClickHouseDB\Statement
      */
-    public function selectAsync($sql, array $bindings = [])
+    public function selectAsync($sql, array $bindings = [],$whereInFile=null)
     {
-        $request=$this->prepareSelect($sql,$bindings);
+        $request=$this->prepareSelect($sql,$bindings,$whereInFile);
         $this->curler->addQueLoop($request);
         return new \ClickHouseDB\Statement($request);
     }
@@ -280,18 +332,5 @@ class Http
         return new \ClickHouseDB\Statement($request);
     }
 
-    /**
-     * @param $sql
-     * @param array $bindings
-     * @return \ClickHouseDB\Statement
-     * @throws \Exception
-     */
-    public function select($sql, array $bindings = [])
-    {
-        $request=$this->prepareSelect($sql,$bindings);
-        $code=$this->curler->execOne($request);
-    
-        return new \ClickHouseDB\Statement($request);
-    }
 
 }

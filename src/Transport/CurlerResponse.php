@@ -52,13 +52,13 @@ class Response
     }
     public function dump($result=false)
     {
-            $msg="\n-----\nBODY:\n";
+            $msg="\n----------------------------------------------------------------------\nBODY:\n";
             $msg.=print_r($this->_body,true);
             $msg.="\nHEAD:\n";
             $msg.=print_r($this->_headers,true);
-            $msg.="\nINFO:\n";
-            $msg.=print_r($this->_info,true);
-            $msg.="\n-----\n";
+//            $msg.="\nINFO:\n";
+//            $msg.=print_r($this->_info,true);
+            $msg.="\n----------------------------------------------------------------------\n";
 
         if ($result) return $msg;
         echo $msg;

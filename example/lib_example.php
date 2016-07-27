@@ -1,5 +1,26 @@
 <?php
 
+function makeListSitesKeysDataFile($file_name,$from_id=1000,$to_id=20000)
+{
+    @unlink($file_name);
+
+
+    $handle = fopen($file_name,'w');
+    $rows=0;
+    for($f=$from_id;$f<$to_id;$f++)
+    {
+        $j['site_id']=$f;
+        $j['site_hash']=md5($f);
+
+        fputcsv($handle,$j);
+        $rows=$rows+1;
+    }
+
+    fclose($handle);
+
+    echo "Created file  [$file_name]: $rows rows...\n";
+
+}
 function makeSomeDataFile($file_name,$size=10)
 {
 

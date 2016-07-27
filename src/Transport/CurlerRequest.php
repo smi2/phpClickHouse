@@ -14,9 +14,13 @@ class Request
     private $_cookieFile;
     private $resp;
     private $_persistent=false;
+    private $_attachFiles=false;
     private $callback_class='';
     private $callback_functionName='';
-    private $callback_function=false;
+    /**
+     * @var
+     */
+    private $callback_function;
 
     private $infile_handle=false;
 
@@ -52,6 +56,17 @@ class Request
     {
         curl_close($this->handle);
         $this->handle=null;
+    }
+    public function attachFiles($attachFiles)
+    {
+        $this->header("Content-Type","multipart/form-data");
+        $out=[];
+        foreach ($attachFiles as $post_name=>$file_path)
+        {
+            $out[$post_name]=new \CURLFile($file_path);
+        }
+        $this->_attachFiles=true;
+        $this->parameters($out);
     }
     public function sslVeryfi()
     {
@@ -137,11 +152,13 @@ class Request
     }
     public function dump()
     {
-        echo 'URL:'.$this->url."\n";
-        echo 'METHOD:'.$this->method."\n";
-        echo 'PARAMS:';
-        print_r($this->parameters);
-        echo "\n\n";
+        $message="\n";
+        $message.="-----------------------------------\n";
+        $message.='URL:'.$this->url."\n\n";
+        $message.='METHOD:'.$this->method."\n\n";
+        $message.='PARAMS:'.print_r($this->parameters,true)."\n";
+        $message.="-----------------------------------\n";
+        echo $message;
     }
     public function getId()
     {
@@ -236,9 +253,9 @@ class Request
      * @param $data
      * @return $this
      */
-    public function parameters_string($data)
+    public function parameters($data)
     {
-        $this->parameters=http_build_query($data);
+        $this->parameters=$data;
         return $this;
     }
 
@@ -259,6 +276,7 @@ class Request
      */
     public function parameters_json($data)
     {
+
         $this->header("Content-Type","application/json, text/javascript; charset=utf-8");
         $this->header("Accept","application/json, text/javascript, */*; q=0.01");
         if ($data===null)
@@ -375,7 +393,10 @@ class Request
 
         $method=$this->method;
 
-
+        if ($this->_attachFiles)
+        {
+            $curl_opt[CURLOPT_SAFE_UPLOAD]=true;
+        }
 
 
         if(strtoupper($method) == 'GET'){
@@ -384,22 +405,26 @@ class Request
             $curl_opt[CURLOPT_POSTFIELDS] =false;
         }
         else {
-
             if (strtoupper($method)==='POST') $curl_opt[CURLOPT_POST] = TRUE;
-
-
             $curl_opt[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
             if ($this->parameters)
             {
                 $curl_opt[CURLOPT_POSTFIELDS] = $this->parameters;
-                $this->header('Content-Length',strlen($this->parameters));
+                if (is_array($this->parameters))
+                {
+                }
+                else
+                {
+                    $this->header('Content-Length',strlen($this->parameters));
+                }
+
             }
 
         }
 
         $curl_opt[CURLOPT_DNS_CACHE_TIMEOUT] = $this->getDnsCache();
-        $curl_opt[CURLOPT_URL] = $this->url;
 
+        $curl_opt[CURLOPT_URL] = $this->url;
 
         if ($this->_cookieFile)
         {
@@ -408,16 +433,12 @@ class Request
             $curl_opt[CURLOPT_COOKIEJAR]=$this->_cookieFile;
         }
 
-
-        //
         if ($this->headers && sizeof($this->headers))
         {
             $curl_opt[CURLOPT_HTTPHEADER] = array();
             foreach( $this->headers as $key => $value){
                 $curl_opt[CURLOPT_HTTPHEADER][] = sprintf("%s:%s", $key, $value);
             }
-
-
         }
 
         if (!empty($curl_opt[CURLOPT_INFILE]))
@@ -426,7 +447,6 @@ class Request
         }
 
         curl_setopt_array($this->handle, $curl_opt);
-//        if ($this->curl_progress_callback)  curl_setopt($this->handle, CURLOPT_PROGRESSFUNCTION, array($this, 'curl_progress_callback'));
         return true;
 
     }

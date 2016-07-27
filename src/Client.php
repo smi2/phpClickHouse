@@ -104,9 +104,9 @@ class Client
      * @param array $bindings
      * @return Statement
      */
-    public function select($sql,$bindings = [])
+    public function select($sql,$bindings = [],$whereInFile=null)
     {
-        return $this->transport()->select($sql,$bindings);
+        return $this->transport()->select($sql,$bindings,$whereInFile);
     }
 
     /**
@@ -123,9 +123,9 @@ class Client
      * @param bool $query_id
      * @return Statement
      */
-    public function selectAsync($sql,$bindings=[],$query_id=false)
+    public function selectAsync($sql,$bindings=[],$whereInFile=null)
     {
-        return $this->transport()->selectAsync($sql,$bindings);
+        return $this->transport()->selectAsync($sql,$bindings,$whereInFile);
     }
 
     /**
