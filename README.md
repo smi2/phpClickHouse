@@ -7,6 +7,7 @@ php ClickHouse wrapper
 * No dependency, only curl 
 * Select parallel queries (asynchronous)
 * Parallelizing bulk inserts from CSV file
+* enable_http_compression, for bulk inserts 
 * Find active host and check cluster
 * Select WHERE IN ( _local csv file_ )
 * SQL conditions & template
@@ -148,6 +149,26 @@ $insert=$db->insertBatchFiles('summing_url_views',['/tmp/clickHouseDB_test.1.dat
 ```
 see example/exam5_error_async.php
 
+### Gzip & enable_http_compression
+
+On fly read CSV file and compress zlib.deflate.
+  
+
+```
+$db->settings()->max_execution_time(200);
+$db->enableHttpCompression(true);
+
+$result_insert=$db->insertBatchFiles('summing_url_views',$file_data_names,[......]);
+
+
+foreach ($result_insert as $fileName=>$state)
+{
+    echo "$fileName => ".json_encode($state->info_upload())."\n";
+}
+
+
+```
+see example/exam8_http_gzip_batch_insert.php
 
 
 ### Find active host and check cluster
@@ -248,6 +269,7 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
  - drop include ?
  - find ActiveHost & CheckCluster - how check cluster and replica ?
 
+ 
 
 License
 ----

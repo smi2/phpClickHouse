@@ -44,6 +44,7 @@ class Http
         }
         $this->host=$host;
     }
+
     public function getUri()
     {
         return 'http://'.$this->host.':'.$this->port;
@@ -151,6 +152,12 @@ class Http
     {
         $new=new \Curler\Request();
         $new->auth($this->username,$this->password)->POST()->extendinfo($extendinfo);
+        if ($this->settings()->isEnableHttpCompression())
+        {
+            $new->httpCompression(true);
+
+        }
+        $new->timeOut($this->settings()->getTimeOut());
         $new->verbose($this->_verbose);
         return $new;
     }
@@ -182,6 +189,10 @@ class Http
         {
             $new->parameters_json($sql);
         }
+        if ($this->settings()->isEnableHttpCompression())
+        {
+            $new->httpCompression(true);
+        }
         return $new;
     }
 
@@ -207,6 +218,7 @@ class Http
                 fclose($request->getInfileHandle());
             }
         );
+
         $request->setInfile($file_name);
         $this->curler->addQueLoop($request);
 

@@ -17,6 +17,7 @@ class Request
     private $_attachFiles=false;
     private $callback_class='';
     private $callback_functionName='';
+    private $_httpCompression=false;
     /**
      * @var
      */
@@ -27,10 +28,10 @@ class Request
     public function __construct($id=false)
     {
         $this->id=$id;
-        $this->header('Accept-Language','ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3');
-        $this->header('Cache-Control','no-cache, no-store, must-revalidate');
-        $this->header('Expires','0');
-        $this->header('Pragma','no-cache');
+//        $this->header('Accept-Language','ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3');
+//        $this->header('Cache-Control','no-cache, no-store, must-revalidate');
+//        $this->header('Expires','0');
+//        $this->header('Pragma','no-cache');
         $this->options=array(
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
@@ -43,7 +44,7 @@ class Request
             CURLOPT_AUTOREFERER        => 1, // при редиректе подставлять в «Referer:» значение из «Location:»
             CURLOPT_BINARYTRANSFER    => 1, // передавать в binary-safe
             CURLOPT_RETURNTRANSFER => TRUE,
-            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 8.1; Trident/5.0; .NET4.0E; en-AU)',
+//            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 8.1; Trident/5.0; .NET4.0E; en-AU)',
         );
 
     }
@@ -122,10 +123,28 @@ class Request
      */
     public function setInfile($file_name)
     {
+        $this->header('Expect','');
         $this->infile_handle=fopen($file_name,'r');
+        if ($this->_httpCompression)
+        {
+            $this->header('Content-Encoding','gzip');
+            $this->header('Content-Type','application/x-www-form-urlencoded');
+
+            stream_filter_append($this->infile_handle, 'zlib.deflate', STREAM_FILTER_READ,  ["window" => 30]);
+
+            $this->options[CURLOPT_SAFE_UPLOAD]=1;
+
+        }
+        else
+        {
+            $this->options[CURLOPT_INFILESIZE]=filesize($file_name);
+
+
+        }
 
         $this->options[CURLOPT_INFILE]=$this->infile_handle;
-        $this->options[CURLOPT_INFILESIZE]=filesize($file_name);
+
+
         return $this->infile_handle;
     }
     public function setCallbackFunction($callback)
@@ -236,6 +255,14 @@ class Request
         return $id.'.'.microtime().mt_rand(0,1000000);
     }
 
+    public function httpCompression($flag)
+    {
+        if ($flag)
+        {
+            $this->_httpCompression=$flag;
+            $this->options[CURLOPT_ENCODING]='gzip';
+        }
+    }
     /**
      * @param $username
      * @param $password
@@ -266,7 +293,6 @@ class Request
     {
         $this->options[CURLOPT_TIMEOUT]=$seconds;
         $this->options[CURLOPT_CONNECTTIMEOUT]=$seconds;
-        $this->keepAlive(round($seconds/2));
         return $this;
     }
 
@@ -437,7 +463,7 @@ class Request
         {
             $curl_opt[CURLOPT_HTTPHEADER] = array();
             foreach( $this->headers as $key => $value){
-                $curl_opt[CURLOPT_HTTPHEADER][] = sprintf("%s:%s", $key, $value);
+                $curl_opt[CURLOPT_HTTPHEADER][] = sprintf("%s: %s", $key, $value);
             }
         }
 

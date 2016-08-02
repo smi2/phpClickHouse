@@ -99,6 +99,10 @@ class Client
         $this->settings()->database($db);
     }
 
+    public function enableHttpCompression($flag=true)
+    {
+        $this->settings()->enableHttpCompression($flag);
+    }
     /**
      * @param $sql
      * @param array $bindings

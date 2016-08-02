@@ -17,8 +17,11 @@ class Settings
         $default=[
             'extremes'=>true,
             'readonly'=>true,
-            'max_rows_to_read'=>1000000000,
-            'max_execution_time'=>20
+//            'max_block_size'=>10000000,
+            'max_rows_to_read'=>10000000,
+//            'max_insert_block_size'=>1000000000,
+            'max_execution_time'=>20,
+            'enable_http_compression'=>0
 //            'database'=>false
         ];
         $this->settings=$default;
@@ -55,6 +58,19 @@ class Settings
         return $this;
     }
 
+    public function getTimeOut()
+    {
+        return $this->get('max_execution_time');
+    }
+    public function isEnableHttpCompression()
+    {
+        return $this->getSetting('enable_http_compression');
+    }
+    public function enableHttpCompression($flag)
+    {
+        $this->set('enable_http_compression',intval($flag));
+        return $this;
+    }
     /**
      * @param $flag
      * @return $this
@@ -75,5 +91,14 @@ class Settings
     public function getSettings()
     {
         return $this->settings;
+    }
+
+    /**
+     * @param $name
+     */
+    public function getSetting($name)
+    {
+        if (!isset($this->settings[$name])) return null;
+        return $this->get($name);
     }
 }

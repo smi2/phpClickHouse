@@ -237,6 +237,17 @@ class Statement
         return $out;
 
     }
+    public function info_upload()
+    {
+        $this->init();
+        return [
+                'size_upload'=>$this->_request->response()->size_upload(),
+                'upload_content'=>$this->_request->response()->upload_content_length(),
+                'speed_upload'=>$this->_request->response()->speed_upload(),
+                'time_request'=>$this->totalTimeRequest()
+            ];
+
+    }
     public function rows()
     {
         $this->init();

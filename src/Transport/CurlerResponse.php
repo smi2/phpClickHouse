@@ -56,12 +56,35 @@ class Response
             $msg.=print_r($this->_body,true);
             $msg.="\nHEAD:\n";
             $msg.=print_r($this->_headers,true);
-//            $msg.="\nINFO:\n";
-//            $msg.=print_r($this->_info,true);
+            $msg.="\nINFO:\n";
+            $msg.=print_r($this->_info,true);
             $msg.="\n----------------------------------------------------------------------\n";
 
         if ($result) return $msg;
         echo $msg;
+    }
+    private function humanFileSize($size,$unit="") {
+        if( (!$unit && $size >= 1<<30) || $unit == "GB")
+            return number_format($size/(1<<30),2)." GB";
+        if( (!$unit && $size >= 1<<20) || $unit == "MB")
+            return number_format($size/(1<<20),2)." MB";
+        if( (!$unit && $size >= 1<<10) || $unit == "KB")
+            return number_format($size/(1<<10),2)." KB";
+        return number_format($size)." bytes";
+    }
+
+    public function upload_content_length()
+    {
+        return $this->humanFileSize($this->_info['upload_content_length']);
+    }
+    public function speed_upload()
+    {
+        $SPEED_UPLOAD=$this->_info['speed_upload'];
+        return round(($SPEED_UPLOAD*8)/(1000*1000),2).' Mbps';
+    }
+    public function size_upload()
+    {
+        return $this->humanFileSize($this->_info['size_upload']);
     }
     public function json($key=null)
     {
