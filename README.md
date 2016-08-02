@@ -11,6 +11,10 @@ php ClickHouse wrapper
 * Find active host and check cluster
 * Select WHERE IN ( _local csv file_ )
 * SQL conditions & template
+* tablesSize & databaseSize
+* listPartitions
+* pre production :  dropPartition & dropOldPartitions 
+
 
 ## Start
 
@@ -194,6 +198,38 @@ list($resultGoodHost,$resultBadHost,$selectHost)=$db->findActiveHostAndCheckClus
 echo "SelectHost:".$selectHost."\n";
 
 ```
+### tablesSize & databaseSize
+
+Result in _human size_
+
+```php
+
+print_r($db->databaseSize()));
+print_r($db->tablesSize());
+print_r($db->tableSize('summing_partions_views'));
+
+```
+
+
+### Partitions
+
+```php
+$count_result=2;
+print_r($db->partitions('summing_partions_views',$count_result));
+```
+
+Drop partitions ( pre production )
+
+```php
+$count_old_days=10;
+print_r(
+    $db->dropOldPartitions('summing_partions_views',$count_old_days);
+)
+// by `partition_id` 
+print_r($db->dropPartition('summing_partions_views','201512'));
+```
+
+
 
 ### Select WHERE IN ( _local csv file_ )
 ```php

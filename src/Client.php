@@ -24,6 +24,7 @@ class Client
         $this->_connect_password=$connect_params['password'];
         $this->_connect_port=$connect_params['port'];
         $this->_connect_host=$connect_params['host'];
+        $this->settings()->database('default');
 
     }
 
@@ -240,5 +241,104 @@ class Client
         }
         return $result;
 
+
     }
+
+    /**
+     * @return mixed|null
+     */
+    public function databaseSize()
+    {
+        $b=$this->settings()->getDatabase();
+        return $this->select('
+            SELECT database,formatReadableSize(sum(bytes)) as size
+            FROM system.parts
+            WHERE active AND database=:database
+            GROUP BY database
+',['database'=>$b])->fetchOne();
+    }
+
+    /**
+     * @param $tableName
+     * @return mixed
+     */
+    public function tableSize($tableName)
+    {
+        $tables=$this->tablesSize();
+        if (isset($tables[$tableName])) return $tables[$tableName];
+    }
+
+    /**
+     * @return array
+     */
+    public function tablesSize()
+    {
+        return $this->select('
+SELECT table,
+formatReadableSize(sum(bytes)) as size,
+min(min_date) as min_date,
+max(max_date) as max_date
+FROM system.parts
+WHERE active
+GROUP BY table
+')->rowsAsTree('table');
+
+    }
+
+    /**
+     * @param $table
+     * @param int $limit
+     * @return array
+     */
+    public function partitions($table,$limit=-1)
+    {
+        return $this->select(
+            '
+            SELECT *
+            FROM system.parts 
+            WHERE like(table,\'%'.$table.'%\')  
+            ORDER BY max_date '.($limit>0?' LIMIT '.intval($limit):'')
+        )->rowsAsTree('name');
+    }
+
+
+    public function dropPartition($tableName,$partition_id)
+    {
+        $state=$this->write('ALTER TABLE {tableName} DROP PARTITION :partion_id',
+            [
+                'tableName'=>$tableName,
+                'partion_id'=>$partition_id
+            ]
+            );
+        if ($state->isError()) $state->error();
+    }
+    /**
+     * @param $table_name
+     * @param $days_ago
+     * @param int $count_partitons_per_one
+     */
+    public function dropOldPartitions($table_name,$days_ago,$count_partitons_per_one=100)
+    {
+        $days_ago=strtotime(date('Y-m-d 00:00:00',strtotime('-'.$days_ago.' day')));
+        $drop=[];
+        $list_patitions=$this->partitions($table_name,$count_partitons_per_one);
+        foreach ($list_patitions as $partion_id=>$partition)
+        {
+            if (stripos($partition['engine'],'mergetree')===false) continue;
+            $min_date=strtotime($partition['min_date']);
+            $max_date=strtotime($partition['max_date']);
+            if ($max_date<$days_ago)
+            {
+                $drop[]=$partition['partition'];
+            }
+        }
+
+
+        foreach ($drop as $partition_id)
+        {
+            $this->dropPartition($table_name,$partition_id);
+        }
+        return $drop;
+    }
+
 }

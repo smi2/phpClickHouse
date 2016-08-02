@@ -63,6 +63,41 @@ function makeSomeDataFile($file_name,$size=10)
     echo "Created file  [$file_name]: $rows rows...\n";
 }
 
+function makeSomeDataFileBigOldDates($file_name,$size=10)
+{
+    if (is_file($file_name)) {
+        echo "Exist file  [$file_name]: ± rows... size = ".humanFileSize(filesize($file_name))." \n";
+        return false;
+    }
+
+    @unlink($file_name);
+
+
+    $handle = fopen($file_name,'w');
+    $rows=0;
+
+    for ($day_ago=0;$day_ago<360;$day_ago++)
+    {
+        $date=strtotime('-'.$day_ago.' day');
+        for ($hash_id=1;$hash_id<(1+$size);$hash_id++)
+        for ($site_id=100;$site_id<199;$site_id++)
+        {
+                $j['event_time']=date('Y-m-d H:00:00',$date);
+                $j['site_id']=$site_id;
+                $j['hash_id']=$hash_id;
+                $j['views']=1;
+
+
+                fputcsv($handle,$j);
+                $rows++;
+        }
+    }
+
+    fclose($handle);
+
+    echo "Created file  [$file_name]: $rows rows... size = ".humanFileSize(filesize($file_name))." \n";
+
+}
 function makeSomeDataFileBig($file_name,$size=10)
 {
     if (is_file($file_name)) {
@@ -70,7 +105,7 @@ function makeSomeDataFileBig($file_name,$size=10)
         return false;
     }
 
-        @unlink($file_name);
+    @unlink($file_name);
 
 
     $handle = fopen($file_name,'w');

@@ -47,7 +47,10 @@ class Settings
         $this->settings[$key]=$value;
         return $this;
     }
-
+    public function getDatabase()
+    {
+        return $this->get('database');
+    }
     /**
      * @param $db
      * @return $this
