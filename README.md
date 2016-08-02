@@ -154,7 +154,7 @@ see example/exam5_error_async.php
 On fly read CSV file and compress zlib.deflate.
   
 
-```
+```php
 $db->settings()->max_execution_time(200);
 $db->enableHttpCompression(true);
 
