@@ -8,21 +8,16 @@ class Settings
      */
     private $client=false;
     private $settings=[];
-//    const ALWAYS_SETS=[
-//        'extremes','readonly','max_rows_to_read','max_execution_time','database'
-//    ];
 
     public function __construct(\ClickHouseDB\Transport\Http $client)
     {
         $default=[
             'extremes'=>true,
             'readonly'=>true,
-//            'max_block_size'=>10000000,
             'max_rows_to_read'=>10000000,
-//            'max_insert_block_size'=>1000000000,
             'max_execution_time'=>20,
             'enable_http_compression'=>0
-//            'database'=>false
+            //'max_insert_block_size'=>1000000000, 'max_block_size'=>10000000,
         ];
         $this->settings=$default;
         $this->client=$client;
@@ -42,7 +37,7 @@ class Settings
      * @param $value
      * @return $this
      */
-    private function set($key,$value)
+    public function set($key,$value)
     {
         $this->settings[$key]=$value;
         return $this;
@@ -96,6 +91,18 @@ class Settings
         return $this->settings;
     }
 
+    /**
+     * @param $settings_array
+     * @return $this
+     */
+    public function apply($settings_array)
+    {
+        foreach ($settings_array as $key=>$value)
+        {
+            $this->set($key,$value);
+        }
+        return $this;
+    }
     /**
      * @param $name
      */

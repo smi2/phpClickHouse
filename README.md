@@ -291,7 +291,33 @@ $state1=$db->selectAsync('SELECT 1 as {key} WHERE {key}=:value',['key'=>'ping','
 // SELECT 1 as ping WHERE ping="1"
 ```
 
+### Settings
 
+3 way set any settings
+```php
+// in array config
+$config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x','settings'=>['max_execution_time'=>100]];
+$db=new ClickHouseDB\Client($config);
+
+// settings via constructor 
+$config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x'];
+$db=new ClickHouseDB\Client($config,['max_execution_time'=>100]);
+
+// set method
+$config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x'];
+$db=new ClickHouseDB\Client($config);
+$db->settings()->set('max_execution_time',100);
+
+// apply array method 
+$db->settings()->apply(['max_execution_time'=>100,'max_block_size'=>12345]);
+
+
+// check
+if ($db->settings()->getSetting('max_execution_time')!==100) throw new Exception("Bad work settings");
+
+//see example/exam10_settings.php
+
+```
 
 
 ### Todos

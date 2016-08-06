@@ -13,18 +13,30 @@ class Client
     private $_connect_host=false;
     private $_connect_port=false;
     private $_connect_uri=false;
-    public function __construct($connect_params)
+    public function __construct($connect_params,$settings=[])
     {
         if (!isset($connect_params['username']))  throw  new \Exception('not set username');
         if (!isset($connect_params['password']))  throw  new \Exception('not set password');
         if (!isset($connect_params['port']))  throw  new \Exception('not set port');
         if (!isset($connect_params['host']))  throw  new \Exception('not set host');
 
+        if (isset($connect_params['settings']) && is_array($connect_params['settings']))
+        {
+            if (empty($settings))
+            {
+                $settings=$connect_params['settings'];
+            }
+        }
+
         $this->_connect_username=$connect_params['username'];
         $this->_connect_password=$connect_params['password'];
         $this->_connect_port=$connect_params['port'];
         $this->_connect_host=$connect_params['host'];
         $this->settings()->database('default');
+        if (sizeof($settings))
+        {
+            $this->settings()->apply($settings);
+        }
 
     }
 
