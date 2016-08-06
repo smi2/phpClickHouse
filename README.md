@@ -16,6 +16,13 @@ php ClickHouse wrapper
 * pre production :  dropPartition & dropOldPartitions 
 
 
+
+## Install 
+
+```
+composer require smi2/phpclickhouse
+```
+
 ## Start
 
 Connect and select database:
