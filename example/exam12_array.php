@@ -48,3 +48,4 @@ echo "Insert Done\n";
 
 print_r($db->select('SELECT s_key, s_arr FROM arrays_test_string ARRAY JOIN s_arr')->rows());
 
+

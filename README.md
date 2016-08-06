@@ -14,7 +14,7 @@ php ClickHouse wrapper
 * tablesSize & databaseSize
 * listPartitions
 * pre production :  dropPartition & dropOldPartitions 
-
+* Insert array as column
 
 
 ## Install 
@@ -325,13 +325,44 @@ if ($db->settings()->getSetting('max_execution_time')!==100) throw new Exception
 //see example/exam10_settings.php
 
 ```
+### Array as column
+
+```php
+
+$db->write('
+CREATE TABLE IF NOT EXISTS arrays_test_string
+(
+    s_key String,
+    s_arr Array(String)
+) ENGINE = Memory
+');
+
+$db->insert('arrays_test_string',
+    [
+        ['HASH1',["a","dddd","xxx"]],
+        ['HASH1',["b'\tx"]],
+    ]
+    ,
+    ['s_key','s_arr']
+);
+```
+
+Class for CSV array
+```php
+var_dump(
+    \ClickHouseDB\CSV::quoteRow(
+        ['HASH1',["a","dddd","xxx"]]
+    )
+);
+```
+
+ 
 
 
 ### Todos
 
 
  - Write unit-tests & more docs
- - Fix `array` insert in row
  - Find ActiveHost & CheckCluster - how check cluster and replica work?
  - Drop partitions in cluster
  

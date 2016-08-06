@@ -1,4 +1,5 @@
 <?php
+include_once __DIR__.'/src/CSV.php';
 include_once __DIR__.'/src/Exception/Exception.php';
 include_once __DIR__.'/src/Exception/QueryException.php';
 include_once __DIR__.'/src/Exception/DatabaseException.php';
