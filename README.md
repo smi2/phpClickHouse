@@ -345,6 +345,7 @@ $db->insert('arrays_test_string',
     ,
     ['s_key','s_arr']
 );
+//see example/exam12_array.php
 ```
 
 Class for CSV array
