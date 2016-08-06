@@ -325,10 +325,8 @@ if ($db->settings()->getSetting('max_execution_time')!==100) throw new Exception
 
  - Write unit-tests & more docs
  - Fix `array` insert in row
- - Add/use composer | include.php
  - Find ActiveHost & CheckCluster - how check cluster and replica work?
- - Drop partitions in cluster 
- - Use version/tag/release  
+ - Drop partitions in cluster
  
 
 License
