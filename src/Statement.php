@@ -102,7 +102,7 @@ class Statement
 
             if ($parse)
             {
-                throw new DatabaseException($parse['message'],$parse['code']);
+                throw new DatabaseException($parse['message']."\nIN:".$this->sql(),$parse['code']);
             }
             else
             {

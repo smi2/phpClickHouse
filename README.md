@@ -341,4 +341,7 @@ License
 
 MIT
 
+ChangeLog
+---
 
+* 2016-08-06 Release 0.1.0 

@@ -337,11 +337,20 @@ class Http
      * @return \ClickHouseDB\Statement
      * @throws \ClickHouseDB\TransportException
      */
-    public function write($sql, array $bindings = [])
+    public function write($sql, array $bindings = [],$exception=true)
     {
         $request=$this->prepareWrite($sql,$bindings);
         $code=$this->curler->execOne($request);
-        return new \ClickHouseDB\Statement($request);
+        $response=new \ClickHouseDB\Statement($request);
+
+        if ($exception)
+        {
+            if ($response->isError())
+            {
+                $response->error();
+            }
+        }
+        return $response;
     }
 
 
