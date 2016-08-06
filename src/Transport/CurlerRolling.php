@@ -86,7 +86,7 @@ class CurlerRolling
                 }
                 else
                 {
-                    throw new \Exception("Cant add exists que - cant overwrite : $id!\n");
+                    throw new \ClickHouseDB\TransportException("Cant add exists que - cant overwrite : $id!\n");
                 }
 
             }
@@ -231,7 +231,7 @@ class CurlerRolling
         while(($execrun = curl_multi_exec($this->handlerMulti(), $running)) == CURLM_CALL_MULTI_PERFORM);
         if($execrun != CURLM_OK)
         {
-            throw new \Exception("[ NOT CURLM_OK]");
+            throw new \ClickHouseDB\TransportException("[ NOT CURLM_OK]");
         }
         $this->runningRequests=$running;
 

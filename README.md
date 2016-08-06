@@ -326,11 +326,10 @@ if ($db->settings()->getSetting('max_execution_time')!==100) throw new Exception
  - Write Tests
  - Write docs
  - Fix array insert in row
- - Normal exception
  - add/use composer ?
  - drop include ?
  - find ActiveHost & CheckCluster - how check cluster and replica ?
-
+  
  
 
 License

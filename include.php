@@ -1,4 +1,8 @@
 <?php
+include_once __DIR__.'/src/Exception/Exception.php';
+include_once __DIR__.'/src/Exception/QueryException.php';
+include_once __DIR__.'/src/Exception/DatabaseException.php';
+include_once __DIR__.'/src/Exception/TransportException.php';
 include_once __DIR__.'/src/Statement.php';
 include_once __DIR__.'/src/Client.php';
 include_once __DIR__.'/src/Query/Query.php';

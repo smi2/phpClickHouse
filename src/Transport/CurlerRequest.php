@@ -169,14 +169,15 @@ class Request
             $this->callback_class->$c($this);
         }
     }
-    public function dump()
+    public function dump($result=false)
     {
         $message="\n";
-        $message.="-----------------------------------\n";
+        $msg="\n--------------------------- Request -------------------------------------\n";
         $message.='URL:'.$this->url."\n\n";
         $message.='METHOD:'.$this->method."\n\n";
         $message.='PARAMS:'.print_r($this->parameters,true)."\n";
         $message.="-----------------------------------\n";
+        if ($result) return $message;
         echo $message;
     }
     public function getId()
@@ -319,8 +320,7 @@ class Request
         $this->parameters=json_encode($data);
         if (!$this->parameters && $data)
         {
-            var_dump($data);
-            throw new \Exception("Cant json_encode");
+            throw new \ClickHouseDB\TransportException("Cant json_encode : ".$data);
         }
         return $this;
     }
@@ -378,11 +378,11 @@ class Request
 
     /**
      * @return \Curler\Response
-     * @throws \Exception
+     * @throws \ClickHouseDB\TransportException
      */
     public function response()
     {
-        if (!$this->resp) throw new \Exception('cant fetch response - is empty');
+        if (!$this->resp)throw new \ClickHouseDB\TransportException('Can`t fetch response - is empty');
         return $this->resp;
     }
 

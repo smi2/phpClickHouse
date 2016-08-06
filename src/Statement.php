@@ -71,30 +71,63 @@ class Statement
     {
         return $this->sql;
     }
-    public function error()
+    private function parseErrorClickHouse($body)
     {
-        // @todo normal Exception
-        // @todo parse error answer
+        $body=trim($body);
+        $mathes=[];
+        if (preg_match("%Code: (\d+),\se\.displayText\(\) \=\s*DB\:\:Exception\s*:\s*(.*)\,\s*e\.what.*%ius",$body,$mathes))
+        {
+            return ['code'=>$mathes[1],'message'=>$mathes[2]];
+        }
+        return false;
+    }
+    public function error($debug=false)
+    {
+        // @todo parse error answer ClickHouse  & curl error response
+
         // Code: 115, e.displayText() = DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception
-
-        $this->_request->response()->http_code();
+        // Code: 192, e.displayText() = DB::Exception: Unknown user x, e.what() = DB::Exception
+        // Code: 60, e.displayText() = DB::Exception: Table default.ZZZZZ doesn't exist., e.what() = DB::Exception
         $body=$this->_request->response()->body();
-        $this->_request->response()->dump();
-        $this->_request->dump();
 
-        throw new \Exception($body);
+        if ($debug)
+        {
+            $message="HttpCode:".$this->_request->response()->http_code()."\n";
+            $message.=$this->_request->dump(true);
+            $message.=$this->_request->response()->dump(true);
+        }
+        else
+        {
+            $parse=$this->parseErrorClickHouse($body);
+
+            if ($parse)
+            {
+                throw new DatabaseException($parse['message'],$parse['code']);
+            }
+            else
+            {
+                $message="HttpCode:".$this->_request->response()->http_code()." ; ".$body;
+            }
+            die("Zope?\n");
+
+        }
+        throw new QueryException($message);
     }
     public function isError()
     {
         return ($this->_request->response()->http_code()!==200);
     }
+
+    /**
+     * @return bool
+     */
     private function init()
     {
         if ($this->_init) return false;
 
         if (!$this->_request->isResponseExists())
         {
-            throw new \Exception('Not have response');
+            throw new QueryException('Not have response');
         }
 
         $this->_http_code=$this->_request->response()->http_code();
@@ -120,7 +153,7 @@ class Statement
         }
         if (empty($this->meta))
         {
-            throw  new \Exception('Can`t find meta');
+            throw  new QueryException('Can`t find meta');
         }
         $this->array_data=[];
         foreach ($this->data as $rows)

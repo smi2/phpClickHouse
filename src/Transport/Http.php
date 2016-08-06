@@ -165,7 +165,7 @@ class Http
      * @param \ClickHouseDB\Query $query
      * @param $urlParams
      * @return \Curler\Request
-     * @throws \Exception
+     * @throws \ClickHouseDB\TransportException
      */
     private function makeRequest(\ClickHouseDB\Query $query, $urlParams=[],$query_as_string=false)
     {
@@ -311,7 +311,7 @@ class Http
      * @param $sql
      * @param array $bindings
      * @return \ClickHouseDB\Statement
-     * @throws \Exception
+     * @throws \ClickHouseDB\TransportException
      */
     public function select($sql, array $bindings = [],$whereInFile=null)
     {
@@ -335,7 +335,7 @@ class Http
      * @param $sql
      * @param array $bindings
      * @return \ClickHouseDB\Statement
-     * @throws \Exception
+     * @throws \ClickHouseDB\TransportException
      */
     public function write($sql, array $bindings = [])
     {

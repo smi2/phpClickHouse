@@ -40,7 +40,7 @@ class WhereInFile
     {
         if (!is_readable($file_name))
         {
-            throw new \Exception("Can`t read file:".$file_name);
+            throw new QueryException("Can`t read file:".$file_name);
         }
 
         $this->_files[$table_name]=['filename'=>$file_name,'structure'=>$structure,'format'=>$format];

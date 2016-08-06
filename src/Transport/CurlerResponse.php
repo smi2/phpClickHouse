@@ -13,6 +13,10 @@ class Response
     {
 
     }
+    public function error()
+    {
+        return $this->_error;
+    }
     public function url()
     {
         return $this->_info['url'];
@@ -52,12 +56,13 @@ class Response
     }
     public function dump($result=false)
     {
-            $msg="\n----------------------------------------------------------------------\nBODY:\n";
+            $msg="\n--------------------------- Response -------------------------------------\nBODY:\n";
             $msg.=print_r($this->_body,true);
             $msg.="\nHEAD:\n";
             $msg.=print_r($this->_headers,true);
+            $msg.="\nERROR:\n".$this->error();
             $msg.="\nINFO:\n";
-            $msg.=print_r($this->_info,true);
+            $msg.=json_encode($this->_info);
             $msg.="\n----------------------------------------------------------------------\n";
 
         if ($result) return $msg;

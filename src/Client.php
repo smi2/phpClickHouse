@@ -15,10 +15,10 @@ class Client
     private $_connect_uri=false;
     public function __construct($connect_params,$settings=[])
     {
-        if (!isset($connect_params['username']))  throw  new \Exception('not set username');
-        if (!isset($connect_params['password']))  throw  new \Exception('not set password');
-        if (!isset($connect_params['port']))  throw  new \Exception('not set port');
-        if (!isset($connect_params['host']))  throw  new \Exception('not set host');
+        if (!isset($connect_params['username']))  throw  new \InvalidArgumentException('not set username');
+        if (!isset($connect_params['password']))  throw  new \InvalidArgumentException('not set password');
+        if (!isset($connect_params['port']))  throw  new \InvalidArgumentException('not set port');
+        if (!isset($connect_params['host']))  throw  new \InvalidArgumentException('not set host');
 
         if (isset($connect_params['settings']) && is_array($connect_params['settings']))
         {
@@ -58,17 +58,17 @@ class Client
      * @param int $max_time_out
      * @param bool $changeHost
      * @return array
-     * @throws \Exception
+     * @throws \QueryException
      */
     public function findActiveHostAndCheckCluster($max_time_out=2,$changeHost=true)
     {
         $hostsips=$this->transport()->getHostIPs();
-
+        $selectHost = false;
         if (sizeof($hostsips)>1)
         {
             list($resultGoodHost,$resultBadHost)=$this->transport()->checkServerReplicas($hostsips,$max_time_out);
 
-            if (!sizeof($resultGoodHost)) throw new \Exception("All host is down:".json_encode($resultBadHost));
+            if (!sizeof($resultGoodHost)) throw new QueryException("All host is down:".json_encode($resultBadHost));
 
             // @todo : add make some
 
@@ -219,13 +219,13 @@ class Client
      * @param $file_names
      * @param $columns_array
      * @return array
-     * @throws \Exception
+     * @throws QueryException
      */
     public function insertBatchFiles($table_name, $file_names, $columns_array)
     {
         if ($this->getCountPendingQueue()>0)
         {
-            throw new \Exception("Queue must be empty, before insertBatch,need executeAsync");
+            throw new QueryException("Queue must be empty, before insertBatch,need executeAsync");
         }
 
 
@@ -234,7 +234,7 @@ class Client
         foreach ($file_names as $fileName)
         {
             if (!is_file($fileName) || !is_readable($fileName)) {
-                throw  new \Exception("Cant read file:".$fileName);
+                throw  new QueryException("Cant read file:".$fileName);
             }
             $sql='INSERT INTO '.$table_name.' ( '.implode(",",$columns_array).' ) FORMAT CSV ';
             $result[$fileName]=$this->transport()->writeAsyncCSV($sql,$fileName);
@@ -278,6 +278,16 @@ class Client
     {
         $tables=$this->tablesSize();
         if (isset($tables[$tableName])) return $tables[$tableName];
+    }
+
+    /**
+     * ping & connect
+     *
+     * @return array
+     */
+    public function ping()
+    {
+        return $this->select("SELECT 1 as ping")->rows();
     }
 
     /**

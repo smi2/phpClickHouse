@@ -37,4 +37,4 @@ if ($db->settings()->getSetting('max_block_size')!==12345) throw new Exception("
 
 
 
-echo "OK\n";
+echo "getSetting - OK\n";
