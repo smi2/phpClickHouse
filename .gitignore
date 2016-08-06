@@ -1,0 +1,7 @@
+phpunit.xml
+composer.phar
+composer.lock
+composer-test.lock
+vendor/
+.idea
+.DS_STORE
