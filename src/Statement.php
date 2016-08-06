@@ -108,7 +108,6 @@ class Statement
             {
                 $message="HttpCode:".$this->_request->response()->http_code()." ; ".$body;
             }
-            die("Zope?\n");
 
         }
         throw new QueryException($message);
