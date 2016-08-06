@@ -323,13 +323,12 @@ if ($db->settings()->getSetting('max_execution_time')!==100) throw new Exception
 ### Todos
 
 
- - Write Tests
- - Write docs
- - Fix array insert in row
- - add/use composer ?
- - drop include ?
- - find ActiveHost & CheckCluster - how check cluster and replica ?
-  
+ - Write unit-tests & more docs
+ - Fix `array` insert in row
+ - Add/use composer | include.php
+ - Find ActiveHost & CheckCluster - how check cluster and replica work?
+ - Drop partitions in cluster 
+ - Use version/tag/release  
  
 
 License
