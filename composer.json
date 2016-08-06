@@ -1,5 +1,5 @@
 {
-  "name": "smi2/phpClickHouse",
+  "name": "smi2/clickhouse",
   "type": "library",
   "version" : "0.0.2",
   "description": "php ClickHouse HTTP client library",
