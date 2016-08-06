@@ -17,7 +17,7 @@ echo "Insert\n";
 $stat=$db->insert('arrays_test',
     [
         ['HASH1',[11,22,33]],
-        ['HASH1',[11,22,44,55]],
+        ['HASH1',[11,22,55]],
     ]
     ,
     ['s_key','s_arr']
@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS arrays_test_string
 echo "Insert\n";
 $stat=$db->insert('arrays_test_string',
     [
-        ['HASH1',["a","b","c"]],
-        ['HASH1',["z","a","b'\tx"]],
+        ['HASH1',["a","dddd","xxx"]],
+        ['HASH1',["b'\tx"]],
     ]
     ,
     ['s_key','s_arr']
