@@ -53,6 +53,7 @@ class Request
     {
         $this->close();
     }
+
     public function close()
     {
         curl_close($this->handle);
@@ -69,13 +70,8 @@ class Request
         $this->_attachFiles=true;
         $this->parameters($out);
     }
-    public function sslVeryfi()
-    {
-        die('@todo sslVeryfi');
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
-    }
+
     /**
      * @param $cookieFile
      * @return $this
