@@ -7,7 +7,7 @@ class StackTest extends TestCase
      * @var \ClickHouseDB\Client
      */
     private $db;
-    private $tablename = 'all_types_test_table';
+
     public function setUp()
     {
         date_default_timezone_set('Europe/Moscow');
@@ -93,6 +93,25 @@ v_55 Int32
 
         $this->db->write("DROP TABLE IF EXISTS summing_url_views");
     }
+    /**
+     * @expectedException \ClickHouseDB\DatabaseException
+     */
+    public function testExceptionWrite()
+    {
+        $this->db->write("DRAP TABLEX")->isError();
+    }
+
+    /**
+     * @expectedException \ClickHouseDB\DatabaseException
+     * @expectedExceptionCode 60
+     *
+     */
+    public function testExceptionSelect()
+    {
+        $this->db->select("SELECT * FROM XXXXX_SSS")->rows();
+    }
+
+
     public function testInsertTable()
     {
         
