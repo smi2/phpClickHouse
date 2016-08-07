@@ -166,8 +166,9 @@ class Client
      */
     public function showTables()
     {
-        return $this->select('SHOW TABLES')->rows();
+        return $this->select('SHOW TABLES')->rowsAsTree('name');
     }
+
 
 
 
@@ -268,7 +269,8 @@ class Client
      */
     public function ping()
     {
-        return $this->select("SELECT 1 as ping")->rows();
+        $result=$this->select("SELECT 1 as ping")->rows();
+        return ($result==1);
     }
 
     /**
