@@ -1,7 +1,7 @@
 <?php
 use PHPUnit\Framework\TestCase;
 
-class StackTest extends TestCase
+class ClientTest extends TestCase
 {
     /**
      * @var \ClickHouseDB\Client
@@ -106,12 +106,118 @@ v_55 Int32
      * @expectedExceptionCode 60
      *
      */
+    public function testExceptionInsert()
+    {
+        $this->db->insert('bla_bla',
+            [
+                ['HASH1',[11,22,33]],
+                ['HASH1',[11,22,55]],
+            ]
+            ,
+            ['s_key','s_arr']
+        );
+    }
+    /**
+     * @expectedException \ClickHouseDB\DatabaseException
+     * @expectedExceptionCode 60
+     *
+     */
     public function testExceptionSelect()
     {
         $this->db->select("SELECT * FROM XXXXX_SSS")->rows();
     }
+    /**
+     * @expectedException \ClickHouseDB\QueryException
+     * @expectedExceptionCode 6
+     *
+     */
+    public function testExceptionConnects()
+    {
+        $config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x','settings'=>['max_execution_time'=>100]];
+        $db=new ClickHouseDB\Client($config);
+        $db->ping();
+    }
+    public function testSettings()
+    {
+
+        $config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x','settings'=>['max_execution_time'=>100]];
+        $db=new ClickHouseDB\Client($config);
+        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
 
 
+
+// settings via constructor
+        $config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x'];
+        $db=new ClickHouseDB\Client($config,['max_execution_time'=>100]);
+        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
+
+
+//
+        $config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x'];
+        $db=new ClickHouseDB\Client($config);
+        $db->settings()->set('max_execution_time',100);
+        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
+
+
+        $config=['host'=>'x','port'=>'8123','username'=>'x','password'=>'x'];
+        $db=new ClickHouseDB\Client($config);
+        $db->settings()->apply(['max_execution_time'=>100,'max_block_size'=>12345]);
+
+        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
+        $this->assertEquals(12345, $db->settings()->getSetting('max_block_size'));
+
+    }
+
+    public function testSqlConditions()
+    {
+
+        $input_params=[
+            'select_date'=>['2000-10-10','2000-10-11','2000-10-12'],
+            'limit'=>5,
+            'from_table'=>'table_x_y'
+        ];
+
+
+        $this->assertEquals('SELECT * FROM table_x_y FORMAT JSON',$this->db->selectAsync('SELECT * FROM {from_table}',$input_params)->sql());
+
+        $this->assertEquals('SELECT * FROM table_x_y WHERE event_date IN (\'2000-10-10\',\'2000-10-11\',\'2000-10-12\') FORMAT JSON',$this->db->selectAsync('SELECT * FROM {from_table} WHERE event_date IN (:select_date)',$input_params)->sql());
+
+        $this->assertEquals('SELECT * FROM ZZZ LIMIT 5 FORMAT JSON',$this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}',$input_params)->sql());
+
+        $this->assertEquals('SELECT * FROM ZZZ NOOPE FORMAT JSON',$this->db->selectAsync('SELECT * FROM ZZZ {if nope}LIMIT {limit}{else}NOOPE{/if}',$input_params)->sql());
+
+    }
+    public function testInsertArrayTable()
+    {
+        $this->db->write("DROP TABLE IF EXISTS arrays_test_ints");
+        $this->db->write('
+CREATE TABLE IF NOT EXISTS arrays_test_ints
+(
+    s_key String,
+    s_arr Array(UInt8)
+) ENGINE = Memory
+');
+
+
+        $state=$this->db->insert('arrays_test_ints',
+            [
+                ['HASH1',[11,33]],
+                ['HASH2',[11,55]],
+            ]
+            ,
+            ['s_key','s_arr']
+        );
+
+        $this->assertGreaterThan(0,$state->totalTimeRequest());
+
+        $state=$this->db->select('SELECT s_key, s_arr FROM arrays_test_ints ARRAY JOIN s_arr');
+
+        $this->assertEquals(4,$state->count());
+        $this->assertArraySubset([['s_key'=>'HASH1','s_arr'=>11]],$state->rows());
+
+
+
+    }
     public function testInsertTable()
     {
         

@@ -109,16 +109,18 @@ class Statement
             }
             else
             {
+                $code=$this->response()->http_code();
                 $message="HttpCode:".$this->response()->http_code()." ; ".$body;
             }
 
         }
         else
         {
-            $message="Curl error:".$error_no." ".$this->response()->error();
+            $code=$error_no;
+            $message=$this->response()->error();
         }
 
-        throw new QueryException($message);
+        throw new QueryException($message,$code);
     }
     public function isError()
     {
