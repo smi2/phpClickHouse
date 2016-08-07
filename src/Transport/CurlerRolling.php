@@ -111,6 +111,7 @@ class CurlerRolling
         $n->_body=$body;
         $n->_info = curl_getinfo($oneHandle);
         $n->_error = curl_error($oneHandle);
+        $n->_errorNo = curl_errno($oneHandle);
         $n->_useTime=0;
         return $n;
     }

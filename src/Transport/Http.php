@@ -68,7 +68,7 @@ class Http
         {
             $request=new \Curler\Request();
             $url='http://'.$host.":".$this->port.'?'.http_build_query($query);
-            $request->url($url)->GET()->verbose(false)->timeOut($time_out);
+            $request->url($url)->GET()->verbose(false)->timeOut($time_out)->connectTimeOut($time_out)->setDnsCache(0);
             $this->curler->addQueLoop($request);
             $statements[$host]=new \ClickHouseDB\Statement($request);
         }
@@ -151,13 +151,14 @@ class Http
     private function newRequest($extendinfo)
     {
         $new=new \Curler\Request();
-        $new->auth($this->username,$this->password)->POST()->extendinfo($extendinfo);
+        $new->auth($this->username,$this->password)->POST()->setRequestExtendedInfo($extendinfo);
         if ($this->settings()->isEnableHttpCompression())
         {
             $new->httpCompression(true);
 
         }
         $new->timeOut($this->settings()->getTimeOut());
+        $new->connectTimeOut(1)->keepAlive();// one sec
         $new->verbose($this->_verbose);
         return $new;
     }
@@ -204,7 +205,6 @@ class Http
     public function writeAsyncCSV($sql, $file_name)
     {
         $query = new \ClickHouseDB\Query($sql);
-        $request=new \Curler\Request();
         $url=$this->getUrl(['readonly'=>0,'query'=>$query->toSql()]);
 
         $extendinfo=['sql'=>$sql,'query'=>$query];

@@ -5,18 +5,31 @@ class Request
     public $extendinfo=array();
 
     private $parameters='';
+
     private $options;
+
     private $headers; // Parsed reponse header object.
+
     private $url;
+
     private $method;
+
     private $id;
+
     private $handle;
+
     private $_cookieFile;
+
     private $resp;
+
     private $_persistent=false;
+
     private $_attachFiles=false;
+
     private $callback_class='';
+
     private $callback_functionName='';
+
     private $_httpCompression=false;
     /**
      * @var
@@ -25,18 +38,21 @@ class Request
 
     private $infile_handle=false;
 
+    private $_dns_cache=10;
+
     public function __construct($id=false)
     {
         $this->id=$id;
-//        $this->header('Accept-Language','ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3');
-//        $this->header('Cache-Control','no-cache, no-store, must-revalidate');
-//        $this->header('Expires','0');
-//        $this->header('Pragma','no-cache');
+
+        $this->header('Cache-Control','no-cache, no-store, must-revalidate');
+        $this->header('Expires','0');
+        $this->header('Pragma','no-cache');
+
         $this->options=array(
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_TIMEOUT => 10,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_CONNECTTIMEOUT => 1,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_HEADER => TRUE,
@@ -44,7 +60,7 @@ class Request
             CURLOPT_AUTOREFERER        => 1, // при редиректе подставлять в «Referer:» значение из «Location:»
             CURLOPT_BINARYTRANSFER    => 1, // передавать в binary-safe
             CURLOPT_RETURNTRANSFER => TRUE,
-//            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 8.1; Trident/5.0; .NET4.0E; en-AU)',
+            CURLOPT_USERAGENT => 'smi2/PHPClickHouse/client',
         );
 
     }
@@ -94,12 +110,12 @@ class Request
         return $this;
     }
 
-    public function extendinfo($params)
+    public function setRequestExtendedInfo($params)
     {
         $this->extendinfo=$params;
         return $this;
     }
-    public function getExtendinfo($key=null)
+    public function getRequestExtendedInfo($key=null)
     {
         if ($key)
         {
@@ -185,7 +201,7 @@ class Request
      * @param $value
      * @return $this
      */
-    public function option($key, $value){
+    private function option($key, $value){
         $this->options[$key] = $value;
         return $this;
     }
@@ -282,14 +298,17 @@ class Request
         $this->parameters=$data;
         return $this;
     }
-
+    public function connectTimeOut($seconds=1)
+    {
+        $this->options[CURLOPT_CONNECTTIMEOUT]=1;
+        return $this;
+    }
     /**
      * @return $this
      */
     public function timeOut($seconds=10)
     {
         $this->options[CURLOPT_TIMEOUT]=$seconds;
-        $this->options[CURLOPT_CONNECTTIMEOUT]=$seconds;
         return $this;
     }
 
@@ -352,13 +371,18 @@ class Request
         return $this->execute('GET');
     }
 
+    public function setDnsCache($set)
+    {
+        $this->_dns_cache=$set;
+        return $this;
+    }
     /**
      *
      * @return int
      */
     public function getDnsCache()
     {
-        return 0;
+        return $this->_dns_cache;
     }
 
     /**

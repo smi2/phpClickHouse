@@ -6,12 +6,17 @@ class Response
     public $_headers;
     public $_info;
     public $_error;
+    public $_errorNo=0;
     public $_useTime;
     public $_body;
 
     public function __construct()
     {
 
+    }
+    public function error_no()
+    {
+        return $this->_errorNo;
     }
     public function error()
     {

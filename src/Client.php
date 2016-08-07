@@ -269,7 +269,7 @@ class Client
      */
     public function ping()
     {
-        $result=$this->select("SELECT 1 as ping")->rows();
+        $result=$this->select("SELECT 1 as ping")->fetchOne('ping');
         return ($result==1);
     }
 

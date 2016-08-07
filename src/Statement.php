@@ -63,9 +63,16 @@ class Statement
     public function __construct(\Curler\Request $request)
     {
         $this->_request=$request;
-        $this->query=$this->_request->getExtendinfo('query');
-        $this->sql=$this->_request->getExtendinfo('sql');
+        $this->query=$this->_request->getRequestExtendedInfo('query');
+        $this->sql=$this->_request->getRequestExtendedInfo('sql');
+    }
 
+    /**
+     * @return \Curler\Response
+     */
+    public function response()
+    {
+        return $this->_request->response();
     }
     public function sql()
     {
@@ -75,46 +82,47 @@ class Statement
     {
         $body=trim($body);
         $mathes=[];
+        // Code: 115, e.displayText() = DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception
+        // Code: 192, e.displayText() = DB::Exception: Unknown user x, e.what() = DB::Exception
+        // Code: 60, e.displayText() = DB::Exception: Table default.ZZZZZ doesn't exist., e.what() = DB::Exception
+
         if (preg_match("%Code: (\d+),\se\.displayText\(\) \=\s*DB\:\:Exception\s*:\s*(.*)\,\s*e\.what.*%ius",$body,$mathes))
         {
             return ['code'=>$mathes[1],'message'=>$mathes[2]];
         }
         return false;
     }
-    public function error($debug=false)
+    public function error()
     {
-        // @todo parse error answer ClickHouse  & curl error response
+        if (!$this->isError()) return false;
 
-        // Code: 115, e.displayText() = DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception
-        // Code: 192, e.displayText() = DB::Exception: Unknown user x, e.what() = DB::Exception
-        // Code: 60, e.displayText() = DB::Exception: Table default.ZZZZZ doesn't exist., e.what() = DB::Exception
-        $body=$this->_request->response()->body();
+        $body=$this->response()->body();
+        $error_no=$this->response()->error_no();
 
-        if ($debug)
-        {
-            $message="HttpCode:".$this->_request->response()->http_code()."\n";
-            $message.=$this->_request->dump(true);
-            $message.=$this->_request->response()->dump(true);
-        }
-        else
+        if  (!$error_no)
         {
             $parse=$this->parseErrorClickHouse($body);
 
-            if ($parse)
+            if ($parse )
             {
                 throw new DatabaseException($parse['message']."\nIN:".$this->sql(),$parse['code']);
             }
             else
             {
-                $message="HttpCode:".$this->_request->response()->http_code()." ; ".$body;
+                $message="HttpCode:".$this->response()->http_code()." ; ".$body;
             }
 
         }
+        else
+        {
+            $message="Curl error:".$error_no." ".$this->response()->error();
+        }
+
         throw new QueryException($message);
     }
     public function isError()
     {
-        return ($this->_request->response()->http_code()!==200);
+        return ($this->response()->http_code()!==200 || $this->response()->error_no());
     }
 
     /**
@@ -128,14 +136,11 @@ class Statement
         {
             throw new QueryException('Not have response');
         }
-
-        $this->_http_code=$this->_request->response()->http_code();
-        if ($this->_http_code!==200)
+        if ($this->isError())
         {
             $this->error();
         }
-        $this->_rawData=$this->_request->response()->json();
-
+        $this->_rawData=$this->response()->json();
 
         if (!$this->_rawData)
         {
@@ -163,8 +168,6 @@ class Statement
             }
             $this->array_data[]=$r;
         }
-
-
         return true;
     }
 
@@ -184,7 +187,7 @@ class Statement
     public function totalTimeRequest()
     {
         $this->init();
-        return $this->_request->response()->total_time();
+        return $this->response()->total_time();
 
     }
 
@@ -225,7 +228,7 @@ class Statement
     public function dump()
     {
         $this->_request->dump();
-        $this->_request->response()->dump();
+        $this->response()->dump();
     }
     public function countAll()
     {
@@ -273,9 +276,9 @@ class Statement
     {
         $this->init();
         return [
-                'size_upload'=>$this->_request->response()->size_upload(),
-                'upload_content'=>$this->_request->response()->upload_content_length(),
-                'speed_upload'=>$this->_request->response()->speed_upload(),
+                'size_upload'=>$this->response()->size_upload(),
+                'upload_content'=>$this->response()->upload_content_length(),
+                'speed_upload'=>$this->response()->speed_upload(),
                 'time_request'=>$this->totalTimeRequest()
             ];
 
