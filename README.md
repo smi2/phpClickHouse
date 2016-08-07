@@ -357,7 +357,19 @@ var_dump(
 );
 ```
 
- 
+### Phpunit Test
+
+
+In phpunit.xml change cons:
+```xml
+<php>
+        <const name="phpunit_clickhouse_host" value="10.211.5.3"/>
+        <const name="phpunit_clickhouse_port" value="8123"/>
+        <const name="phpunit_clickhouse_user" value="default"/>
+        <const name="phpunit_clickhouse_pass" value=""/>
+    </php>
+```
+
 
 
 ### Todos
