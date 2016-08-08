@@ -107,7 +107,35 @@ v_55 Int32
         );
 
     }
+    public function testGzipInsert()
+    {
+        $file_data_names=[
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.1.data',
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.2.data',
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.3.data',
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.4.data'
+        ];
+        foreach ($file_data_names as $file_name)
+        {
+            $this->create_fake_csv_file($file_name,2);
+        }
 
+
+        $this->create_table_summing_url_views();
+        $stat=$this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','url_hash','site_id','views','v_00','v_55'] );
+
+        $st=$this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
+        $this->assertEquals(8544, $st->fetchOne('sum_x'));
+
+        $st=$this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
+        $this->assertEquals(8544, $st->count());
+        // --- drop
+        foreach ($file_data_names as $file_name)
+        {
+            unlink($file_name);
+        }
+
+    }
 
     /**
      * @expectedException \ClickHouseDB\DatabaseException
@@ -124,9 +152,12 @@ v_55 Int32
         }
 
         $this->create_table_summing_url_views();
-        $stat=$this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','site_id','views','v_00','v_55'] );
+        $this->db->enableHttpCompression(true);
 
-        // --- drop
+        $stat=$this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','site_id','views','v_00','v_55'] );
+        // ---------------------------------------------
+
+        // --------------------------------------------- drop
         foreach ($file_data_names as $file_name)
         {
             unlink($file_name);
