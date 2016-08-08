@@ -109,9 +109,103 @@ v_55 Int32
     }
 
 
+    /**
+     * @expectedException \ClickHouseDB\DatabaseException
+     *
+     */
     public function testInsertCSVError()
     {
+        $file_data_names=[
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.1.data'
+        ];
+        foreach ($file_data_names as $file_name)
+        {
+            $this->create_fake_csv_file($file_name,2);
+        }
 
+        $this->create_table_summing_url_views();
+        $stat=$this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','site_id','views','v_00','v_55'] );
+
+        // --- drop
+        foreach ($file_data_names as $file_name)
+        {
+            unlink($file_name);
+        }
+
+    }
+    private function make_csv_SelectWhereIn($file_name,$array)
+    {
+        if (is_file($file_name)) unlink($file_name);
+
+        $handle = fopen($file_name,'w');
+        foreach ($array as $row)
+        {
+            fputcsv($handle,$row);
+
+        }
+        fclose($handle);
+
+    }
+    public function testSelectWhereIn()
+    {
+        $file_data_names=[
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.1.data'
+        ];
+        $file_name_where_in1=$this->tmp_path.'_testSelectWhereIn.1.data';
+        $file_name_where_in2=$this->tmp_path.'_testSelectWhereIn.2.data';
+        foreach ($file_data_names as $file_name)
+        {
+            $this->create_fake_csv_file($file_name,2);
+        }
+        $this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','url_hash','site_id','views','v_00','v_55'] );
+
+        $st=$this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
+        $this->assertEquals(2136, $st->fetchOne('sum_x'));
+
+
+        $whereIn_1=[
+            [85,'x85x2'],[69,'x69x2'],[20,'x20x2'],[11,'xxxxx'],[12,'zzzzz']
+        ];
+        $whereIn_2=[
+            [11,'x11x2'],[12,'x12x1'],[13,'x13x2'],[14,'xxxxx'],[15,'zzzzz']
+        ];
+
+        $this->make_csv_SelectWhereIn($file_name_where_in1,$whereIn_1);
+        $this->make_csv_SelectWhereIn($file_name_where_in2,$whereIn_2);
+
+        $whereIn=new \ClickHouseDB\WhereInFile();
+        $whereIn->attachFile($file_name_where_in1,'whin1',['site_id'=>'Int32','url_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
+        $whereIn->attachFile($file_name_where_in2,'whin2',['site_id'=>'Int32','url_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
+
+        $result=$this->db->select('
+        SELECT 
+          url_hash,
+          site_id,
+          sum(views) as views 
+        FROM summing_url_views 
+        WHERE 
+        (site_id,url_hash) IN (SELECT site_id,url_hash FROM whin1)
+        or
+        (site_id,url_hash) IN (SELECT site_id,url_hash FROM whin2)
+        GROUP BY url_hash,site_id
+        ',[],$whereIn);
+
+        $result=$result->rowsAsTree('site_id');
+
+
+
+        $this->assertEquals(11,$result['11']['site_id']);
+        $this->assertEquals(20,$result['20']['site_id']);
+        $this->assertEquals(24,$result['13']['views']);
+        $this->assertEquals('x20x2',$result['20']['url_hash']);
+        $this->assertEquals('x85x2',$result['85']['url_hash']);
+        $this->assertEquals('x69x2',$result['69']['url_hash']);
+
+        // --- drop
+        foreach ($file_data_names as $file_name)
+        {
+            unlink($file_name);
+        }
     }
     public function testInsertCSV()
     {
@@ -135,18 +229,22 @@ v_55 Int32
 
 
         $st=$this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
-
         $this->assertEquals(6408, $st->fetchOne('sum_x'));
 
         $st=$this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
-
-
         $this->assertEquals(6408, $st->count());
 
         $st=$this->db->select('SELECT * FROM summing_url_views LIMIT 4');
 
         $this->assertEquals(2136, $st->countAll());
 
+
+
+
+        $stat=$this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','url_hash','site_id','views','v_00','v_55'] );
+
+        $st=$this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
+        $this->assertEquals(2*6408, $st->fetchOne('sum_x'));
 
         // --- drop
         foreach ($file_data_names as $file_name)
