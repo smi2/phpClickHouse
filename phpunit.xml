@@ -22,6 +22,7 @@
         <const name="phpunit_clickhouse_port" value="8123"/>
         <const name="phpunit_clickhouse_user" value="default"/>
         <const name="phpunit_clickhouse_pass" value=""/>
+        <const name="phpunit_clickhouse_tmp_path" value="/tmp/"/>
     </php>
 
 </phpunit>

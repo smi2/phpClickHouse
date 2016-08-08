@@ -363,11 +363,12 @@ var_dump(
 In phpunit.xml change cons:
 ```xml
 <php>
-        <const name="phpunit_clickhouse_host" value="10.211.5.3"/>
-        <const name="phpunit_clickhouse_port" value="8123"/>
-        <const name="phpunit_clickhouse_user" value="default"/>
-        <const name="phpunit_clickhouse_pass" value=""/>
-    </php>
+    <const name="phpunit_clickhouse_host" value="192.168.1.20"/>
+    <const name="phpunit_clickhouse_port" value="8123"/>
+    <const name="phpunit_clickhouse_user" value="default"/>
+    <const name="phpunit_clickhouse_pass" value=""/>
+    <const name="phpunit_clickhouse_tmp_path" value="/tmp/"/>
+</php>
 ```
 
 

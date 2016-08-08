@@ -127,10 +127,11 @@ class CurlerRolling
         do
         {
             $this->exec();
-            usleep($usleep);
+
             $loop=$this->countActive();
             $c++;
             if ($c>100000) break;
+            usleep($usleep);
         } while ($loop);
         return true;
     }

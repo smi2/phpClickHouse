@@ -8,6 +8,8 @@ class ClientTest extends TestCase
      */
     private $db;
 
+    private $tmp_path;
+
     public function setUp()
     {
         date_default_timezone_set('Europe/Moscow');
@@ -15,6 +17,12 @@ class ClientTest extends TestCase
         if (!defined('phpunit_clickhouse_host')) {
             throw new Exception("Not set phpunit_clickhouse_host in phpUnit.xml");
         }
+
+        $tmp_path=rtrim(phpunit_clickhouse_tmp_path,'/').'/';
+
+        if (!is_dir($tmp_path)) throw  new Exception("Not dir in phpunit_clickhouse_tmp_path");
+        $this->tmp_path=$tmp_path;
+
         $config=[
                 'host'=>phpunit_clickhouse_host,
                 'port'=>phpunit_clickhouse_port,
@@ -43,6 +51,41 @@ class ClientTest extends TestCase
         );
     }
 
+    private function create_fake_csv_file($file_name,$size=1)
+    {
+        if (is_file($file_name)) unlink($file_name);
+
+
+        $handle = fopen($file_name,'w');
+        $z=0;$rows=0;
+        for($dates=0;$dates<$size;$dates++)
+        {
+            for ($site_id=10;$site_id<99;$site_id++)
+            {
+                for ($hours=0;$hours<12;$hours++)
+                {
+                    $z++;
+                    $dt=strtotime('-'.$dates.' day');
+                    $dt=strtotime('-'.$hours.' hour',$dt);
+                    $j=[];
+                    $j['event_time']=date('Y-m-d H:00:00',$dt);
+                    $j['url_hash']='x'.$site_id.'x'.$size;
+                    $j['site_id']=$site_id;
+                    $j['views']=1;
+
+                    foreach (['00',55] as $key)
+                    {
+                        $z++;
+                        $j['v_'.$key]=($z%2?1:0);
+                    }
+                    fputcsv($handle,$j);
+                    $rows++;
+                }
+            }
+        }
+
+        fclose($handle);
+    }
     /**
      * @return \ClickHouseDB\Statement
      */
@@ -66,6 +109,51 @@ v_55 Int32
     }
 
 
+    public function testInsertCSVError()
+    {
+
+    }
+    public function testInsertCSV()
+    {
+
+
+        $file_data_names=[
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.1.data',
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.2.data',
+            $this->tmp_path.'_testInsertCSV_clickHouseDB_test.3.data'
+        ];
+
+
+        // --- make
+        foreach ($file_data_names as $file_name)
+        {
+            $this->create_fake_csv_file($file_name,2);
+        }
+
+        $this->create_table_summing_url_views();
+        $stat=$this->db->insertBatchFiles('summing_url_views', $file_data_names, ['event_time','url_hash','site_id','views','v_00','v_55'] );
+
+
+        $st=$this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
+
+        $this->assertEquals(6408, $st->fetchOne('sum_x'));
+
+        $st=$this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
+
+
+        $this->assertEquals(6408, $st->count());
+
+        $st=$this->db->select('SELECT * FROM summing_url_views LIMIT 4');
+
+        $this->assertEquals(2136, $st->countAll());
+
+
+        // --- drop
+        foreach ($file_data_names as $file_name)
+        {
+            unlink($file_name);
+        }
+    }
     public function testPing()
     {
         $result=$this->db->select('SELECT 12 as {key} WHERE {key}=:value',['key'=>'ping','value'=>12]);
