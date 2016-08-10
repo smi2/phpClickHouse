@@ -1,6 +1,9 @@
 <?php
-namespace ClickHouseDB;
-class DatabaseException extends QueryException
-{
 
-}
+namespace ClickHouseDB;
+
+/**
+ * Class DatabaseException
+ * @package ClickHouseDB
+ */
+class DatabaseException extends QueryException {}

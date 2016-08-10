@@ -1,6 +1,9 @@
 <?php
-namespace ClickHouseDB;
-class Exception extends \Exception
-{
 
-}
+namespace ClickHouseDB;
+
+/**
+ * Class Exception
+ * @package ClickHouseDB
+ */
+class Exception extends \Exception {}

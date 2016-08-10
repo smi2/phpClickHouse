@@ -1,6 +1,9 @@
 <?php
-namespace ClickHouseDB;
-class TransportException extends \Exception
-{
 
-}
+namespace ClickHouseDB;
+
+/**
+ * Class TransportException
+ * @package ClickHouseDB
+ */
+class TransportException extends \Exception {}

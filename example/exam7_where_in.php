@@ -1,103 +1,102 @@
 <?php
 
-include_once __DIR__.'/../include.php';
-include_once __DIR__.'/lib_example.php';
-$config=['host'=>'192.168.1.20','port'=>'8123','username'=>'default','password'=>''];
-include_once __DIR__.'/../../_clickhouse_config_product.php';
+include_once __DIR__ . '/../include.php';
+include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/../../_clickhouse_config_product.php';
+
+$config = [
+    'host' => '192.168.1.20',
+    'port' => '8123',
+    'username' => 'default',
+    'password' => ''
+];
 
 
+$start_time = microtime(true);
 
-$start_time=microtime(true);
-
-$db=new ClickHouseDB\Client($config);
+$db = new ClickHouseDB\Client($config);
 $db->database('aggr');
-print_r(
-    $db->select('select event_date,site_id,group,sum(views) as views from aggr.summing_url_views
-where event_date=today() and site_id=14776
-group by event_date,site_id,group
-order by views DESC
-LIMIT 3')->rows()
 
-);
-
-
+print_r($db->select('
+    SELECT event_date, site_id, group, SUM(views) as views FROM aggr.summing_url_views
+    WHERE event_date = today() AND site_id = 14776
+    GROUP BY event_date, site_id, group
+    ORDER BY views DESC
+    LIMIT 3
+')->rows());
 
 
-$sql='select site_id,group,sum(views) as views from aggr.summing_url_views
-where event_date=today() and 
-( 
-site_id IN (SELECT site_id FROM namex)
-OR 
-site_id IN (SELECT site_id FROM site_keys)
-)
-group by site_id,group
-order by views DESC
-LIMIT 5
+$sql = '
+    SELECT site_id, group, SUM(views) as views FROM aggr.summing_url_views
+    WHERE 
+       event_date = today() 
+       AND ( 
+          site_id IN (SELECT site_id FROM namex)
+          OR 
+          site_id IN (SELECT site_id FROM site_keys)
+       )
+    GROUP BY site_id, group
+    ORDER BY views DESC
+    LIMIT 5
 ';
 
 
-
 // some file names to data
-$file_name_data1="/tmp/temp_csv.txt";
-
-$file_name_data2="/tmp/site_keys.data";
+$file_name_data1 = "/tmp/temp_csv.txt";
+$file_name_data2 = "/tmp/site_keys.data";
 
 // create CSV file
-makeListSitesKeysDataFile($file_name_data1,1000,2000); // see lib_example.php
-makeListSitesKeysDataFile($file_name_data2,5000,6000); // see lib_example.php
-
-
+makeListSitesKeysDataFile($file_name_data1, 1000, 2000); // see lib_example.php
+makeListSitesKeysDataFile($file_name_data2, 5000, 6000); // see lib_example.php
 
 
 // create WhereInFile
-$whereIn=new \ClickHouseDB\WhereInFile();
+$whereIn = new \ClickHouseDB\WhereInFile();
 
 
 // attachFile( {full_file_path} , {data_table_name} , [ { structure } ]
 
-$whereIn->attachFile($file_name_data1,'namex',['site_id'=>'Int32','site_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
-$whereIn->attachFile($file_name_data2,'site_keys',['site_id'=>'Int32','site_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
+$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
+$whereIn->attachFile($file_name_data2, 'site_keys', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
 
-$result=$db->select($sql,[],$whereIn);
+$result = $db->select($sql, [], $whereIn);
 print_r($result->rows());
 
 // ----------------------------------------------- ASYNC ------------------------------------------------------------------------------------------
 echo "\n----------------------- ASYNC ------------ \n";
 
-$sql='select site_id,group,sum(views) as views from aggr.summing_url_views
-where event_date=today() and site_id IN (SELECT site_id FROM namex)
-group by site_id,group
-order by views DESC
-LIMIT {limit}
+$sql = '
+    SELECT site_id, group, SUM(views) as views FROM aggr.summing_url_views
+    WHERE event_date = today() AND site_id IN (SELECT site_id FROM namex)
+    GROUP BY site_id, group
+    ORDER BY views DESC
+    LIMIT {limit}
 ';
 
 
-$bindings['limit']=3;
+$bindings['limit'] = 3;
 
-$statements=[];
-$whereIn=new \ClickHouseDB\WhereInFile();
-$whereIn->attachFile($file_name_data1,'namex',['site_id'=>'Int32','site_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
+$statements = [];
+$whereIn = new \ClickHouseDB\WhereInFile();
+$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
 
-$statements[0]=$db->selectAsync($sql,$bindings,$whereIn);
+$statements[0] = $db->selectAsync($sql, $bindings, $whereIn);
 
 
 // change data file - for statement two
-$whereIn=new \ClickHouseDB\WhereInFile();
-$whereIn->attachFile($file_name_data2,'namex',['site_id'=>'Int32','site_hash'=>'String'],\ClickHouseDB\WhereInFile::FORMAT_CSV);
+$whereIn = new \ClickHouseDB\WhereInFile();
+$whereIn->attachFile($file_name_data2, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
 
-$statements[1]=$db->selectAsync($sql,$bindings,$whereIn);
-
+$statements[1] = $db->selectAsync($sql, $bindings, $whereIn);
 $db->executeAsync();
 
 
-foreach ( $statements as $statement)
-{
+foreach ($statements as $statement) {
     print_r($statement->rows());
 }
 
 
 /*
-
 Не перечисляйте слишком большое количество значений (миллионы) явно.
 Если множество большое - лучше загрузить его во временную таблицу (например, смотрите раздел "Внешние данные для обработки запроса"), и затем воспользоваться подзапросом.
 

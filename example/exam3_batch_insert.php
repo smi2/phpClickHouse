@@ -1,37 +1,41 @@
 <?php
-include_once __DIR__.'/../include.php';
-include_once __DIR__.'/lib_example.php';
 
-$config=['host'=>'192.168.1.20','port'=>'8123','username'=>'default','password'=>''];
+include_once __DIR__ . '/../include.php';
+include_once __DIR__ . '/lib_example.php';
 
-$db=new ClickHouseDB\Client($config);
+$config = [
+    'host' => '192.168.1.20',
+    'port' => '8123',
+    'username' => 'default',
+    'password' => ''
+];
+
+$db = new ClickHouseDB\Client($config);
 
 
 $db->write("DROP TABLE IF EXISTS summing_url_views");
-$db->write(
-    '
-CREATE TABLE IF NOT EXISTS summing_url_views (
-event_date Date DEFAULT toDate(event_time),
-event_time DateTime,
-url_hash String,
-site_id Int32,
-views Int32,
-v_00 Int32,
-v_55 Int32
-) ENGINE = SummingMergeTree(event_date, (site_id, url_hash, event_time, event_date), 8192)
-'
-);
-echo "Table EXISTSs:".json_encode($db->showTables())."\n";
-// --------------------------------  CREATE csv file ----------------------------------------------------------------
+$db->write('
+    CREATE TABLE IF NOT EXISTS summing_url_views (
+        event_date Date DEFAULT toDate(event_time),
+        event_time DateTime,
+        url_hash String,
+        site_id Int32,
+        views Int32,
+        v_00 Int32,
+        v_55 Int32
+    ) 
+    ENGINE = SummingMergeTree(event_date, (site_id, url_hash, event_time, event_date), 8192)
+');
 
+echo "Table EXISTS: " . json_encode($db->showTables()) . "\n";
+
+// --------------------------------  CREATE csv file ----------------------------------------------------------------
 
 
 // ----------------------------------------------------------------------------------------------------
 
 
-
-
-$file_data_names=[
+$file_data_names = [
     '/tmp/clickHouseDB_test.1.data',
     '/tmp/clickHouseDB_test.2.data',
     '/tmp/clickHouseDB_test.3.data',
@@ -39,39 +43,41 @@ $file_data_names=[
     '/tmp/clickHouseDB_test.5.data',
 ];
 
-foreach ($file_data_names as $file_name)
-{
-    makeSomeDataFile($file_name,5);
+foreach ($file_data_names as $file_name) {
+    makeSomeDataFile($file_name, 5);
 }
+
 // ----------------------------------------------------------------------------------------------------
 echo "insert ONE file:\n";
 
-$time_start=microtime(true);
-$stat=$db->insertBatchFiles('summing_url_views',['/tmp/clickHouseDB_test.1.data'],['event_time','url_hash','site_id','views','v_00','v_55']);
-echo "use time:".round(microtime(true)-$time_start,2)."\n";
+$time_start = microtime(true);
+
+$stat = $db->insertBatchFiles('summing_url_views', ['/tmp/clickHouseDB_test.1.data'], [
+    'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
+]);
+
+echo "use time:" . round(microtime(true) - $time_start, 2) . "\n";
 
 print_r($db->select('select sum(views) from summing_url_views')->rows());
 
 echo "insert ALL file async:\n";
 
-$time_start=microtime(true);
-$result_insert=$db->insertBatchFiles('summing_url_views',$file_data_names,['event_time','url_hash','site_id','views','v_00','v_55']);
-echo "use time:".round(microtime(true)-$time_start,2)."\n";
+$time_start = microtime(true);
+$result_insert = $db->insertBatchFiles('summing_url_views', $file_data_names, [
+    'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
+]);
 
-
-
-
-
+echo "use time:" . round(microtime(true) - $time_start, 2) . "\n";
 
 
 print_r($db->select('select sum(views) from summing_url_views')->rows());
 
 // ------------------------------------------------------------------------------------------------
-foreach ($file_data_names as $fileName)
-{
-    echo $fileName." : ".$result_insert[$fileName]->totalTimeRequest()."\n";
+foreach ($file_data_names as $fileName) {
+    echo $fileName . " : " . $result_insert[$fileName]->totalTimeRequest() . "\n";
 }
 // ------------------------------------------------------------------------------------------------
+
 /*
 Table EXISTSs:[{"name":"summing_url_views"}]
 Created file  [/tmp/clickHouseDB_test.1.data]: 22200 rows...
@@ -99,5 +105,4 @@ Array
         )
 
 )
-
- */
+*/

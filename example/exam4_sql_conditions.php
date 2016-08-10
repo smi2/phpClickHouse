@@ -1,16 +1,23 @@
 <?php
-include_once __DIR__.'/../include.php';
 
-$config=['host'=>'192.168.1.20','port'=>'8123','username'=>'default','password'=>''];
+include_once __DIR__ . '/../include.php';
 
-$db=new ClickHouseDB\Client($config);
-
-$input_params=[
-  'select_date'=>['2000-10-10','2000-10-11','2000-10-12'],
-  'limit'=>5,
-  'from_table'=>'table'
+$config = [
+    'host' => '192.168.1.20',
+    'port' => '8123',
+    'username' => 'default',
+    'password' => ''
 ];
-$select='
+
+$db = new ClickHouseDB\Client($config);
+
+$input_params = [
+    'select_date' => ['2000-10-10', '2000-10-11', '2000-10-12'],
+    'limit'       => 5,
+    'from_table'  => 'table'
+];
+
+$select = '
 SELECT * FROM {from_table}
 WHERE
 {if select_date}
@@ -23,9 +30,10 @@ LIMIT {limit}
 {/if}
 ';
 
-$statement=$db->selectAsync($select,$input_params);
+$statement = $db->selectAsync($select, $input_params);
 echo $statement->sql();
 echo "\n";
+
 /*
 SELECT * FROM table
 WHERE
@@ -34,13 +42,13 @@ LIMIT 5
 FORMAT JSON
 */
 
-$input_params['select_date']=false;
+$input_params['select_date'] = false;
 
 
-
-$statement=$db->selectAsync($select,$input_params);
+$statement = $db->selectAsync($select, $input_params);
 echo $statement->sql();
 echo "\n";
+
 /*
 SELECT * FROM table
 WHERE
