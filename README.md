@@ -436,5 +436,5 @@ MIT
 
 ChangeLog
 ---
-
+* 2016-08-11 Release 0.2.0 : ( exception on error write ) 
 * 2016-08-06 Release 0.1.0 
