@@ -99,7 +99,7 @@ print_r($statement->rows());
 // totalTimeRequest
 print_r($statement->totalTimeRequest());
 
-// rawJson answer,for economy memory
+// raw answer JsonDecode array, for economy memory
 print_r($statement->rawData());
 ```
 
