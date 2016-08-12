@@ -312,6 +312,28 @@ class Statement
     }
 
     /**
+     * get rawJson Answer
+     *
+     * @return mixed
+     */
+    public function rawData()
+    {
+        if ($this->_init) {
+            return $this->_rawData;
+        }
+
+        if (!$this->_request->isResponseExists()) {
+            throw new QueryException('Not have response');
+        }
+
+        if ($this->isError()) {
+            $this->error();
+        }
+
+
+        return $this->response()->json();
+    }
+    /**
      * @param bool $key
      * @return mixed|null
      */
