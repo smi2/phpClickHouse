@@ -96,11 +96,15 @@ class Statement
     /**
      * @return Response
      */
-    public function response()
+    private function response()
     {
         return $this->_request->response();
     }
 
+    public function responseInfo()
+    {
+        return $this->response()->info();
+    }
 
     /**
      * @return mixed|string
@@ -170,6 +174,22 @@ class Statement
     }
 
     /**
+     *
+     * @return bool
+     */
+    private function check()
+    {
+        if (!$this->_request->isResponseExists()) {
+            throw new QueryException('Not have response');
+        }
+
+        if ($this->isError()) {
+            $this->error();
+        }
+
+        return true;
+    }
+    /**
      * @return bool
      */
     private function init()
@@ -178,13 +198,8 @@ class Statement
             return false;
         }
 
-        if (!$this->_request->isResponseExists()) {
-            throw new QueryException('Not have response');
-        }
+        $this->check();
 
-        if ($this->isError()) {
-            $this->error();
-        }
 
         $this->_rawData = $this->response()->json();
 
@@ -232,7 +247,7 @@ class Statement
      */
     public function totalTimeRequest()
     {
-        $this->init();
+        $this->check();
         return $this->response()->total_time();
 
     }
@@ -322,14 +337,7 @@ class Statement
             return $this->_rawData;
         }
 
-        if (!$this->_request->isResponseExists()) {
-            throw new QueryException('Not have response');
-        }
-
-        if ($this->isError()) {
-            $this->error();
-        }
-
+        $this->check();
 
         return $this->response()->json();
     }
@@ -375,19 +383,38 @@ class Statement
     }
 
     /**
+     * Return size_upload,upload_content,speed_upload,time_request
+     *
      * @return array
      */
     public function info_upload()
     {
-        $this->init();
-
+        $this->check();
         return [
             'size_upload'    => $this->response()->size_upload(),
             'upload_content' => $this->response()->upload_content_length(),
             'speed_upload'   => $this->response()->speed_upload(),
-            'time_request'   => $this->totalTimeRequest()
+            'time_request'   => $this->response()->total_time()
         ];
+    }
 
+    /**
+     * Return size_upload,upload_content,speed_upload,time_request,starttransfer_time,size_download,speed_download
+     *
+     * @return array
+     */
+    public function info()
+    {
+        $this->check();
+        return [
+            'starttransfer_time'    => $this->response()->starttransfer_time(),
+            'size_download'    => $this->response()->size_download(),
+            'speed_download'    => $this->response()->speed_download(),
+            'size_upload'    => $this->response()->size_upload(),
+            'upload_content' => $this->response()->upload_content_length(),
+            'speed_upload'   => $this->response()->speed_upload(),
+            'time_request'   => $this->response()->total_time()
+        ];
     }
 
     /**

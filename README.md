@@ -101,6 +101,14 @@ print_r($statement->totalTimeRequest());
 
 // raw answer JsonDecode array, for economy memory
 print_r($statement->rawData());
+
+// raw curl_info answer 
+print_r($statement->responseInfo());
+
+// human size info
+print_r($statement->info());
+
+
 ```
 
 Select result as tree:

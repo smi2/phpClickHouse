@@ -369,6 +369,51 @@ class ClientTest extends TestCase
     /**
      *
      */
+    public function testInfoRaw()
+    {
+        $this->create_table_summing_url_views();
+        $this->insert_data_table_summing_url_views();
+
+
+        $state = $this->db->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
+
+        $this->assertFalse($state->isError());
+
+        $this->assertArrayHasKey('starttransfer_time',$state->info());
+        $this->assertArrayHasKey('size_download',$state->info());
+        $this->assertArrayHasKey('speed_download',$state->info());
+        $this->assertArrayHasKey('size_upload',$state->info());
+        $this->assertArrayHasKey('upload_content',$state->info());
+        $this->assertArrayHasKey('speed_upload',$state->info());
+        $this->assertArrayHasKey('time_request',$state->info());
+
+        $rawData=($state->rawData());
+
+        $this->assertArrayHasKey('rows',$rawData);
+        $this->assertArrayHasKey('meta',$rawData);
+        $this->assertArrayHasKey('data',$rawData);
+        $this->assertArrayHasKey('extremes',$rawData);
+
+
+        $responseInfo=($state->responseInfo());
+        $this->assertArrayHasKey('url',$responseInfo);
+        $this->assertArrayHasKey('content_type',$responseInfo);
+        $this->assertArrayHasKey('http_code',$responseInfo);
+        $this->assertArrayHasKey('request_size',$responseInfo);
+        $this->assertArrayHasKey('filetime',$responseInfo);
+        $this->assertArrayHasKey('total_time',$responseInfo);
+        $this->assertArrayHasKey('upload_content_length',$responseInfo);
+        $this->assertArrayHasKey('primary_ip',$responseInfo);
+        $this->assertArrayHasKey('local_ip',$responseInfo);
+
+
+        $this->assertEquals(200, $responseInfo['http_code']);
+
+    }
+
+    /**
+     *
+     */
     public function testTableExists()
     {
         $this->create_table_summing_url_views();

@@ -74,7 +74,31 @@ class Response
      */
     public function total_time()
     {
-        return $this->_info['total_time'];
+        return round($this->_info['total_time'],3);
+    }
+
+    /**
+     * @return string
+     */
+    public function starttransfer_time()
+    {
+        return round($this->_info['starttransfer_time'],3);
+    }
+
+    /**
+     * @return string
+     */
+    public function connect_time()
+    {
+        return round($this->_info['connect_time'],3);
+    }
+
+    /**
+     * @return string
+     */
+    public function pretransfer_time()
+    {
+        return round($this->_info['pretransfer_time'],3);
     }
 
     /**
@@ -200,11 +224,51 @@ class Response
     /**
      * @return string
      */
+    public function speed_download()
+    {
+        $SPEED_UPLOAD = $this->_info['speed_download'];
+        return round(($SPEED_UPLOAD * 8) / (1000 * 1000), 2) . ' Mbps';
+    }
+
+    /**
+     * @return string
+     */
     public function size_upload()
     {
         return $this->humanFileSize($this->_info['size_upload']);
     }
 
+    /**
+     * @return string
+     */
+    public function request_size()
+    {
+        return $this->humanFileSize($this->_info['request_size']);
+    }
+
+    /**
+     * @return string
+     */
+    public function header_size()
+    {
+        return $this->humanFileSize($this->_info['header_size']);
+    }
+
+    /**
+     * @return string
+     */
+    public function size_download()
+    {
+        return $this->humanFileSize($this->_info['size_download']);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function info()
+    {
+        return $this->_info;
+    }
     /**
      * @param null $key
      * @return bool|mixed
