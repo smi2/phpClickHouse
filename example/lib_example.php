@@ -27,6 +27,67 @@ function makeListSitesKeysDataFile($file_name, $from_id = 1000, $to_id = 20000)
 
 
 /**
+ * @param $size
+ * @param string $unit
+ * @return string
+ */
+function humanFileSize($size, $unit = '')
+{
+    if ((!$unit && $size >= 1 << 30) || $unit == 'GB') {
+        return number_format($size / (1 << 30), 2) . ' GB';
+    }
+    if ((!$unit && $size >= 1 << 20) || $unit == 'MB') {
+        return number_format($size / (1 << 20), 2) . ' MB';
+    }
+    if ((!$unit && $size >= 1 << 10) || $unit == 'KB') {
+        return number_format($size / (1 << 10), 2) . ' KB';
+    }
+
+    return number_format($size) . ' bytes';
+}
+
+
+class memoryUsage
+{
+    private static $last=[];
+    /**
+     * @return array
+     */
+    public static function memoryGetUsage()
+    {
+        return ['mem'=>memory_get_usage(),'peak'=>memory_get_peak_usage()];
+
+    }
+
+    public static function showPeak()
+    {
+        echo "Peak        : \t".chr(27) ."[32m".humanFileSize(memory_get_peak_usage())."\033[0m "."\n";
+    }
+    public static function show($msg='')
+    {
+        $pre=false;
+        if (self::$last)
+        {
+            $pre=self::$last;
+        }
+        self::$last=self::memoryGetUsage();
+        $data=self::$last;
+        $txt=humanFileSize($data['mem']);
+
+        if ($pre)
+        {
+            $mem=$data['mem']-$pre['mem'];
+            $mem=($mem<0?'-':'+').humanFileSize(abs($mem));
+            $txt.= "\t\t\t Delta : ".$mem;
+        }
+        echo "MemoryUsage : \t".chr(27) ."[33m".$txt."\033[0m ".($msg?' <<< '.$msg:'')."\n";
+    }
+}
+
+
+
+
+/**
  * @param $file_name
  * @param int $size
  */
@@ -162,23 +223,3 @@ function makeSomeDataFileBig($file_name, $size = 10)
     echo "Created file  [$file_name]: $rows rows... size = " . humanFileSize(filesize($file_name)) . " \n";
 }
 
-
-/**
- * @param $size
- * @param string $unit
- * @return string
- */
-function humanFileSize($size, $unit = "")
-{
-    if ((!$unit && $size >= 1 << 30) || $unit == "GB") {
-        return number_format($size / (1 << 30), 2) . " GB";
-    }
-    if ((!$unit && $size >= 1 << 20) || $unit == "MB") {
-        return number_format($size / (1 << 20), 2) . " MB";
-    }
-    if ((!$unit && $size >= 1 << 10) || $unit == "KB") {
-        return number_format($size / (1 << 10), 2) . " KB";
-    }
-
-    return number_format($size) . " bytes";
-}
