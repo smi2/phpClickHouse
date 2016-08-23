@@ -414,4 +414,14 @@ class Client
 
         return $drop;
     }
+
+
+    /**
+     * 
+     * @return array
+     */
+    public function clusterHosts()
+    {
+        return $this->select('select host_name from clusters group by host_name')->rows();
+    }
 }

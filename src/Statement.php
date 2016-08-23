@@ -81,6 +81,11 @@ class Statement
      */
     private $array_data = [];
 
+    /**
+     * @var array
+     */
+    private $statistics;
+
 
     /**
      * Statement constructor.
@@ -208,7 +213,7 @@ class Statement
             return false;
         }
 
-        foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least'] as $key) {
+        foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least','statistics'] as $key) {
             if (isset($this->_rawData[$key])) {
                 $this->{$key} = $this->_rawData[$key];
             }
@@ -315,6 +320,22 @@ class Statement
     {
         $this->init();
         return $this->rows_before_limit_at_least;
+    }
+
+    /**
+     * @param bool $key
+     * @return array|mixed|null
+     */
+    public function statistics($key=false)
+    {
+        $this->init();
+        if ($key)
+        {
+            if (!is_array($this->statistics)) return null;
+            if (!isset($this->statistics[$key])) return null;
+            return $this->statistics[$key];
+        }
+        return $this->statistics;
     }
 
     /**

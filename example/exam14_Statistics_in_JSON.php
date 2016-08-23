@@ -1,0 +1,45 @@
+<?php
+
+include_once __DIR__ . '/../include.php';
+
+$config = [
+    'host' => '192.168.1.20',
+    'port' => '8123',
+    'username' => 'default',
+    'password' => ''
+];
+
+$db = new ClickHouseDB\Client($config);
+
+//$db->verbose();
+$db->settings()->readonly(false);
+$db->settings()->set('output_format_write_statistics',true); // clickhouse version > 54011
+
+$result = $db->select(
+    'SELECT 12 as {key} WHERE {key} = :value',
+    ['key' => 'ping', 'value' => 12]
+);
+
+if ($result->fetchOne('ping') != 12) {
+    echo "Error : ? \n";
+}
+
+print_r($result->fetchOne());
+
+
+
+echo 'elapsed   :'.$result->statistics('elapsed')."\n";
+echo 'rows_read :'.$result->statistics('rows_read')."\n";
+echo 'bytes_read:'.$result->statistics('bytes_read')."\n";
+
+//
+print_r($result->statistics());
+/*
+	"statistics":
+	{
+		"elapsed": 0.000029702,
+		"rows_read": 1,
+		"bytes_read": 1
+	}
+
+ */

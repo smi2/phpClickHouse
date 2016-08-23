@@ -108,7 +108,9 @@ print_r($statement->responseInfo());
 // human size info
 print_r($statement->info());
 
-
+// if clickhouse-server version >= 54011
+$db->settings()->set('output_format_write_statistics',true);
+print_r($result->statistics());
 ```
 
 Select result as tree:
