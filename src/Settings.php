@@ -30,7 +30,7 @@ class Settings
         $default = [
             'extremes'                => true,
             'readonly'                => true,
-            'max_rows_to_read'        => 10000000,
+//            'max_rows_to_read'        => 10000000,
             'max_execution_time'      => 20,
             'enable_http_compression' => 0
             // 'max_insert_block_size' => 1000000000,

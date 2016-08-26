@@ -33,6 +33,8 @@ echo 'rows_read :'.$result->statistics('rows_read')."\n";
 echo 'bytes_read:'.$result->statistics('bytes_read')."\n";
 
 //
+$result = $db->select("SELECT 12 as ping");
+
 print_r($result->statistics());
 /*
 	"statistics":
