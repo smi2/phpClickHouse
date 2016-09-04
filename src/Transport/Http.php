@@ -157,13 +157,6 @@ class Http
         return [$resultGoodHost, $resultBadHost];
     }
 
-    /**
-     * @return array
-     */
-    public function getHostIPs()
-    {
-        return gethostbynamel($this->host);
-    }
 
     /**
      * @return Settings

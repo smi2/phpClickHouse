@@ -36,10 +36,9 @@ class Client
     private $_connect_port = false;
 
     /**
-     * @var
+     * @var bool
      */
-    private $_connect_uri = false;
-
+    private $_connect_by_ip= false;
 
     /**
      * Client constructor.
@@ -70,17 +69,51 @@ class Client
             }
         }
 
-        $this->_connect_username = $connect_params['username'];
-        $this->_connect_password = $connect_params['password'];
-        $this->_connect_port = $connect_params['port'];
-        $this->_connect_host = $connect_params['host'];
+        $this->_connect_username    = $connect_params['username'];
+        $this->_connect_password    = $connect_params['password'];
+        $this->_connect_port        = $connect_params['port'];
+        $this->_connect_host        = $connect_params['host'];
+        $this->_connect_use_host    = $connect_params['host'];
 
+
+        if (!empty($connect_params['connect_by_ip']))
+        {
+            $hosts=$this->getHostIPs();
+            shuffle($hosts);
+            $this->_connect_use_host = $hosts[0]; // set first random ip of hosts
+            $this->_connect_by_ip    = true;
+        }
+
+        // init transport class
+        $this->_transport = new Http(
+            $this->_connect_use_host,
+            $this->_connect_port,
+            $this->_connect_username,
+            $this->_connect_password
+        );
+
+        // apply settings to transport class
         $this->settings()->database('default');
-
         if (sizeof($settings)) {
             $this->settings()->apply($settings);
         }
 
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getConnectUseHost()
+    {
+        return $this->_connect_use_host;
+    }
+    /**
+     * @return array
+     */
+    public function getHostIPs()
+    {
+        return gethostbynamel($this->_connect_host);
     }
 
     /**
@@ -89,47 +122,51 @@ class Client
     public function transport()
     {
         if (!$this->_transport) {
-            $this->_transport = new Http(
-                $this->_connect_host,
-                $this->_connect_port,
-                $this->_connect_username,
-                $this->_connect_password
-            );
+            throw  new \InvalidArgumentException('Empty transport class');
         }
-
         return $this->_transport;
     }
 
     /**
-     * @param int $max_time_out
-     * @param bool $changeHost
-     * @return array
+     * @return bool
      */
-    public function findActiveHostAndCheckCluster($max_time_out = 2, $changeHost = true)
+    public function getConnectHost()
     {
-        $hostsips = $this->transport()->getHostIPs();
-        $selectHost = false;
-
-        if (sizeof($hostsips) > 1) {
-            list($resultGoodHost, $resultBadHost) = $this->transport()->checkServerReplicas($hostsips, $max_time_out);
-
-            if (!sizeof($resultGoodHost)) {
-                throw new QueryException('All host is down: ' . json_encode($resultBadHost));
-            }
-
-            // @todo : add make some
-
-            if ($changeHost && sizeof($resultGoodHost)) {
-                $selectHost = array_rand($resultGoodHost);
-                $this->transport()->setHost($selectHost);
-            }
-        }
-        else {
-            return [[$this->_connect_host => 1], [], false];
-        }
-
-        return [$resultGoodHost, $resultBadHost, $selectHost];
+        return $this->_connect_host;
     }
+
+    /**
+     * @return bool
+     */
+    public function getConnectPassword()
+    {
+        return $this->_connect_password;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getConnectPort()
+    {
+        return $this->_connect_port;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getConnectUsername()
+    {
+        return $this->_connect_username;
+    }
+
+    /**
+     * @return Http
+     */
+    public function getTransport()
+    {
+        return $this->_transport;
+    }
+
 
     /**
      * @return mixed
@@ -416,12 +453,4 @@ class Client
     }
 
 
-    /**
-     * 
-     * @return array
-     */
-    public function clusterHosts()
-    {
-        return $this->select('select host_name from clusters group by host_name')->rows();
-    }
 }
