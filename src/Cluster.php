@@ -21,42 +21,55 @@ class Cluster
     private $hosts_names=[];
 
     /**
-     * @var
+     * @var array
      */
-    private $cluster_name;
+    private $_hosts_good=[];
+    /**
+     * @var array
+     */
+    private $_hosts_bad=[];
 
     /**
-     * Client constructor.
-     * @param $cluster_name
+     * Cluster constructor.
      * @param $connect_params
      * @param array $settings
+     * @throws TransportException
      */
-    public function __construct($cluster_name,$connect_params, $settings = [])
+    public function __construct($connect_params, $settings = [])
     {
         $connect_params['connect_by_ip']=true;
 
         $this->_default=new Client($connect_params,$settings);
         $this->hosts_ips   = $this->_default->getHostIPs();
 
+        $this->initActiveHostAndCheckCluster();
+
+        if (in_array($this->_default->getConnectUseHost(),array_keys($this->_hosts_bad)))
+        {
+            // need change default host
+            $this->_default->setHost(array_keys($this->_hosts_good));
+        }
+
+        // request system.cluster table
         try
         {
-            $this->_default->ping();
+            $this->clusters = $this->active()->select('select * from system.clusters')->rows();
         }
-        catch (Exception $E)
+        catch (QueryException $E)
         {
-            //@TODO : first select host not work,try change
-            throw new Exception('first select host not work,try change');
+            throw new TransportException('random select host not work from list marked is good');
         }
-
-        $this->hosts_names = $this->clusterHosts($cluster_name);
-
 
     }
 
+    private function debug($msg)
+    {
+        echo "\t".$msg."\n\n\n";
+    }
     /**
      * @return array
      */
-    public function getHostsIps()
+    public function getAllHostsIps()
     {
         return $this->hosts_ips;
     }
@@ -64,70 +77,63 @@ class Cluster
     /**
      * @return array
      */
-    public function getHostsNames()
+    public function getHostsBad()
     {
-        return $this->hosts_names;
+        return $this->_hosts_bad;
     }
-
 
     /**
-     *
      * @return array
      */
-    private function clusterHosts($cluster_name)
+    public function getClustersTable()
     {
-        try
-        {
-            return $this->active()->select('select * from system.clusters '.($cluster_name?' WHERE cluster=\''.$cluster_name.'\'':""))->rows();
-        }
-        catch (Exception $E)
-        {
-            return false;
-
-        }
+        return $this->clusters;
     }
+
+
+
 
     /**
      * @param int $max_time_out
-     * @param bool $changeHost
-     * @return array
+     * @return bool
      */
-    public function findActiveHostAndCheckCluster($max_time_out = 2, $changeHost = true)
+    private function initActiveHostAndCheckCluster($max_time_out = 2)
     {
-        $hostsips = $this->active()->transport()->getHostIPs();
-        $selectHost = false;
-
-        if (sizeof($hostsips) > 1) {
-            list($resultGoodHost, $resultBadHost) = $this->active()->transport()->checkServerReplicas($hostsips, $max_time_out);
+        if (sizeof($this->hosts_ips) > 1) {
+            list($resultGoodHost, $resultBadHost) = $this->activeClient()->transport()->checkServerReplicas($this->hosts_ips, $max_time_out);
 
             if (!sizeof($resultGoodHost)) {
                 throw new QueryException('All host is down: ' . json_encode($resultBadHost));
             }
 
-            // @todo : add make some
-
-            if ($changeHost && sizeof($resultGoodHost)) {
-                $selectHost = array_rand($resultGoodHost);
-                $this->transport()->setHost($selectHost);
-            }
+            $this->_hosts_good=$resultGoodHost;
+            $this->_hosts_bad=$resultBadHost;
         }
         else {
-            return [[$this->_connect_host => 1], [], false];
+            $this->_hosts_good=[$this->activeClient()->getConnectUseHost() => 1];
+            $this->_hosts_bad=[];
         }
-
-        return [$resultGoodHost, $resultBadHost, $selectHost];
+        return true;
     }
 
     /**
      * @return Client
      */
-    public function active()
+    public function activeClient()
     {
         return $this->_default;
     }
 
-    public function random()
+    /**
+     * @param $sql
+     * @param array $bindings
+     * @param bool $exception
+     * @return Statement
+     */
+    public function writeCluster($cluster,$sql, $bindings = [], $exception = true)
     {
-
+        return $this->transport()->write($sql, $bindings, $exception);
     }
+
+
 }

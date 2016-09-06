@@ -100,7 +100,21 @@ class Client
 
     }
 
+    /**
+     * Set connection host
+     * @param $host
+     */
+    public function setHost($host)
+    {
 
+        if (is_array($host))
+        {
+            $host=array_rand(array_flip($host));
+        }
+
+        $this->_connect_use_host=$host;
+        $this->transport()->setHost($host);
+    }
     /**
      * @return mixed
      */
