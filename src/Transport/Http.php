@@ -18,22 +18,22 @@ class Http
     /**
      * @var string
      */
-    private $username = null;
+    private $_username = null;
 
     /**
      * @var string
      */
-    private $password = null;
+    private $_password = null;
 
     /**
      * @var string
      */
-    private $host = '';
+    private $_host = '';
 
     /**
      * @var int
      */
-    private $port = 0;
+    private $_port = 0;
 
     /**
      * @var bool
@@ -43,7 +43,7 @@ class Http
     /**
      * @var CurlerRolling
      */
-    private $curler = false;
+    private $_curler = false;
 
     /**
      * @var Settings
@@ -62,12 +62,24 @@ class Http
     {
         $this->setHost($host, $port);
 
-        $this->username = $username;
-        $this->password = $password;
+        $this->_username = $username;
+        $this->_password = $password;
         $this->_settings = new Settings($this);
 
-        $this->curler = new CurlerRolling();
-        $this->curler->setSimultaneousLimit(10);
+        $this->setCurler();
+    }
+
+
+    public function setCurler() {
+        $this->_curler = new CurlerRolling();
+        $this->_curler->setSimultaneousLimit(10);
+    }
+
+    /**
+     * @return CurlerRolling
+     */
+    public function getCurler() {
+        return $this->_curler;
     }
 
     /**
@@ -77,10 +89,10 @@ class Http
     public function setHost($host, $port = -1)
     {
         if ($port > 0) {
-            $this->port = $port;
+            $this->_port = $port;
         }
 
-        $this->host = $host;
+        $this->_host = $host;
     }
 
     /**
@@ -88,7 +100,7 @@ class Http
      */
     public function getUri()
     {
-        return 'http://' . $this->host . ':' . $this->port;
+        return 'http://' . $this->_host . ':' . $this->_port;
     }
 
     /**
@@ -101,8 +113,8 @@ class Http
         // @todo add WHERE database=XXXX
 
         $query['query'] = 'SELECT * FROM system.replicas FORMAT JSON';
-        $query['user'] = $this->username;
-        $query['password'] = $this->password;
+        $query['user'] = $this->_username;
+        $query['password'] = $this->_password;
 
         $resultGoodHost = [];
         $resultBadHost = [];
@@ -110,7 +122,7 @@ class Http
         $statements = [];
         foreach ($list_hosts as $host) {
             $request = new Request();
-            $url = 'http://' . $host . ":" . $this->port . '?' . http_build_query($query);
+            $url = 'http://' . $host . ":" . $this->_port . '?' . http_build_query($query);
 
             $request->url($url)
                     ->GET()
@@ -119,11 +131,11 @@ class Http
                     ->connectTimeOut($time_out)
                     ->setDnsCache(0);
 
-            $this->curler->addQueLoop($request);
+            $this->_curler->addQueLoop($request);
             $statements[$host] = new \ClickHouseDB\Statement($request);
         }
 
-        $this->curler->execLoopWait();
+        $this->_curler->execLoopWait();
 
         foreach ($statements as $host => $statement) {
             if ($statement->isError()) {
@@ -162,7 +174,7 @@ class Http
      */
     public function getHostIPs()
     {
-        return gethostbynamel($this->host);
+        return gethostbynamel($this->_host);
     }
 
     /**
@@ -205,7 +217,7 @@ class Http
     private function newRequest($extendinfo)
     {
         $new = new \Curler\Request();
-        $new->auth($this->username, $this->password)
+        $new->auth($this->_username, $this->_password)
             ->POST()
             ->setRequestExtendedInfo($extendinfo);
 
@@ -281,7 +293,7 @@ class Http
         });
 
         $request->setInfile($file_name);
-        $this->curler->addQueLoop($request);
+        $this->_curler->addQueLoop($request);
 
         return new Statement($request);
     }
@@ -291,7 +303,7 @@ class Http
      */
     public function getCountPendingQueue()
     {
-        return $this->curler->countPending();
+        return $this->_curler->countPending();
     }
 
     /**
@@ -366,7 +378,7 @@ class Http
      */
     public function executeAsync()
     {
-        return $this->curler->execLoopWait();
+        return $this->_curler->execLoopWait();
     }
 
     /**
@@ -378,7 +390,7 @@ class Http
     public function select($sql, array $bindings = [], $whereInFile = null)
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile);
-        $code = $this->curler->execOne($request);
+        $code = $this->_curler->execOne($request);
 
         return new Statement($request);
     }
@@ -392,7 +404,7 @@ class Http
     public function selectAsync($sql, array $bindings = [], $whereInFile = null)
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile);
-        $this->curler->addQueLoop($request);
+        $this->_curler->addQueLoop($request);
         return new Statement($request);
     }
 
@@ -405,7 +417,7 @@ class Http
     public function write($sql, array $bindings = [], $exception = true)
     {
         $request = $this->prepareWrite($sql, $bindings);
-        $code = $this->curler->execOne($request);
+        $code = $this->_curler->execOne($request);
         $response = new Statement($request);
 
         if ($exception) {
