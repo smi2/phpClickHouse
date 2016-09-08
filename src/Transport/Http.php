@@ -50,6 +50,10 @@ class Http
      */
     private $_settings = false;
 
+    /**
+     * @var array
+     */
+    private $_query_degenerations=[];
 
     /**
      * Http constructor.
@@ -110,6 +114,7 @@ class Http
     public function checkServerReplicas($list_hosts, $time_out)
     {
         // @todo add WHERE database=XXXX
+        // @todo rewrite
 
         $query['query'] = 'SELECT * FROM system.replicas FORMAT JSON';
         $query['user'] = $this->_username;
@@ -335,6 +340,15 @@ class Http
 
     }
 
+    public function cleanQueryDegeneration()
+    {
+        $this->_query_degenerations=[];
+    }
+    public function addQueryDegeneration(Query\Degeneration $degeneration)
+    {
+        $this->_query_degenerations[]=$degeneration;
+    }
+
     /**
      * @param Query $query
      * @return Request
@@ -348,14 +362,35 @@ class Http
     /**
      * @param $sql
      * @param $bindings
+     * @return Query
+     */
+    private function prepareQuery($sql, $bindings)
+    {
+
+        // add Degeneration query
+        foreach ($this->_query_degenerations as $degeneration)
+        {
+            $degeneration->bindParams($bindings);
+        }
+
+        return new Query($sql,$this->_query_degenerations);
+    }
+    /**
+     * @param $sql
+     * @param $bindings
      * @param $whereInFile
      * @return Request
      */
     private function prepareSelect($sql, $bindings, $whereInFile)
     {
-        $query = new Query($sql, $bindings);
-        $query->setFormat('JSON');
+        if ($sql instanceof Query)
+        {
+            return $this->getRequestWrite($sql);
+        }
 
+
+        $query=$this->prepareQuery($sql,$bindings);
+        $query->setFormat('JSON');
         return $this->getRequestRead($query, $whereInFile);
 
     }
@@ -365,9 +400,14 @@ class Http
      * @param $bindings
      * @return Request
      */
-    private function prepareWrite($sql, $bindings)
+    private function prepareWrite($sql, $bindings=[])
     {
-        $query = new Query($sql, $bindings);
+        if ($sql instanceof Query)
+        {
+            return $this->getRequestWrite($sql);
+        }
+
+        $query=$this->prepareQuery($sql,$bindings);
         return $this->getRequestWrite($query);
     }
 
@@ -407,6 +447,7 @@ class Http
         return new Statement($request);
     }
 
+
     /**
      * @param $sql
      * @param array $bindings
@@ -418,13 +459,11 @@ class Http
         $request = $this->prepareWrite($sql, $bindings);
         $code = $this->_curler->execOne($request);
         $response = new Statement($request);
-
         if ($exception) {
             if ($response->isError()) {
                 $response->error();
             }
         }
-
         return $response;
     }
 }

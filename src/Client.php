@@ -92,6 +92,11 @@ class Client
             $this->_connect_password
         );
 
+
+        $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Bindings());
+        $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Conditions());
+
+
         // apply settings to transport class
         $this->settings()->database('default');
         if (sizeof($settings)) {
@@ -427,10 +432,6 @@ class Client
             'tableName'  => $tableName,
             'partion_id' => $partition_id
         ]);
-
-        if ($state->isError()) {
-            $state->error();
-        }
     }
 
     /**
