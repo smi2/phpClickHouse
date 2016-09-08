@@ -72,7 +72,6 @@ class Http
 
     public function setCurler() {
         $this->_curler = new CurlerRolling();
-        $this->_curler->setSimultaneousLimit(10);
     }
 
     /**

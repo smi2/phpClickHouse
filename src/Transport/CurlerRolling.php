@@ -15,7 +15,7 @@ class CurlerRolling
      *
      * Max number of simultaneous requests.
      */
-    private $simultaneousLimit = 5;
+    private $simultaneousLimit = 10;
 
     /**
      * @var Request[]
@@ -102,21 +102,6 @@ class CurlerRolling
         }
     }
 
-    /**
-     * @param Request $req
-     * @return bool
-     */
-    public function updateQueLoop(Request $req)
-    {
-        $id = $req->getId();
-
-        if (!$id) {
-            $id = $req->getUniqHash($this->completedRequestCount);
-        }
-
-        $this->pendingRequests[$id] = $req;
-        return true;
-    }
 
     /**
      * @param Request $req

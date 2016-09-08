@@ -51,11 +51,6 @@ class Request
     /**
      * @var
      */
-    private $_cookieFile;
-
-    /**
-     * @var
-     */
     private $resp;
 
     /**
@@ -161,16 +156,6 @@ class Request
         $this->parameters($out);
     }
 
-
-    /**
-     * @param $cookieFile
-     * @return $this
-     */
-    public function cookieFile($cookieFile)
-    {
-        $this->_cookieFile = $cookieFile;
-        return $this;
-    }
 
     /**
      * @param bool $set
@@ -614,11 +599,6 @@ class Request
 
         $curl_opt[CURLOPT_DNS_CACHE_TIMEOUT] = $this->getDnsCache();
         $curl_opt[CURLOPT_URL] = $this->url;
-
-        if ($this->_cookieFile) {
-            $curl_opt[CURLOPT_COOKIEFILE] = $this->_cookieFile;
-            $curl_opt[CURLOPT_COOKIEJAR] = $this->_cookieFile;
-        }
 
         if ($this->headers && sizeof($this->headers)) {
             $curl_opt[CURLOPT_HTTPHEADER] = array();
