@@ -37,7 +37,28 @@ class Cluster
      */
     public function __construct($connect_params, $settings = [])
     {
-        $connect_params['connect_by_ip']=true;
+//        $connect_params['connect_by_ip']=true;
+
+
+        /*
+         * 1) Получаем список IP
+         * 2) К каждому подключаемся по IP
+         * 3) Достаем информацию system.clusters + system.replicas c каждой машины
+         * 4) Определяем нужные машины для кластера/реплики по Name
+         * 5) Список
+         *
+         */
+
+
+
+        if (!empty($connect_params['connect_by_ip']))
+        {
+            $hosts=$this->getHostIPs();
+            shuffle($hosts);
+            $this->_connect_use_host = $hosts[0]; // set first random ip of hosts
+            $this->_connect_by_ip    = true;
+        }
+
 
         $this->_default=new Client($connect_params,$settings);
         $this->hosts_ips   = $this->_default->getHostIPs();
@@ -53,7 +74,7 @@ class Cluster
         // request system.cluster table
         try
         {
-            $this->clusters = $this->active()->select('select * from system.clusters')->rows();
+            $this->clusters = $this->activeClient()->select('select * from system.clusters')->rows();
         }
         catch (QueryException $E)
         {
@@ -61,7 +82,13 @@ class Cluster
         }
 
     }
-
+    /**
+     * @return array
+     */
+    public function getHostIPs()
+    {
+        return gethostbynamel($this->_connect_host);
+    }
     private function debug($msg)
     {
         echo "\t".$msg."\n\n\n";
@@ -90,6 +117,71 @@ class Cluster
         return $this->clusters;
     }
 
+    /**
+     * @param $list_hosts
+     * @param $time_out
+     * @return array
+     */
+    public function checkServerReplicas($list_hosts, $time_out)
+    {
+        // @todo rewrite
+
+        $query['query'] = 'SELECT * FROM system.replicas FORMAT JSON';
+        $query['user'] = $this->_username;
+        $query['password'] = $this->_password;
+
+        $resultGoodHost = [];
+        $resultBadHost = [];
+
+        $statements = [];
+        foreach ($list_hosts as $host) {
+            $request = new Request();
+            $url = 'http://' . $host . ":" . $this->_port . '?' . http_build_query($query);
+
+            $request->url($url)
+                ->GET()
+                ->verbose(false)
+                ->timeOut($time_out)
+                ->connectTimeOut($time_out)
+                ->setDnsCache(0);
+
+            $this->_curler->addQueLoop($request);
+            $statements[$host] = new \ClickHouseDB\Statement($request);
+        }
+
+        $this->_curler->execLoopWait();
+
+        foreach ($statements as $host => $statement) {
+            if ($statement->isError()) {
+                $resultBadHost[$host] = 1;
+            }
+            else {
+                $result = $statement->rows();
+                $flag_bad = false;
+//                foreach ($result as $row)
+//                {
+//                    if (!isset($row['total_replicas']))  $flag_bad=true;
+//                    if (!isset($row['active_replicas']))  $flag_bad=true;
+//                    if ($row['total_replicas']!==$row['active_replicas'])  $flag_bad=true;
+//
+//                    if ($flag_bad) break;
+//                }
+
+
+                if ($flag_bad) {
+                    $resultBadHost[$host] = $result;
+                }
+                else {
+                    $resultGoodHost[$host] = $result;
+                }
+            }
+        }
+
+        // @todo : use total_replicas + active_replicas - for check state ?
+        // total_replicas + active_replicas
+
+        return [$resultGoodHost, $resultBadHost];
+    }
 
 
 

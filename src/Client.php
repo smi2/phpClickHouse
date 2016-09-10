@@ -73,20 +73,11 @@ class Client
         $this->_connect_password    = $connect_params['password'];
         $this->_connect_port        = $connect_params['port'];
         $this->_connect_host        = $connect_params['host'];
-        $this->_connect_use_host    = $connect_params['host'];
 
-
-        if (!empty($connect_params['connect_by_ip']))
-        {
-            $hosts=$this->getHostIPs();
-            shuffle($hosts);
-            $this->_connect_use_host = $hosts[0]; // set first random ip of hosts
-            $this->_connect_by_ip    = true;
-        }
 
         // init transport class
         $this->_transport = new Http(
-            $this->_connect_use_host,
+            $this->_connect_host,
             $this->_connect_port,
             $this->_connect_username,
             $this->_connect_password
@@ -117,22 +108,8 @@ class Client
             $host=array_rand(array_flip($host));
         }
 
-        $this->_connect_use_host=$host;
+        $this->_connect_host=$host;
         $this->transport()->setHost($host);
-    }
-    /**
-     * @return mixed
-     */
-    public function getConnectUseHost()
-    {
-        return $this->_connect_use_host;
-    }
-    /**
-     * @return array
-     */
-    public function getHostIPs()
-    {
-        return gethostbynamel($this->_connect_host);
     }
 
     /**
