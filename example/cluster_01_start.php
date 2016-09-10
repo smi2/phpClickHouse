@@ -19,12 +19,28 @@ $config = include_once __DIR__ . '/../../_clickhouse_config_product.php';
 
 // ----------------------------------------------------------------------
 $cluster_name='ads';
-$db = new ClickHouseDB\Cluster($config);
-print_r(    $db->getAllHostsIps()        );
-print_r(    $db->getHostsBad()        );
+$cl1 = new ClickHouseDB\Cluster($config);
+$cl2= new ClickHouseDB\Cluster($config);
+$cl2->setScanTimeOut(0.2); // 200 ms
+
+
+for ($z=0;$z<100;$z++)
+{
+    $cl1->rescan();
+    $cl2->rescan();
+    print_r(    $cl1->getHostsBad()        );
+    print_r(    $cl2->getHostsBad()        );
+
+}
+
+
+
+
+echo "END\n";
+//print_r(    $db->getAllHostsIps()        );
 
 //print_r(         );
 
-print_r($db->getListHostInCluser('ads')); // like $db->getClustersTable()
+//print_r($db->getListHostInCluser('ads')); // like $db->getClustersTable()
 
 // ----------------------------------------------------------------------

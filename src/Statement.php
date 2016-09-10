@@ -99,6 +99,13 @@ class Statement
     }
 
     /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->_request;
+    }
+    /**
      * @return Response
      */
     private function response()

@@ -432,6 +432,18 @@ class Request
     }
 
     /**
+     * @param int $seconds
+     * @return $this
+     */
+    public function timeOutMs($ms = 10)
+    {
+        unset($this->options[CURLOPT_TIMEOUT]);
+        $this->options[CURLOPT_TIMEOUT_MS] = $ms;
+        return $this;
+    }
+
+
+    /**
      * @param $data
      * @return $this
      * @throws \ClickHouseDB\TransportException
