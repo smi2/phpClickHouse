@@ -21,15 +21,15 @@ $config = include_once __DIR__ . '/../../_clickhouse_config_product.php';
 $cluster_name='ads';
 $cl1 = new ClickHouseDB\Cluster($config);
 $cl2= new ClickHouseDB\Cluster($config);
-$cl2->setScanTimeOut(0.2); // 200 ms
+$cl2->setScanTimeOut(0.45); // 200 ms
 
 
 for ($z=0;$z<100;$z++)
 {
     $cl1->rescan();
     $cl2->rescan();
-    print_r(    $cl1->getHostsBad()        );
-    print_r(    $cl2->getHostsBad()        );
+    print_r(    $cl1->getBadIps()        );
+    print_r(    $cl2->getBadIps()        );
 
 }
 

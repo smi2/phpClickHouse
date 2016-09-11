@@ -427,17 +427,15 @@ class Request
      */
     public function timeOut($seconds = 10)
     {
-        $this->options[CURLOPT_TIMEOUT] = $seconds;
-        return $this;
+        return $this->timeOutMs($seconds*1000);
     }
 
     /**
-     * @param int $seconds
+     * @param int $ms
      * @return $this
      */
-    public function timeOutMs($ms = 10)
+    protected function timeOutMs($ms = 10)
     {
-        unset($this->options[CURLOPT_TIMEOUT]);
         $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;
     }
