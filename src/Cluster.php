@@ -28,6 +28,10 @@ class Cluster
 
 
     /**
+     * @var array
+     */
+    private $resultScan=[];
+    /**
      * @var bool
      */
     private $defaultHostName;
@@ -105,6 +109,11 @@ class Cluster
         }
         return $this;
     }
+
+    /**
+     * @param $replicas
+     * @return bool
+     */
     private function isReplicasWork($replicas)
     {
         $ok=true;
@@ -127,6 +136,10 @@ class Cluster
         }
         return $ok;
     }
+
+    /**
+     * @return $this
+     */
     public function rescan()
     {
        /*
@@ -139,6 +152,7 @@ class Cluster
         $statementsReplicas=[];
         $statementsClusters=[];
         $result=[];
+
         $badIps=[];
         $replicasIsOk=true;
 
@@ -168,7 +182,13 @@ class Cluster
             // ---------------------------------------------------------------------------------------------------
             try
             {
-                $result['clusters'][$ip] =$statementsClusters[$ip]->rowsAsTree('cluster.host_address');
+                $c=$statementsClusters[$ip]->rows();
+                $result['clusters'][$ip] = $c;
+                foreach ($c as $row)
+                {
+                    $result['cluster.list'][$row['cluster']][$row['host_address']][$row['shard_num']][$row['replica_num']]=['shard_weight'=>$row['shard_weight'],'is_local'=>$row['is_local']];
+                }
+
             }
             catch (\Exception $E)
             {
@@ -207,9 +227,18 @@ class Cluster
             $this->replicasIsOk=false;
         }
 
+        $this->resultScan=$result;
         // @todo Мы подключаемся ко всем в списке DNS, нужно пререить что запросы вернули все хосты к которым мы подключались
+        return $this;
     }
 
+    /**
+     * @return boolean
+     */
+    public function isReplicasIsOk()
+    {
+        return $this->connect()->replicasIsOk;
+    }
     /**
      * @return Client
      */
@@ -225,7 +254,17 @@ class Cluster
     {
         return $this->client($this->ips[0]);
     }
-
+    public function getClusterHosts($cluster)
+    {
+        $this->connect();
+        if (empty($this->resultScan['cluster.list'][$cluster])) throw new QueryException('Cluster not find:'.$cluster);
+        return array_keys($this->resultScan['cluster.list'][$cluster]);
+    }
+    public function getClusterList()
+    {
+        $this->connect();
+        return array_keys($this->resultScan['cluster.list']);
+    }
     /**
      * @param $sql
      * @param array $bindings

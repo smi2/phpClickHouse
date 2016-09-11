@@ -19,28 +19,28 @@ $config = include_once __DIR__ . '/../../_clickhouse_config_product.php';
 
 // ----------------------------------------------------------------------
 $cluster_name='ads';
-$cl1 = new ClickHouseDB\Cluster($config);
-$cl2= new ClickHouseDB\Cluster($config);
-$cl2->setScanTimeOut(0.45); // 200 ms
+$cl = new ClickHouseDB\Cluster($config);
+$cl->setScanTimeOut(0.45); // 200 ms
 
-
-for ($z=0;$z<100;$z++)
+if (!$cl->isReplicasIsOk())
 {
-    $cl1->rescan();
-    $cl2->rescan();
-    print_r(    $cl1->getBadIps()        );
-    print_r(    $cl2->getBadIps()        );
-
+    throw new Exception('Replica state is bad');
 }
 
+$sql=[
+'up'=>['CREATE DATABASE IF NOT EXISTS ttests'],
+'down'=>['DROP DATABASE IF EXISTS ttests ']
+];
+echo "getClusterList:\n";
+print_r($cl->getClusterList());
+
+echo "getClusterHosts:model:\n";
+print_r($cl->getClusterHosts('model'));
 
 
 
-echo "END\n";
-//print_r(    $db->getAllHostsIps()        );
 
-//print_r(         );
 
-//print_r($db->getListHostInCluser('ads')); // like $db->getClustersTable()
+echo "\n----\nEND\n";
 
 // ----------------------------------------------------------------------
