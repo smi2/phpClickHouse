@@ -26,7 +26,10 @@ class Cluster
      */
     private $badIps=[];
 
-
+    /**
+     * @var string
+     */
+    private $error="";
     /**
      * @var array
      */
@@ -84,7 +87,7 @@ class Cluster
     /**
      * @return array
      */
-    public function getAllHostsIps()
+    public function getIps()
     {
         return $this->ips;
     }
@@ -124,14 +127,14 @@ class Cluster
             return false;
         }
         foreach ($replicas as $replica) {
-            if ($replica['is_readonly']) $ok=false;
-            if ($replica['is_session_expired']) $ok=false;
-            if ($replica['future_parts']>20) $ok=false;
-            if ($replica['parts_to_check']>10) $ok=false;
-            if ($replica['total_replicas']<2) $ok=false;
-            if ($replica['active_replicas'] < $replica['total_replicas']) $ok=false;
-            if ($replica['queue_size']>20) $ok=false;
-            if (($replica['log_max_index'] - $replica['log_pointer'])>10) $ok=false;
+            if ($replica['is_readonly']) {$ok=false;$this->error[]='is_readonly : '.json_encode($replica);}
+            if ($replica['is_session_expired']) {$ok=false;$this->error[]='is_session_expired : '.json_encode($replica);}
+            if ($replica['future_parts']>20) {$ok=false;$this->error[]='future_parts : '.json_encode($replica);}
+            if ($replica['parts_to_check']>10) {$ok=false;$this->error[]='parts_to_check : '.json_encode($replica);}
+            if ($replica['total_replicas']<2) {$ok=false;$this->error[]='total_replicas : '.json_encode($replica);}
+            if ($replica['active_replicas'] < $replica['total_replicas']) {$ok=false;$this->error[]='active_replicas : '.json_encode($replica);}
+            if ($replica['queue_size']>20) {$ok=false;$this->error[]='queue_size : '.json_encode($replica);}
+            if (($replica['log_max_index'] - $replica['log_pointer'])>10) {$ok=false;$this->error[]='log_max_index : '.json_encode($replica);}
             if (!$ok) break;
         }
         return $ok;
@@ -142,6 +145,7 @@ class Cluster
      */
     public function rescan()
     {
+        $this->error='';
        /*
         * 1) Получаем список IP
         * 2) К каждому подключаемся по IP, через activeClient подменяя host на ip
@@ -178,6 +182,7 @@ class Cluster
             {
                 $result['replicas'][$ip]= false;
                 $badIps[$ip]=$E->getMessage();
+                $this->error[]=$E->getMessage();
             }
             // ---------------------------------------------------------------------------------------------------
             try
@@ -193,6 +198,8 @@ class Cluster
             catch (\Exception $E)
             {
                 $result['clusters'][$ip] = false;
+
+                $this->error[]=$E->getMessage();
                 $badIps[$ip]=$E->getMessage();
 
             }
@@ -209,24 +216,18 @@ class Cluster
         // Востановим DNS имя хоста в клиенте
         $this->defaultClient()->setHost($this->defaultHostName);
 
-        // Создаем клиенты под каждый IP
-        foreach ($this->ips as $ip)
-        {
-            if (empty($this->clients[$ip]))
-            {
-                $this->clients[$ip]=clone $this->defaultClient();
-                $this->clients[$ip]->setHost($ip);
-            }
-        }
+
         $this->isScaned=true;
         $this->replicasIsOk=$replicasIsOk;
+        $this->error[]="Bad replicasIsOk, in ".json_encode($result['replicasIsOk']);
         // ------------------------------------------------
         // @todo Уточнить на боевых падениях и при разношорсных конфигурациях...
         if (sizeof($this->badIps))
         {
+            $this->error[]='Have bad ip : '.json_encode($this->badIps);
             $this->replicasIsOk=false;
         }
-
+        $this->error=false;
         $this->resultScan=$result;
         // @todo Мы подключаемся ко всем в списке DNS, нужно пререить что запросы вернули все хосты к которым мы подключались
         return $this;
@@ -244,7 +245,13 @@ class Cluster
      */
     public function client($ip)
     {
-        $this->rescan();
+        // Создаем клиенты под каждый IP
+        if (empty($this->clients[$ip]))
+        {
+            $this->clients[$ip]=clone $this->defaultClient();
+            $this->clients[$ip]->setHost($ip);
+        }
+
         return $this->clients[$ip];
     }
     /**
@@ -265,6 +272,89 @@ class Cluster
         $this->connect();
         return array_keys($this->resultScan['cluster.list']);
     }
+
+    /**
+     * @return string
+     */
+    public function getError()
+    {
+        if (is_array($this->error))
+        {
+            return implode(" ; ".$this->error);
+        }
+        return $this->error;
+    }
+
+    public function createCluster($sql_up,$sql_down,$ip_hosts=[])
+    {
+        if (!sizeof($ip_hosts)) $ip_hosts=$this->ips;
+
+        if (!is_array($sql_down))
+        {
+            $sql_down=[$sql_down];
+        }
+        if (!is_array($sql_up))
+        {
+            $sql_up=[$sql_up];
+        }
+        // Пропингуем все хосты
+        foreach ($ip_hosts as $ip) {
+            try {
+                $this->client($ip)->ping();
+            } catch (QueryException $E) {
+                $this->error = "Can`t connect or ping ip : " . $ip;
+                return false;
+            }
+        }
+
+
+
+        // Выполняем запрос на каждый client(IP) , если хоть одни не отработал то делаем на каждый Down
+        $need_undo=false;
+        $undo_ip=[];
+        foreach ($ip_hosts as $ip)
+        {
+            foreach ($sql_up as $s_u) {
+                try {
+                    if ($this->client($ip)->write($s_u)->isError()) {
+                        $need_undo = true;
+                        $this->error = "Host $ip result error";
+                    }
+
+                } catch (QueryException $E) {
+                    $need_undo = true;
+                    $this->error = "Host $ip result error : " . $E->getMessage();
+                }
+                if ($need_undo)
+                {
+                    $undo_ip[$ip]=1;
+                    break;
+                }
+            }
+            if ($need_undo)
+            {
+                $undo_ip[$ip]=1;
+                break;
+            }
+        }
+
+        if (!$need_undo)
+        {
+            return true;
+        }
+
+        // if Undo
+        // тут не очень точный метод отката
+        foreach ($undo_ip as $ip=>$tmp)
+        {
+            foreach ($sql_down as $s_u) {
+                    if ($this->client($ip)->write($s_u)->isError()) {
+                }
+            }
+        }
+        return false;
+
+    }
     /**
      * @param $sql
      * @param array $bindings
@@ -275,6 +365,8 @@ class Cluster
     {
         return $this->transport()->write($sql, $bindings, $exception);
     }
+
+
 
 /*
 system.clusters
