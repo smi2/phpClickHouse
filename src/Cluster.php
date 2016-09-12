@@ -8,7 +8,7 @@ class Cluster
     /**
      * @var array
      */
-    private $ips=[];
+    private $nodes=[];
 
 
     /**
@@ -24,7 +24,7 @@ class Cluster
     /**
      * @var array
      */
-    private $badIps=[];
+    private $badNodes=[];
 
     /**
      * @var string
@@ -64,7 +64,7 @@ class Cluster
     {
         $this->defaultClient=new Client($connect_params,$settings);
         $this->defaultHostName=$this->defaultClient->getConnectHost();
-        $this->setIps(gethostbynamel($this->defaultHostName));
+        $this->setNodes(gethostbynamel($this->defaultHostName));
     }
 
     /**
@@ -79,25 +79,25 @@ class Cluster
         $this->scanTimeOut = $scanTimeOut;
     }
 
-    public function setIps($hosts_ips)
+    public function setNodes($nodes)
     {
-        $this->ips = $hosts_ips;
+        $this->nodes = $nodes;
     }
 
     /**
      * @return array
      */
-    public function getIps()
+    public function getNodes()
     {
-        return $this->ips;
+        return $this->nodes;
     }
 
     /**
      * @return array
      */
-    public function getBadIps()
+    public function getBadNodes()
     {
-        return $this->badIps;
+        return $this->badNodes;
     }
 
 
@@ -157,61 +157,67 @@ class Cluster
         $statementsClusters=[];
         $result=[];
 
-        $badIps=[];
+        $badNodes=[];
         $replicasIsOk=true;
 
-        foreach ($this->ips as $ip)
+        foreach ($this->nodes as $node)
         {
-            $this->defaultClient()->setHost($ip);
-            $statementsReplicas[$ip] = $this->defaultClient()->selectAsync('SELECT * FROM system.replicas');
-            $statementsClusters[$ip] = $this->defaultClient()->selectAsync('SELECT * FROM system.clusters');
+            $this->defaultClient()->setHost($node);
+            $statementsReplicas[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.replicas');
+            $statementsClusters[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.clusters');
             // пересетапим timeout
-            $statementsReplicas[$ip]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
-            $statementsClusters[$ip]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
+            $statementsReplicas[$node]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
+            $statementsClusters[$node]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
         }
         $this->defaultClient()->executeAsync();
 
 
-        foreach ($this->ips as $ip)
+        foreach ($this->nodes as $node)
         {
             try
             {
-                $result['replicas'][$ip] = $statementsReplicas[$ip]->rows();
+                $result['replicas'][$node] = $statementsReplicas[$node]->rows();
             }
             catch (\Exception $E)
             {
-                $result['replicas'][$ip]= false;
-                $badIps[$ip]=$E->getMessage();
+                $result['replicas'][$node]= false;
+                $badNodes[$node]=$E->getMessage();
                 $this->error[]=$E->getMessage();
             }
             // ---------------------------------------------------------------------------------------------------
             try
             {
-                $c=$statementsClusters[$ip]->rows();
-                $result['clusters'][$ip] = $c;
+                $c=$statementsClusters[$node]->rows();
+                $result['clusters'][$node] = $c;
                 foreach ($c as $row)
                 {
-                    $result['cluster.list'][$row['cluster']][$row['host_address']][$row['shard_num']][$row['replica_num']]=['shard_weight'=>$row['shard_weight'],'is_local'=>$row['is_local']];
+                    $result['cluster.list'][$row['cluster']][$row['host_address']]=
+                            [
+                                    'shard_weight'=>$row['shard_weight'],
+                                    'replica_num'=>$row['replica_num'],
+                                    'shard_num'=>$row['shard_num'],
+                                    'is_local'=>$row['is_local']
+                            ];
                 }
 
             }
             catch (\Exception $E)
             {
-                $result['clusters'][$ip] = false;
+                $result['clusters'][$node] = false;
 
                 $this->error[]=$E->getMessage();
-                $badIps[$ip]=$E->getMessage();
+                $badNodes[$node]=$E->getMessage();
 
             }
             // ---------------------------------------------------------------------------------------------------
             // Проверим что репликации хорошо идут
-            $rIsOk= $this->isReplicasWork($result['replicas'][$ip]);
-            $result['replicasIsOk'][$ip]=$rIsOk;
+            $rIsOk= $this->isReplicasWork($result['replicas'][$node]);
+            $result['replicasIsOk'][$node]=$rIsOk;
             if (!$rIsOk) $replicasIsOk=false;
             // ---------------------------------------------------------------------------------------------------
         }
-        // $badIps = array(6) {  '222.222.222.44' =>  string(13) "HttpCode:0 ; " , '222.222.222.11' =>  string(13) "HttpCode:0 ; "
-        $this->badIps=$badIps;
+        // badNodes = array(6) {  '222.222.222.44' =>  string(13) "HttpCode:0 ; " , '222.222.222.11' =>  string(13) "HttpCode:0 ; "
+        $this->badNodes=$badNodes;
 
         // Востановим DNS имя хоста в клиенте
         $this->defaultClient()->setHost($this->defaultHostName);
@@ -222,9 +228,9 @@ class Cluster
         $this->error[]="Bad replicasIsOk, in ".json_encode($result['replicasIsOk']);
         // ------------------------------------------------
         // @todo Уточнить на боевых падениях и при разношорсных конфигурациях...
-        if (sizeof($this->badIps))
+        if (sizeof($this->badNodes))
         {
-            $this->error[]='Have bad ip : '.json_encode($this->badIps);
+            $this->error[]='Have bad node : '.json_encode($this->badNodes);
             $this->replicasIsOk=false;
         }
         $this->error=false;
@@ -243,25 +249,35 @@ class Cluster
     /**
      * @return Client
      */
-    public function client($ip)
+    public function client($node)
     {
         // Создаем клиенты под каждый IP
-        if (empty($this->clients[$ip]))
+        if (empty($this->clients[$node]))
         {
-            $this->clients[$ip]=clone $this->defaultClient();
-            $this->clients[$ip]->setHost($ip);
+            $this->clients[$node]=clone $this->defaultClient();
+            $this->clients[$node]->setHost($node);
         }
 
-        return $this->clients[$ip];
+        return $this->clients[$node];
     }
     /**
      * @return Client
      */
     public function activeClient()
     {
-        return $this->client($this->ips[0]);
+        return $this->client($this->nodes[0]);
     }
-    public function getClusterHosts($cluster)
+    public function getClusterNodesShard($cluster)
+    {
+        //????
+        print_r($this->resultScan['cluster.list'][$cluster]);
+        die();
+    }
+    public function getClusterNodesReplica($cluster)
+    {
+        //????
+    }
+    public function getClusterNodesAll($cluster)
     {
         $this->connect();
         if (empty($this->resultScan['cluster.list'][$cluster])) throw new QueryException('Cluster not find:'.$cluster);
@@ -285,9 +301,9 @@ class Cluster
         return $this->error;
     }
 
-    public function createCluster($sql_up,$sql_down,$ip_hosts=[])
+    public function sendMigration($cluster,$sql_up,$sql_down)
     {
-        if (!sizeof($ip_hosts)) $ip_hosts=$this->ips;
+        $node_hosts=$this->getClusterNodesAll($cluster);
 
         if (!is_array($sql_down))
         {
@@ -298,11 +314,11 @@ class Cluster
             $sql_up=[$sql_up];
         }
         // Пропингуем все хосты
-        foreach ($ip_hosts as $ip) {
+        foreach ($node_hosts as $node) {
             try {
-                $this->client($ip)->ping();
+                $this->client($node)->ping();
             } catch (QueryException $E) {
-                $this->error = "Can`t connect or ping ip : " . $ip;
+                $this->error = "Can`t connect or ping ip/node : " . $node;
                 return false;
             }
         }
@@ -312,28 +328,28 @@ class Cluster
         // Выполняем запрос на каждый client(IP) , если хоть одни не отработал то делаем на каждый Down
         $need_undo=false;
         $undo_ip=[];
-        foreach ($ip_hosts as $ip)
+        foreach ($node_hosts as $node)
         {
             foreach ($sql_up as $s_u) {
                 try {
-                    if ($this->client($ip)->write($s_u)->isError()) {
+                    if ($this->client($node)->write($s_u)->isError()) {
                         $need_undo = true;
-                        $this->error = "Host $ip result error";
+                        $this->error = "Host $node result error";
                     }
 
                 } catch (QueryException $E) {
                     $need_undo = true;
-                    $this->error = "Host $ip result error : " . $E->getMessage();
+                    $this->error = "Host $node result error : " . $E->getMessage();
                 }
                 if ($need_undo)
                 {
-                    $undo_ip[$ip]=1;
+                    $undo_ip[$node]=1;
                     break;
                 }
             }
             if ($need_undo)
             {
-                $undo_ip[$ip]=1;
+                $undo_ip[$node]=1;
                 break;
             }
         }
@@ -345,10 +361,10 @@ class Cluster
 
         // if Undo
         // тут не очень точный метод отката
-        foreach ($undo_ip as $ip=>$tmp)
+        foreach ($undo_ip as $node=>$tmp)
         {
             foreach ($sql_down as $s_u) {
-                    if ($this->client($ip)->write($s_u)->isError()) {
+                    if ($this->client($node)->write($s_u)->isError()) {
                 }
             }
         }
