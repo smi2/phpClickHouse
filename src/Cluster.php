@@ -267,21 +267,35 @@ class Cluster
     {
         return $this->client($this->nodes[0]);
     }
-    public function getClusterNodesShard($cluster)
+    public function getClusterCountShard($cluster)
     {
-        //????
-        print_r($this->resultScan['cluster.list'][$cluster]);
-        die();
+        $table=$this->getClusterInfoTable($cluster);
+        $c=[];
+        foreach ($table as $row)
+        {
+            $c[$row['shard_num']]=1;
+        }
+        return sizeof($c);
     }
-    public function getClusterNodesReplica($cluster)
+    public function getClusterCountReplica($cluster)
     {
-        //????
+        $table=$this->getClusterInfoTable($cluster);
+        $c=[];
+        foreach ($table as $row)
+        {
+            $c[$row['replica_num']]=1;
+        }
+        return sizeof($c);
     }
-    public function getClusterNodesAll($cluster)
+    public function getClusterInfoTable($cluster)
     {
         $this->connect();
         if (empty($this->resultScan['cluster.list'][$cluster])) throw new QueryException('Cluster not find:'.$cluster);
-        return array_keys($this->resultScan['cluster.list'][$cluster]);
+        return $this->resultScan['cluster.list'][$cluster];
+    }
+    public function getClusterNodes($cluster)
+    {
+        return array_keys($this->getClusterInfoTable($cluster));
     }
     public function getClusterList()
     {
@@ -303,7 +317,7 @@ class Cluster
 
     public function sendMigration($cluster,$sql_up,$sql_down)
     {
-        $node_hosts=$this->getClusterNodesAll($cluster);
+        $node_hosts=$this->getClusterNodes($cluster);
 
         if (!is_array($sql_down))
         {
@@ -382,23 +396,4 @@ class Cluster
         return $this->transport()->write($sql, $bindings, $exception);
     }
 
-
-
-/*
-system.clusters
-Содержит информацию о доступных в конфигурационном файле кластерах и серверах, которые в них входят.
-Столбцы:
-
-cluster String      - имя кластера
-shard_num UInt32    - номер шарда в кластере, начиная с 1
-shard_weight UInt32 - относительный вес шарда при записи данных
-replica_num UInt32  - номер реплики в шарде, начиная с 1
-host_name String    - имя хоста, как прописано в конфиге
-host_address String - IP-адрес хоста, полученный из DNS
-port UInt16         - порт, на который обращаться для соединения с сервером
-user String         - имя пользователя, которого использовать для соединения с сервером
-
-
-
- */
 }
