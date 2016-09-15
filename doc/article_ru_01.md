@@ -47,7 +47,10 @@ $db->showProcesslist();
 
 ### Запросы 
 
-
+Запросы разделены на запись, вставку данных и на чтение, чтение и вставка может быть асинхронными. 
+ 
+ 
+ 
 
 
 ----
@@ -156,41 +159,22 @@ foreach (['pulse','repikator','sharovara','repikator3x','sharovara3x'] as $name)
 Если хоть на одном происходит ошибка, или не получилось сделать ping() 
 откатываем запросы 
 
-sendMigration(Cluster\Migration $zzzz)
 
-....................
+```php
+
+$mclq=new ClickHouseDB\Cluster\Migration($cluster_name);
+
+$mclq->setUpdate('CREATE DATABASE IF NOT EXISTS cluster_tests');
+$mclq->setDowngrade('DROP DATABASE IF EXISTS cluster_tests');
 
 
 
-
+if (!$cl->sendMigration($mclq))
+{
+    throw new Exception('sendMigration is bad , error='.$cl->getError());
+}
 ```
-  if (!$cl->sendMigration($cluster,$sql_up,$sql_down))
-  {
-    echo 'error ;(';
-  }
-  
-// где: 
-  
-  $sql_up=[
-  	'CREATE DATABASE IF NOT EXISTS tst',
-  	'CREATE TABLE IF NOT EXISTS tst.sum_views_sharded (...... ) ENGINE = ReplicatedSummingMergeTree(......)',
-  	'CREATE TABLE IF NOT EXISTS tst.sum_views AS tst.sum_views_sharded ENGINE = Distributed(....)'
-  ];
-  $sql_down=[
-          'DROP TABLE IF EXISTS tst.sum_views',
-          'DROP TABLE IF EXISTS tst.sum_views_sharded',
-          'DROP DATABASE IF EXISTS tst'
-  ];
-  
-``` 
 
-
-.... 
-
-....
-....
-....
-....
 
 
 
