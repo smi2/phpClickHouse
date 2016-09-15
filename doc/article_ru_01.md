@@ -1,6 +1,59 @@
-Использование clickhouse в php 
+## clickhouse и php 
+
+
+Соединение с базой, с одной нодой: 
+```php
+$config = [
+    'host' => '192.168.1.1', 
+    'port' => '8123', 
+    'username' => 'default', 
+    'password' => ''
+];
+$settings=['max_execution_time' => 100];
+
+$db = new ClickHouseDB\Client($config,$settings);
+$db->database('default');
+```
+
+Если нужно соединиться и выполнить запросы на весь кластер используем другой класс, 
+который позволяет выбирать ноду c которой работать исходя из имени кластера:
+
+```php
+$cluster_name='sharavara';
+
+$cl = new ClickHouseDB\Cluster($config,$settings);
+$db=$cl->client($cluster_name);
+$db->database('default');
+
+```
+
+
+
+```php
+// Получаем спискок таблиц в выбранной базе
+print_r($db->showTables());
+
+
+// Размер таблиц
+$db->tableSize("table_name");
+
+// Список баз
+$db->showDatabases();
+
+// 
+$db->showProcesslist();
+
+```
+
+### Запросы 
+
+
+
 
 ----
+
+
+
 
 ###  Кластер 
 
@@ -103,7 +156,7 @@ foreach (['pulse','repikator','sharovara','repikator3x','sharovara3x'] as $name)
 Если хоть на одном происходит ошибка, или не получилось сделать ping() 
 откатываем запросы 
 
-
+sendMigration(Cluster\Migration $zzzz)
 
 ....................
 

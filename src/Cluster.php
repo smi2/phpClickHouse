@@ -315,7 +315,7 @@ class Cluster
         return $this->error;
     }
 
-    public function sendMigration($cluster,$sql_up,$sql_down)
+    public function sendMigration(Cluster\Migration $cluster,$sql_up,$sql_down)
     {
         $node_hosts=$this->getClusterNodes($cluster);
 

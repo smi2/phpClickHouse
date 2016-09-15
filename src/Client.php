@@ -35,10 +35,6 @@ class Client
      */
     private $_connect_port = false;
 
-    /**
-     * @var bool
-     */
-    private $_connect_by_ip= false;
 
     /**
      * Client constructor.
@@ -330,6 +326,8 @@ class Client
     }
 
     /**
+     * Размер базы
+     *
      * @return mixed|null
      */
     public function databaseSize()
@@ -345,6 +343,8 @@ class Client
     }
 
     /**
+     * Размер таблицы
+     *
      * @param $tableName
      * @return mixed
      */
@@ -369,6 +369,8 @@ class Client
     }
 
     /**
+     * Размеры таблиц
+     *
      * @return array
      */
     public function tablesSize()
