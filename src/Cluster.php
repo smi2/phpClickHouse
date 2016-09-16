@@ -131,7 +131,12 @@ class Cluster
             if ($replica['is_session_expired']) {$ok=false;$this->error[]='is_session_expired : '.json_encode($replica);}
             if ($replica['future_parts']>20) {$ok=false;$this->error[]='future_parts : '.json_encode($replica);}
             if ($replica['parts_to_check']>10) {$ok=false;$this->error[]='parts_to_check : '.json_encode($replica);}
-            if ($replica['total_replicas']<2) {$ok=false;$this->error[]='total_replicas : '.json_encode($replica);}
+
+            // @todo : rewrite total_replicas=1 если кластер без реплики , нужно проверять какой класте и сколько в нем реплик
+//            if ($replica['total_replicas']<2) {$ok=false;$this->error[]='total_replicas : '.json_encode($replica);}
+
+
+
             if ($replica['active_replicas'] < $replica['total_replicas']) {$ok=false;$this->error[]='active_replicas : '.json_encode($replica);}
             if ($replica['queue_size']>20) {$ok=false;$this->error[]='queue_size : '.json_encode($replica);}
             if (($replica['log_max_index'] - $replica['log_pointer'])>10) {$ok=false;$this->error[]='log_max_index : '.json_encode($replica);}
@@ -145,7 +150,7 @@ class Cluster
      */
     public function rescan()
     {
-        $this->error='';
+        $this->error=["R"];
        /*
         * 1) Получаем список IP
         * 2) К каждому подключаемся по IP, через activeClient подменяя host на ip
@@ -182,7 +187,7 @@ class Cluster
             {
                 $result['replicas'][$node]= false;
                 $badNodes[$node]=$E->getMessage();
-                $this->error[]=$E->getMessage();
+                $this->error[]='statementsReplicas:'.$E->getMessage();
             }
             // ---------------------------------------------------------------------------------------------------
             try
@@ -205,7 +210,7 @@ class Cluster
             {
                 $result['clusters'][$node] = false;
 
-                $this->error[]=$E->getMessage();
+                $this->error[]='clusters:'.$E->getMessage();
                 $badNodes[$node]=$E->getMessage();
 
             }
@@ -315,18 +320,13 @@ class Cluster
         return $this->error;
     }
 
-    public function sendMigration(Cluster\Migration $cluster,$sql_up,$sql_down)
+    public function sendMigration(Cluster\Migration $migration)
     {
-        $node_hosts=$this->getClusterNodes($cluster);
+        $node_hosts=$this->getClusterNodes($migration->getClusterName());
 
-        if (!is_array($sql_down))
-        {
-            $sql_down=[$sql_down];
-        }
-        if (!is_array($sql_up))
-        {
-            $sql_up=[$sql_up];
-        }
+        $sql_down=$migration->getSqlDowngrade();
+        $sql_up=$migration->getSqlUpdate();
+
         // Пропингуем все хосты
         foreach ($node_hosts as $node) {
             try {
@@ -370,6 +370,7 @@ class Cluster
 
         if (!$need_undo)
         {
+            echo "ALL!PK!\n";
             return true;
         }
 

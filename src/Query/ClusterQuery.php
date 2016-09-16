@@ -46,13 +46,31 @@ class Query
 
 class Migration extends Query
 {
-    public function setUpdate($sql)
+    private $_sql_up=[];
+    private $_sql_down=[];
+    public function addSqlUpdate($sql)
     {
-
+        $this->_sql_up[]=$sql;
     }
-    public function setDowngrade($sql)
+    public function addSqlDowngrade($sql)
     {
+        $this->_sql_down[]=$sql;
+    }
 
+    /**
+     * @return array
+     */
+    public function getSqlDowngrade()
+    {
+        return $this->_sql_down;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSqlUpdate()
+    {
+        return $this->_sql_up;
     }
 
 }
