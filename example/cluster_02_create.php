@@ -29,8 +29,7 @@ $mclq->addSqlUpdate('DROP DATABASE IF EXISTS shara');
 $mclq->addSqlUpdate('CREATE DATABASE IF NOT EXISTS shara');
 $mclq->addSqlUpdate('DROP TABLE IF EXISTS shara.adpreview_body_views_sharded');
 $mclq->addSqlUpdate('DROP TABLE IF EXISTS shara.adpreview_body_views');
-$mclq->addSqlUpdate('DROP TABLE IF EXISTS target.adpreview_body_views_sharded');
-$mclq->addSqlUpdate('DROP TABLE IF EXISTS target.adpreview_body_views');
+
 $mclq->addSqlUpdate(
 "CREATE TABLE IF NOT EXISTS shara.adpreview_body_views_sharded (
     event_date Date DEFAULT toDate(event_time),

@@ -260,8 +260,9 @@ class Cluster
         if (empty($this->clients[$node]))
         {
             $this->clients[$node]=clone $this->defaultClient();
-            $this->clients[$node]->setHost($node);
         }
+
+        $this->clients[$node]->setHost($node);
 
         return $this->clients[$node];
     }
@@ -330,6 +331,7 @@ class Cluster
         // Пропингуем все хосты
         foreach ($node_hosts as $node) {
             try {
+                echo "Ping : $node \n ";
                 $this->client($node)->ping();
             } catch (QueryException $E) {
                 $this->error = "Can`t connect or ping ip/node : " . $node;
@@ -346,10 +348,15 @@ class Cluster
         {
             foreach ($sql_up as $s_u) {
                 try {
+
+                    echo "Send : $node \n ";
+
                     if ($this->client($node)->write($s_u)->isError()) {
                         $need_undo = true;
                         $this->error = "Host $node result error";
                     }
+
+                    echo "OK!\n";
 
                 } catch (QueryException $E) {
                     $need_undo = true;
