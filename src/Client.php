@@ -378,6 +378,7 @@ class Client
         return $this->select('
             SELECT table,
             formatReadableSize(sum(bytes)) as size,
+            sum(bytes) as sizebytes,
             min(min_date) as min_date,
             max(max_date) as max_date
             FROM system.parts

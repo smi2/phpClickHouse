@@ -45,6 +45,15 @@ class Cluster
     private $scanTimeOut=2;
 
     /**
+     * @var array
+     */
+    private $tables=[];
+
+    /**
+     * @var array
+     */
+    private $hostsnames=[];
+    /**
      * @var bool
      */
     private $isScaned=false;
@@ -181,7 +190,12 @@ class Cluster
         {
             try
             {
-                $result['replicas'][$node] = $statementsReplicas[$node]->rows();
+                $r = $statementsReplicas[$node]->rows();
+                foreach ($r as $row)
+                {
+                    $tables[$row['database']][$row['table']][$node]=$row['replica_path'];
+                }
+                $result['replicas'][$node] =$r;
             }
             catch (\Exception $E)
             {
@@ -196,6 +210,7 @@ class Cluster
                 $result['clusters'][$node] = $c;
                 foreach ($c as $row)
                 {
+                    $hosts[$row['host_address']][$row['port']]=$row['host_name'];
                     $result['cluster.list'][$row['cluster']][$row['host_address']]=
                             [
                                     'shard_weight'=>$row['shard_weight'],
@@ -214,6 +229,8 @@ class Cluster
                 $badNodes[$node]=$E->getMessage();
 
             }
+            $this->hostsnames=$hosts;
+            $this->tables=$tables;
             // ---------------------------------------------------------------------------------------------------
             // Проверим что репликации хорошо идут
             $rIsOk= $this->isReplicasWork($result['replicas'][$node]);
@@ -309,6 +326,16 @@ class Cluster
         return array_keys($this->resultScan['cluster.list']);
     }
 
+    public function getNodesByTable($database_table)
+    {
+        list($db,$table)=explode('.',$database_table);
+
+        if (empty($this->tables[$db][$table]))
+        {
+            throw new QueryException('Not find :'.$database_table);
+        }
+        return array_keys($this->tables[$db][$table]);
+    }
     /**
      * @return string
      */

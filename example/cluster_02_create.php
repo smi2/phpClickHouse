@@ -25,6 +25,9 @@ echo "> $cluster_name , count shard   = ".$cl->getClusterCountShard($cluster_nam
 
 $mclq=new ClickHouseDB\Cluster\Migration($cluster_name);
 
+
+
+
 $mclq->addSqlUpdate('DROP DATABASE IF EXISTS shara');
 $mclq->addSqlUpdate('CREATE DATABASE IF NOT EXISTS shara');
 $mclq->addSqlUpdate('DROP TABLE IF EXISTS shara.adpreview_body_views_sharded');
@@ -36,9 +39,8 @@ $mclq->addSqlUpdate(
     event_time DateTime DEFAULT now(),
     body_id Int32,
     site_id Int32,
-    block_id Int32,
     views Int32
-) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{sharovara_replica}/shara/adpreview_body_views_sharded', '{replica}', event_date, (event_date, event_time, body_id, site_id, block_id), 8192)
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{sharovara_replica}/shara/adpreview_body_views_sharded', '{replica}', event_date, (event_date, event_time, body_id, site_id), 8192)
 ");
 $mclq->addSqlUpdate(
 "CREATE TABLE IF NOT EXISTS 
@@ -60,3 +62,4 @@ if (!$cl->sendMigration($mclq))
 
 echo "\n----\nEND\n";
 // ----------------------------------------------------------------------
+

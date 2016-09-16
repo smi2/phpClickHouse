@@ -215,29 +215,7 @@ foreach ($result_insert as $fileName => $state) {
 see example/exam8_http_gzip_batch_insert.php
 
 
-### Find active host and check cluster
 
-We use in the smi2, DNS Round-Robin.
-
-Set host =  "clickhouse.smi2.ru" is A record  => [ xdb1.ch1.smi2.ru, xdb1.ch2.smi2.ru, xdb1.ch3.smi2.ru.... ]
-
-function findActiveHostAndCheckCluster() - ping all IPs in DNS record
-
-then random() select from active list
-
-if dev. server (one IP or host) - no check
-
-
-see example/exam6_check_cluster.php
-
-```php
-$db = new ClickHouseDB\Client($config);
-$change_host = true;
-$time_out_second = 1;
-
-list($resultGoodHost, $resultBadHost, $selectHost) = $db->findActiveHostAndCheckCluster($time_out_second, $change_host);
-echo 'SelectHost: ' . $selectHost . PHP_EOL;
-```
 
 ### tablesSize & databaseSize
 
