@@ -21,8 +21,15 @@ class WriteToFile
      */
     private $file_name = null;
 
+    /**
+     * @var string
+     */
     private $format='CSV';
 
+    /**
+     * @var bool
+     */
+    private $gzip=false;
     /**
      * WriteToFile constructor.
      * @param $file_name
@@ -55,15 +62,38 @@ class WriteToFile
         }
         if ($format)
         {
-            if (!in_array($format,$this->support_format))
-            {
-                throw new QueryException('Unsupport format: ' . $format);
-            }
-            $this->format=$format;
+           $this->setFormat($format);
         }
         $this->file_name=$file_name;
     }
 
+    /**
+     * @return bool
+     */
+    public function getGzip()
+    {
+        return $this->gzip;
+    }
+
+    /**
+     * @param $flag
+     */
+    public function setGzip($flag)
+    {
+        $this->gzip=$flag;
+    }
+
+    /**
+     * @param $format
+     */
+    public function setFormat($format)
+    {
+        if (!in_array($format,$this->support_format))
+        {
+            throw new QueryException('Unsupport format: ' . $format);
+        }
+        $this->format=$format;
+    }
     /**
      * @return int
      */

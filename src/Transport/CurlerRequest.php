@@ -495,9 +495,14 @@ class Request
      * @param $h resource
      * @return $this
      */
-    public function setResultFileHandle($h)
+    public function setResultFileHandle($h,$zlib=false)
     {
         $this->resultFileHandle=$h;
+        if ($zlib)
+        {
+            $params = array('level' => 6, 'window' => 15, 'memory' => 9);
+            stream_filter_append($this->resultFileHandle, 'zlib.deflate', STREAM_FILTER_WRITE, $params);
+        }
         return $this;
     }
 

@@ -66,3 +66,14 @@ $db->executeAsync();
 
 print_r($statement->info());
 echo "END SELECT\n";
+
+
+echo "TRY GZIP\n";
+
+$WriteToFile=new ClickHouseDB\WriteToFile('/tmp/_0_select.csv.gz');
+$WriteToFile->setFormat(ClickHouseDB\WriteToFile::FORMAT_TabSeparatedWithNames);
+$WriteToFile->setGzip(true);// cat /tmp/_0_select.csv.gz | gzip -dc > /tmp/w.result
+
+$statement=$db->select('select * from summing_url_views',[],null,$WriteToFile);
+print_r($statement->info());
+

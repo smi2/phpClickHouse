@@ -271,7 +271,27 @@ class Http
         // result to file
         if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat())
         {
-            $request->setResultFileHandle(fopen($writeToFile->fetchFile(),'w'))->setCallbackFunction(function (Request $request) {
+
+            $fout=fopen($writeToFile->fetchFile(),'w');
+            $isGz=$writeToFile->getGzip();
+
+            if ($isGz)
+            {
+                // write gzip header
+//                "\x1f\x8b\x08\x00\x00\x00\x00\x00"
+//                fwrite($fout, "\x1F\x8B\x08\x08".pack("V", time())."\0\xFF", 10);
+                fwrite($fout, "\x1f\x8b\x08\x00\x00\x00\x00\x00");
+                // write the original file name
+//                $oname = str_replace("\0", "", basename($writeToFile->fetchFile()));
+//                fwrite($fout, $oname."\0", 1+strlen($oname));
+
+            }
+
+
+
+
+
+            $request->setResultFileHandle($fout,$isGz)->setCallbackFunction(function (Request $request) {
                 fclose($request->getResultFileHandle());
             });
         }
