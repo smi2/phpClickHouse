@@ -1,6 +1,51 @@
 ## clickhouse и php 
 
 
+Мы создали в СМИ2, http драйвер, обертку над curl для работы с Clickhouse из PHP и Web интерфейс для удобного создания запросов.
+
+Реализованы специфичный возможности CH, и фичи драйвера:   
+* Отсутствие зависимостей, только curl и json,   
+* Работа с кластером CH, получение список  node,
+* Проверка работы каждой node при подключении к кластеру,
+* Выполнение запроса на каждой node в кластере, схоже с миграциями,
+* Поддержка сжатия на лету, при записи данных в CH,
+* Асинхронное выполнение запросов на чтение,
+* Асинхронное выполнение запросов на вставку данных,
+* Запрос на чтение, используея локальный CSV файл, select * from X where id in (_local_csv_file_),  
+* Работа с партициями таблиц,
+* Вставка массива в колонку,
+* Запись результата запроса напрямую в файл,
+* Получение размера таблицы,базы и списока процессов на каждой node 
+* Получение статистики выполение запроса select
+* Шаблонизация запросов 
+
+
+
+Драйвер протестированн на php 5.6 и 7 , hhvm 3.9
+
+
+## Установка 
+
+
+```
+composer require smi2/phpclickhouse
+```
+
+Или используя git 
+
+```
+git clone https://github.com/smi2/phpClickHouse.git 
+```
+
+При использовании git, подключаем драйвер через `include_once 'phpClickHouse/include.php';`
+Есть спицифичное требование не использовать `autoload`, поэтому в `include.php` перечисленны все необходимые файлы. 
+
+
+
+
+## Приступаем к работе 
+
+
 Соединение с базой, с одной нодой: 
 ```php
 $config = [
@@ -9,14 +54,15 @@ $config = [
     'username' => 'default', 
     'password' => ''
 ];
+// дополнительные настройки, передаваемые с каждым запросом
 $settings=['max_execution_time' => 100];
 
 $db = new ClickHouseDB\Client($config,$settings);
 $db->database('default');
 ```
 
-Если нужно соединиться и выполнить запросы на весь кластер используем другой класс, 
-который позволяет выбирать ноду c которой работать исходя из имени кластера:
+Если нужно соединиться и выполнить запросы на весь кластер - используем другой класс, 
+который позволяет выбирать node или получать список node, c которыми работать исходя из имени кластера:
 
 ```php
 $cluster_name='sharavara';
@@ -26,7 +72,6 @@ $nodes=$cl->getClusterNodes($cluster_name)
 
 $db=$cl->client($nodes[0]);
 $db->database('default');
-
 ```
 
 
@@ -49,12 +94,20 @@ $db->showProcesslist();
 
 ## Запросы 
 
-Запросы разделены на запись, вставку данных и на чтение, чтение и вставка может быть асинхронными. 
+Запросы разделены:
+* запись 
+* вставку данных 
+* чтение
  
- 
+При этом чтение и вставка может быть асинхронными, т/е выполняться паралелньо используя curl_multi запросы. 
+
+Запросы на запись  и вставку данных - не содержат ответа
+Запросы на чтение - содержат ответ, исключение прямая запись ответа в файл. 
 
 
 ### Запросы на запись
+
+
 
 ```php
 $db->write('
@@ -228,7 +281,8 @@ print_r($result->statistics());
 #### Результат в виде дерева
 
 
-Select result as tree:
+Можно получить ассоциатвный массив результата в виде дерева: 
+
 ```php
 $statement = $db->select('
     SELECT event_date, site_key, sum(views), avg(views) 
@@ -264,8 +318,54 @@ print_r($statement->rowsAsTree('event_date.site_key'));
 
 ```
 
+#### Результат запроса, напрямую в файл 
+
+Бывает необходимо, результат запроса SELECT записать файл - для дольнейшего импорта другой базой данных. 
+
+Можно выполнить запрос SELECT и не разбирая результат средствами PHP, чтобы секономить ресурсы, напряую записать файл. 
+   
+   
+Используем класc : `WriteToFile(имя_файла,перезапись,$format)`   
+
+```php   
+$WriteToFile=new ClickHouseDB\WriteToFile('/tmp/_0_select.csv.gz');
+$WriteToFile->setFormat(ClickHouseDB\WriteToFile::FORMAT_TabSeparatedWithNames);
+// $WriteToFile->setGzip(true);// cat /tmp/_0_select.csv.gz | gzip -dc > /tmp/w.result
+$statement=$db->select('select * from summing_url_views',[],null,$WriteToFile);
+print_r($statement->info());
+```
+
+При использовании WriteToFile результат запроса будет пустым, т/к парсинг не производится. 
+И `$statement->count() и $statement->rows()` пустые. 
+ 
+Для проверики можно получить размер результирующего файла: 
+```php
+echo $WriteToFile->size(); 
+``` 
+
+При указании setGzip(true) - создается gz файл, но у которого отсутствует crc запись, и его распаковка будет с ошибкой проверки crc.
+  
+Так же возможна асинхронное запись в файл: 
+ 
+```php
+$db->selectAsync('select * from summing_url_views limit 14',[],null,new ClickHouseDB\WriteToFile('/tmp/_3_select.tab',true,'TabSeparatedWithNames'));
+$db->selectAsync('select * from summing_url_views limit 35',[],null,new ClickHouseDB\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
+$db->selectAsync('select * from summing_url_views limit 55',[],null,new ClickHouseDB\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\WriteToFile::FORMAT_CSV));
+$db->executeAsync();
+``` 
 
 
+
+Реализация через установку CURLOPT_FILE: 
+
+```php
+$curl_opt[CURLOPT_FILE]=$this->resultFileHandle;
+// Если указан gzip, дописываем в начало файла : 
+ "\x1f\x8b\x08\x00\x00\x00\x00\x00"
+// и вешаем на указатель файла: 
+  $params = array('level' => 6, 'window' => 15, 'memory' => 9);
+  stream_filter_append($this->resultFileHandle, 'zlib.deflate', STREAM_FILTER_WRITE, $params);
+```
 
 ###  Кластер 
 
@@ -400,8 +500,3 @@ if (!$cl->sendMigration($mclq))
 }
 
 ```
-
-
-
-
- ---
