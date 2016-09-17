@@ -6,6 +6,7 @@ use ClickHouseDB\Query;
 use ClickHouseDB\Settings;
 use ClickHouseDB\Statement;
 use ClickHouseDB\WhereInFile;
+use ClickHouseDB\WriteToFile;
 use Curler\CurlerRolling;
 use Curler\Request;
 
@@ -240,11 +241,11 @@ class Http
      * @param null $whereInFile
      * @return Request
      */
-    public function getRequestRead(Query $query, $whereInFile = null)
+    public function getRequestRead(Query $query, $whereInFile = null,$writeToFile=null)
     {
         $urlParams = ['readonly' => 1];
         $query_as_string = false;
-
+        // ---------------------------------------------------------------------------------
         if ($whereInFile instanceof WhereInFile && $whereInFile->size()) {
             // $request = $this->prepareSelectWhereIn($request, $whereInFile);
             $structure = $whereInFile->fetchUrlParams();
@@ -252,15 +253,29 @@ class Http
             $urlParams = array_merge($urlParams, $structure);
             $query_as_string = true;
         }
-
+        // ---------------------------------------------------------------------------------
+        // if result to file
+        if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat()) {
+            $query->setFormat($writeToFile->fetchFormat());
+            $urlParams['extremes']=false;
+        }
+        // ---------------------------------------------------------------------------------
         // makeRequest read
         $request = $this->makeRequest($query, $urlParams, $query_as_string);
-
+        // ---------------------------------------------------------------------------------
         // attach files
         if ($whereInFile instanceof WhereInFile && $whereInFile->size()) {
             $request->attachFiles($whereInFile->fetchFiles());
         }
-
+        // ---------------------------------------------------------------------------------
+        // result to file
+        if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat())
+        {
+            $request->setResultFileHandle(fopen($writeToFile->fetchFile(),'w'))->setCallbackFunction(function (Request $request) {
+                fclose($request->getResultFileHandle());
+            });
+        }
+        // ---------------------------------------------------------------------------------
         return $request;
 
     }
@@ -306,7 +321,7 @@ class Http
      * @param $whereInFile
      * @return Request
      */
-    private function prepareSelect($sql, $bindings, $whereInFile)
+    private function prepareSelect($sql, $bindings, $whereInFile,$writeToFile=null)
     {
         if ($sql instanceof Query)
         {
@@ -316,7 +331,7 @@ class Http
 
         $query=$this->prepareQuery($sql,$bindings);
         $query->setFormat('JSON');
-        return $this->getRequestRead($query, $whereInFile);
+        return $this->getRequestRead($query, $whereInFile,$writeToFile);
 
     }
 
@@ -351,9 +366,9 @@ class Http
      * @param null $whereInFile
      * @return Statement
      */
-    public function select($sql, array $bindings = [], $whereInFile = null)
+    public function select($sql, array $bindings = [], $whereInFile = null,$writeToFile=null)
     {
-        $request = $this->prepareSelect($sql, $bindings, $whereInFile);
+        $request = $this->prepareSelect($sql, $bindings, $whereInFile,$writeToFile);
         $code = $this->_curler->execOne($request);
 
         return new Statement($request);
@@ -365,9 +380,9 @@ class Http
      * @param null $whereInFile
      * @return Statement
      */
-    public function selectAsync($sql, array $bindings = [], $whereInFile = null)
+    public function selectAsync($sql, array $bindings = [], $whereInFile = null,$writeToFile=null)
     {
-        $request = $this->prepareSelect($sql, $bindings, $whereInFile);
+        $request = $this->prepareSelect($sql, $bindings, $whereInFile,$writeToFile);
         $this->_curler->addQueLoop($request);
         return new Statement($request);
     }

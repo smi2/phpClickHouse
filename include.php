@@ -15,6 +15,7 @@ include_once __DIR__ . '/src/Cluster.php';
 include_once __DIR__ . '/src/Query/Degeneration.php';
 include_once __DIR__ . '/src/Query/Degenerations/Bindings.php';
 include_once __DIR__ . '/src/Query/Degenerations/Conditions.php';
+include_once __DIR__ . '/src/Query/WriteToFile.php';
 include_once __DIR__ . '/src/Query/WhereInFile.php';
 include_once __DIR__ . '/src/Query/Query.php';
 include_once __DIR__ . '/src/Query/ClusterQuery.php';

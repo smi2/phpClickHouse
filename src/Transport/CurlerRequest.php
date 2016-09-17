@@ -93,6 +93,10 @@ class Request
      */
     private $_dns_cache = 10;
 
+    /**
+     * @var resource
+     */
+    private $resultFileHandle=null;
 
     /**
      * Request constructor.
@@ -472,6 +476,32 @@ class Request
     }
 
     /**
+     * @return resource
+     */
+    public function getResultFileHandle()
+    {
+        return $this->resultFileHandle;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isResultFile()
+    {
+        return ($this->resultFileHandle?true:false);
+    }
+
+    /**
+     * @param $h resource
+     * @return $this
+     */
+    public function setResultFileHandle($h)
+    {
+        $this->resultFileHandle=$h;
+        return $this;
+    }
+
+    /**
      * @return $this
      */
     public function PUT()
@@ -622,8 +652,12 @@ class Request
             $curl_opt[CURLOPT_PUT] = true;
         }
 
+        if ($this->resultFileHandle)
+        {
+            $curl_opt[CURLOPT_FILE]=$this->resultFileHandle;
+            $curl_opt[CURLOPT_HEADER]=false;
+        }
         curl_setopt_array($this->handle, $curl_opt);
-
         return true;
     }
 }

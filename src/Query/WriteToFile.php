@@ -1,0 +1,91 @@
+<?php
+
+namespace ClickHouseDB;
+
+/**
+ * Class WriteToFile
+ * @package ClickHouseDB
+ */
+class WriteToFile
+{
+    /**
+     *
+     */
+    const FORMAT_TabSeparated          = 'TabSeparated';
+    const FORMAT_TabSeparatedWithNames = 'TabSeparatedWithNames';
+    const FORMAT_CSV                   = 'CSV';
+
+    private $support_format=['TabSeparated','TabSeparatedWithNames','CSV'];
+    /**
+     * @var string
+     */
+    private $file_name = null;
+
+    private $format='CSV';
+
+    /**
+     * WriteToFile constructor.
+     * @param $file_name
+     * @param bool $overwrite
+     * @param null $format
+     */
+    public function __construct($file_name,$overwrite=true,$format=null) {
+
+
+        if (!$file_name)
+        {
+            throw new QueryException('Bad file path');
+        }
+
+        if (is_file($file_name))
+        {
+            if (!$overwrite)
+            {
+                throw new QueryException('File exists: ' . $file_name);
+            }
+            if (!unlink($file_name))
+            {
+                throw new QueryException('Can`t delete: ' . $file_name);
+            }
+        }
+        $dir=dirname($file_name);
+        if (!is_writable($dir))
+        {
+            throw new QueryException('Can`t writable dir: ' . $dir);
+        }
+        if ($format)
+        {
+            if (!in_array($format,$this->support_format))
+            {
+                throw new QueryException('Unsupport format: ' . $format);
+            }
+            $this->format=$format;
+        }
+        $this->file_name=$file_name;
+    }
+
+    /**
+     * @return int
+     */
+    public function size()
+    {
+        return sizeof($this->file_name);
+    }
+
+    /**
+     * @return string
+     */
+    public function fetchFile()
+    {
+        return $this->file_name;
+    }
+
+    /**
+     * @return string
+     */
+    public function fetchFormat()
+    {
+        return $this->format;
+    }
+
+}

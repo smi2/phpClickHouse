@@ -13,7 +13,7 @@ $db = new ClickHouseDB\Client($config);
 
 //$db->verbose();
 $db->settings()->readonly(false);
-$db->settings()->set('output_format_write_statistics',true); // clickhouse version > 54011
+
 
 $result = $db->select(
     'SELECT 12 as {key} WHERE {key} = :value',

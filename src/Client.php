@@ -206,12 +206,13 @@ class Client
     /**
      * @param $sql
      * @param array $bindings
-     * @param null $whereInFile
+     * @param WhereInFile $whereInFile
+     * @param WriteToFile $writeToFile
      * @return Statement
      */
-    public function select($sql, $bindings = [], $whereInFile = null)
+    public function select($sql, $bindings = [], $whereInFile = null, $writeToFile=null)
     {
-        return $this->transport()->select($sql, $bindings, $whereInFile);
+        return $this->transport()->select($sql, $bindings, $whereInFile,$writeToFile);
     }
 
     /**
@@ -225,12 +226,13 @@ class Client
     /**
      * @param $sql
      * @param array $bindings
-     * @param null $whereInFile
+     * @param WhereInFile $whereInFile
+     * @param WriteToFile $writeToFile
      * @return Statement
      */
-    public function selectAsync($sql, $bindings = [], $whereInFile = null)
+    public function selectAsync($sql, $bindings = [], $whereInFile = null,$writeToFile=null)
     {
-        return $this->transport()->selectAsync($sql, $bindings, $whereInFile);
+        return $this->transport()->selectAsync($sql, $bindings, $whereInFile,$writeToFile);
     }
 
     /**

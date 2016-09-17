@@ -1,5 +1,9 @@
 <?php
 
+date_default_timezone_set('Europe/Moscow');
+error_reporting( E_ALL );
+ini_set('display_errors',1);
+
 /**
  * @param $file_name
  * @param int $from_id
