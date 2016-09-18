@@ -251,6 +251,11 @@ class Client
         return $this->select('show databases')->rows();
     }
 
+    public function showCreateTable($table)
+    {
+        return ($this->select('SHOW CREATE TABLE '.$table)->fetchOne('statement'));
+    }
+
     /**
      * @return array
      */

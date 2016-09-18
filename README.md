@@ -57,7 +57,10 @@ $db->write('
     ENGINE = SummingMergeTree(event_date, (site_id, site_key, event_time, event_date), 8192)
 ';
 ```
-
+Show create table:
+```php
+echo $db->showCreateTable('summing_url_views');
+```
 Insert data:
 ```php
 $stat = $db->insert('summing_url_views', 
@@ -423,5 +426,20 @@ MIT
 
 ChangeLog
 ---
+* 2016-09-20 Release 0.16.9 
+
+- Support cluster: new class Cluster and ClusterQuery
+- output_format_write_statistics
+- WriteToFile in select,selectAsync
+- Degeneration for Bindings & Conditions
+- $db->select(new Query("Select..."));
+- remove findActiveHostAndCheckCluster , clusterHosts , checkServerReplicas
+- Add cleanQueryDegeneration(),addQueryDegeneration()
+- float in CurlerRequest->timeOut(2.5) = 2500 ms
+- tablesSize() add  `sizebytes`
+
+
+
+
 * 2016-08-11 Release 0.2.0 : ( exception on error write ) 
 * 2016-08-06 Release 0.1.0 

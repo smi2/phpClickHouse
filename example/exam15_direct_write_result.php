@@ -29,6 +29,8 @@ $db->write('
 
 echo "Table EXISTS: " . json_encode($db->showTables()) . "\n";
 
+echo $db->showCreateTable('summing_url_views');
+exit;
 // --------------------------------  CREATE csv file ----------------------------------------------------------------
 
 
