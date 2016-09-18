@@ -426,7 +426,7 @@ MIT
 
 ChangeLog
 ---
-* 2016-09-20 Release 0.16.9 
+###  2016-09-20 Release 0.16.9 
 
 - Support cluster: new class Cluster and ClusterQuery
 - output_format_write_statistics
@@ -441,5 +441,8 @@ ChangeLog
 
 
 
-* 2016-08-11 Release 0.2.0 : ( exception on error write ) 
-* 2016-08-06 Release 0.1.0 
+### 2016-08-11 Release 0.2.0  
+- exception on error write 
+
+### 2016-08-06 Release 0.1.0 
+- init
