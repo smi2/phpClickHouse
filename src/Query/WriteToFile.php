@@ -99,7 +99,7 @@ class WriteToFile
      */
     public function size()
     {
-        return sizeof($this->file_name);
+        return filesize($this->file_name);
     }
 
     /**

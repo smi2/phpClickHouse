@@ -20,22 +20,5 @@ include_once __DIR__ . '/../../_clickhouse_config_product.php';
 // random() select from active
 // if develop server one IP or host - no check
 
-
-$start_time = microtime(true);
-
-$db = new ClickHouseDB\Client($config);
-
-
-$change_host = true;
-$time_out_second = 1;
-
-
-list($resultGoodHost, $resultBadHost, $selectHost) = $db->findActiveHostAndCheckCluster($time_out_second, $change_host);
-
-
-echo "GoodHost:" . json_encode(array_keys($resultGoodHost)) . "\n";
-echo "Bad Host:" . json_encode(array_keys($resultBadHost)) . "\n";
-echo "SelectHost:" . $selectHost . "\n";
-
-print_r($resultBadHost);
-echo "\n\nUseTime:" . round(microtime(true) - $start_time, 3) . "\n";
+///
+// see clusert_***.php examples

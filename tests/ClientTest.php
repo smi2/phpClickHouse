@@ -169,6 +169,59 @@ class ClientTest extends TestCase
         }
     }
 
+
+    public function testWriteToFileSelect()
+    {
+        $file=$this->tmp_path.'__chdrv_testWriteToFileSelect.csv';
+
+
+        $file_data_names = [
+            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data',
+        ];
+
+        foreach ($file_data_names as $file_name) {
+            $this->create_fake_csv_file($file_name, 1);
+        }
+
+        $this->create_table_summing_url_views();
+
+        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+            'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
+        ]);
+        $this->db->ping();
+
+        $write=new ClickHouseDB\WriteToFile($file);
+        $this->db->select('select * from summing_url_views limit 4',[],null,$write);
+        $this->assertEquals(208,$write->size());
+
+        $write=new ClickHouseDB\WriteToFile($file,true,ClickHouseDB\WriteToFile::FORMAT_TabSeparated);
+        $this->db->select('select * from summing_url_views limit 4',[],null,$write);
+        $this->assertEquals(184,$write->size());
+
+
+        $write=new ClickHouseDB\WriteToFile($file,true,ClickHouseDB\WriteToFile::FORMAT_TabSeparatedWithNames);
+        $this->db->select('select * from summing_url_views limit 4',[],null,$write);
+        $this->assertEquals(239,$write->size());
+
+        unlink($file);
+        // --- drop
+        foreach ($file_data_names as $file_name) {
+            unlink($file_name);
+        }
+
+    }
+    public function testSqlDisableConditions()
+    {
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', [])->sql());
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
+        $this->db->cleanQueryDegeneration();
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
+        $this->setUp();
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
+
+
+    }
+
     /**
      * @expectedException \ClickHouseDB\DatabaseException
      */

@@ -264,7 +264,16 @@ $result = $db->select($sql, [], $whereIn);
 
 ### Simple sql conditions & template
 
+conditions is depricated, if need use: 
+`$db->enableQueryConditions();`
+
+
+Example with QueryConditions:
+
 ```php
+
+$db->enableQueryConditions();
+
 $input_params = [
   'select_date' => ['2000-10-10', '2000-10-11', '2000-10-12'],
   'limit' => 5,
@@ -316,6 +325,9 @@ $state1 = $db->selectAsync(
 
 // SELECT 1 as ping WHERE ping = "1"
 ```
+
+
+Example custom query Degeneration in `exam16_custom_degeneration.php`
 
 ### Settings
 
