@@ -435,8 +435,9 @@ ChangeLog
 - $db->select(new Query("Select..."));
 - remove findActiveHostAndCheckCluster , clusterHosts , checkServerReplicas
 - Add cleanQueryDegeneration(),addQueryDegeneration()
+- Need $db->enableQueryConditions(); for use Conditions ; default Conditions - disabled;
 - float in CurlerRequest->timeOut(2.5) = 2500 ms
-- tablesSize() add  `sizebytes`
+- tablesSize() - add `sizebytes`
 
 
 

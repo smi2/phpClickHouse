@@ -81,8 +81,6 @@ class Client
 
 
         $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Bindings());
-        $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Conditions());
-
 
         // apply settings to transport class
         $this->settings()->database('default');
@@ -92,6 +90,30 @@ class Client
 
     }
 
+    /**
+     * @return bool
+     */
+    public function cleanQueryDegeneration()
+    {
+        return $this->_transport->cleanQueryDegeneration();
+    }
+
+    /**
+     * @param Query\Degeneration $degeneration
+     * @return bool
+     */
+    public function addQueryDegeneration(Query\Degeneration $degeneration)
+    {
+        return $this->_transport->addQueryDegeneration($degeneration);
+    }
+
+    /**
+     * @return bool
+     */
+    public function enableQueryConditions()
+    {
+        return $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Conditions());
+    }
     /**
      * Set connection host
      * @param $host

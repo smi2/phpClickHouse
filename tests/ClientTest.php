@@ -547,6 +547,8 @@ class ClientTest extends TestCase
             $this->db->selectAsync('SELECT * FROM {from_table} WHERE event_date IN (:select_date)', $input_params)->sql()
         );
 
+        $this->db->enableQueryConditions();
+
         $this->assertEquals(
             'SELECT * FROM ZZZ LIMIT 5 FORMAT JSON',
             $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', $input_params)->sql()

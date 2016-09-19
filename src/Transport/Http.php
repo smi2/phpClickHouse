@@ -303,10 +303,12 @@ class Http
     public function cleanQueryDegeneration()
     {
         $this->_query_degenerations=[];
+        return true;
     }
     public function addQueryDegeneration(Query\Degeneration $degeneration)
     {
         $this->_query_degenerations[]=$degeneration;
+        return true;
     }
 
     /**
