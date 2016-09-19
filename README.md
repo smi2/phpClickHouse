@@ -23,6 +23,9 @@ php ClickHouse wrapper
 composer require smi2/phpclickhouse
 ```
 
+
+packagist : https://packagist.org/packages/smi2/phpclickhouse
+
 ## Start
 
 Connect and select database:
