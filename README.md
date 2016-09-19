@@ -421,13 +421,6 @@ In phpunit.xml change constants:
     <const name="phpunit_clickhouse_tmp_path" value="/tmp/" />
 </php>
 ```
-
-
-
-### Todos
-
- - Drop partitions in cluster
- - HHVM (VM 3.9.1): CURLOPT_SAFE_UPLOAD : `hhvm example/exam7_where_in.php`
  
  
 License
