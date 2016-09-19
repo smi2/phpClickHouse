@@ -1,7 +1,7 @@
 {
   "name": "smi2/phpclickhouse",
   "type": "library",
-  "version" : "0.16.09",
+  "version" : "0.16.9",
   "description": "php ClickHouse client library",
   "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client"],
   "homepage": "https://github.com/smi2/phpClickHouse",
