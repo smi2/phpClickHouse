@@ -440,6 +440,7 @@ ChangeLog
 ---
 ###  2016-09-20 Release 0.16.9 
 
+- Version/Release names: [ zero dot year dot month]
 - Support cluster: new class Cluster and ClusterQuery
 - output_format_write_statistics
 - WriteToFile in select,selectAsync
