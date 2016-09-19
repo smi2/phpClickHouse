@@ -411,7 +411,7 @@ var_dump(
 ### Phpunit Test
 
 
-In phpunit.xml change const:
+In phpunit.xml change constants:
 ```xml
 <php>
     <const name="phpunit_clickhouse_host" value="192.168.1.20" />
@@ -427,7 +427,6 @@ In phpunit.xml change const:
 ### Todos
 
  - Drop partitions in cluster
- - Fix timezone settings for HHVM, or where not set `date.timezone setting` 
  - HHVM (VM 3.9.1): CURLOPT_SAFE_UPLOAD : `hhvm example/exam7_where_in.php`
  
  
