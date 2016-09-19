@@ -441,7 +441,7 @@ ChangeLog
 
 - Version/Release names: [ zero dot year dot month]
 - Support cluster: new class Cluster and ClusterQuery
-- output_format_write_statistics, for clickhouse version > v1.1.54019-stable
+- output_format_write_statistics, for clickhouse version > v1.1.54019-stable 
 - WriteToFile in select,selectAsync
 - Degeneration for Bindings & Conditions
 - $db->select(new Query("Select..."));
