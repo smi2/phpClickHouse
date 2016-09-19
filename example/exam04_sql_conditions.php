@@ -17,6 +17,10 @@ $input_params = [
     'from_table'  => 'table'
 ];
 
+
+$db->enableQueryConditions();
+
+
 $select = '
 SELECT * FROM {from_table}
 WHERE
