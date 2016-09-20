@@ -35,7 +35,7 @@ class Conditions implements \ClickHouseDB\Query\Degeneration
         $sql = preg_replace_callback('#\{if\s(.+?)}(.+?)\{else}(.+?)\{/if}#sui', function ($matches) use ($markers) {
             list($condition, $variable, $content_true, $content_false) = $matches;
 
-            return (isset($markers[$variable]) && ( $markers[$variable] || $markers[$variable]===0 ) )
+            return (isset($markers[$variable]) && ( $markers[$variable] || is_numeric($markers[$variable]) ) )
                 ? $content_true
                 : $content_false;
         }, $sql);
@@ -44,7 +44,7 @@ class Conditions implements \ClickHouseDB\Query\Degeneration
         $sql = preg_replace_callback('#\{if\s(.+?)}(.+?)\{/if}#sui', function ($matches) use ($markers) {
             list($condition, $variable, $content) = $matches;
 
-            if (isset($markers[$variable]) && ( $markers[$variable] || $markers[$variable]===0 )) {
+            if (isset($markers[$variable]) && ( $markers[$variable] || is_numeric($markers[$variable]) )) {
                 return $content;
             }
         }, $sql);
