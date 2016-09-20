@@ -44,7 +44,7 @@ class Conditions implements \ClickHouseDB\Query\Degeneration
         $sql = preg_replace_callback('#\{if\s(.+?)}(.+?)\{/if}#sui', function ($matches) use ($markers) {
             list($condition, $variable, $content) = $matches;
 
-            if (isset($markers[$variable]) && $markers[$variable]) {
+            if (isset($markers[$variable]) && ( $markers[$variable] || $markers[$variable]===0 )) {
                 return $content;
             }
         }, $sql);
