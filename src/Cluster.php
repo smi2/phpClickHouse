@@ -416,22 +416,18 @@ class Cluster
         foreach ($undo_ip as $node=>$tmp)
         {
             foreach ($sql_down as $s_u) {
-                    if ($this->client($node)->write($s_u)->isError()) {
+
+                if ($showDebug)
+                {
+                    echo "!UNDO!\nclient($node)->write(".substr($s_u,0,45).")....\n";
+                }
+
+
+                if ($this->client($node)->write($s_u)->isError()) {
                 }
             }
         }
         return false;
 
     }
-    /**
-     * @param $sql
-     * @param array $bindings
-     * @param bool $exception
-     * @return Statement
-     */
-    public function writeCluster($cluster,$sql, $bindings = [], $exception = true)
-    {
-        return $this->transport()->write($sql, $bindings, $exception);
-    }
-
 }
