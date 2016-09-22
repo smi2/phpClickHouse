@@ -348,7 +348,7 @@ class Cluster
         return $this->error;
     }
 
-    public function sendMigration(Cluster\Migration $migration)
+    public function sendMigration(Cluster\Migration $migration,$showDebug=false)
     {
         $node_hosts=$this->getClusterNodes($migration->getClusterName());
 
@@ -359,12 +359,17 @@ class Cluster
         foreach ($node_hosts as $node) {
             try {
                 $this->client($node)->ping();
+
+                if ($showDebug)
+                {
+                    echo "client($node)->ping() OK!\n";
+                }
+
             } catch (QueryException $E) {
                 $this->error = "Can`t connect or ping ip/node : " . $node;
                 return false;
             }
         }
-
 
 
         // Выполняем запрос на каждый client(IP) , если хоть одни не отработал то делаем на каждый Down
@@ -374,6 +379,12 @@ class Cluster
         {
             foreach ($sql_up as $s_u) {
                 try {
+
+                    if ($showDebug)
+                    {
+                        echo "client($node)->write(".substr($s_u,0,45).")....\n";
+                    }
+
                     if ($this->client($node)->write($s_u)->isError()) {
                         $need_undo = true;
                         $this->error = "Host $node result error";

@@ -51,7 +51,7 @@ $mclq->addSqlDowngrade('DROP TABLE IF EXISTS shara.adpreview_body_views_sharded'
 $mclq->addSqlDowngrade('DROP DATABASE IF EXISTS shara');
 
 
-if (!$cl->sendMigration($mclq))
+if (!$cl->sendMigration($mclq,true))
 {
     throw new Exception('sendMigration is bad , error='.$cl->getError());
 }
