@@ -45,6 +45,15 @@ git clone https://github.com/smi2/phpClickHouse.git
 
 Если вы ярый сторонник PSR-[4|7], просьба не читать далее, используйте готовые драйверы CH на Guzzle.
 
+
+Или git submodule
+
+```
+git submodule add https://github.com/smi2/phpClickHouse.git
+git submodule init
+git submodule update --init --recursive
+```
+
 ## Приступаем к работе 
 
 
