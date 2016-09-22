@@ -48,13 +48,46 @@ class Migration extends Query
 {
     private $_sql_up=[];
     private $_sql_down=[];
+    private $_split_chars=false;
+
+    private function autoSplit($sql)
+    {
+        if ($this->_split_chars)
+        {
+            return explode($this->_split_chars,$sql);
+        }
+        return $sql;
+    }
+
+    public function setAutoSplitQuerty($split_chars)
+    {
+        $this->_split_chars=$split_chars;
+    }
     public function addSqlUpdate($sql)
     {
-        $this->_sql_up[]=$sql;
+        $sql=$this->autoSplit($sql);
+
+        if (is_array($sql))
+        {
+          foreach ($sql as $q) $this->_sql_up[]=trim($q);
+        }
+        else
+        {
+            $this->_sql_up[]=$sql;
+        }
+
     }
     public function addSqlDowngrade($sql)
     {
-        $this->_sql_down[]=$sql;
+        $sql=$this->autoSplit($sql);
+        if (is_array($sql))
+        {
+            foreach ($sql as $q) $this->_sql_down[]=trim($q);
+        }
+        else
+        {
+            $this->_sql_down[]=$sql;
+        }
     }
 
     /**
