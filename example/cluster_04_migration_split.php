@@ -21,7 +21,7 @@ echo "> $cluster_name , count shard   = ".$cl->getClusterCountShard($cluster_nam
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 $mclq=new ClickHouseDB\Cluster\Migration($cluster_name);
-$mclq->setAutoSplitQuerty(';;');
+$mclq->setAutoSplitQuery(';;');
 
 
 
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS shara.adpreview_body_views_sharded (
 ) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{sharovara_replica}/shara/adpreview_body_views_sharded', '{replica}', event_date, (event_date, event_time, body_id, site_id), 8192)
 ;;
 CREATE TABLE IF NOT EXISTS
-shara.adpreview_body_views AS shara.adpreview_body_views_sharded 
+shara.adpreview_body_views AS shara.adpreview_body_views_sharded
 ENGINE = Distributed(sharovara, shara, adpreview_body_views_sharded , rand())
 ");
 

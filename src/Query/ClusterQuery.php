@@ -59,7 +59,7 @@ class Migration extends Query
         return $sql;
     }
 
-    public function setAutoSplitQuerty($split_chars)
+    public function setAutoSplitQuery($split_chars)
     {
         $this->_split_chars=$split_chars;
     }
@@ -69,7 +69,12 @@ class Migration extends Query
 
         if (is_array($sql))
         {
-          foreach ($sql as $q) $this->_sql_up[]=trim($q);
+          foreach ($sql as $q)
+          {
+              $q=trim($q);
+              if ($q)
+              $this->_sql_up[]=$q;
+          }
         }
         else
         {

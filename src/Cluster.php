@@ -347,7 +347,11 @@ class Cluster
         }
         return $this->error;
     }
-
+    public function showDebug($message,$print=false)
+    {
+        $message=str_ireplace(["\n","\r","\t"],'',$message);
+        if ($print) echo date('H:i:s')." ".$message."\n";
+    }
     public function sendMigration(Cluster\Migration $migration,$showDebug=false)
     {
         $node_hosts=$this->getClusterNodes($migration->getClusterName());
@@ -359,13 +363,11 @@ class Cluster
         foreach ($node_hosts as $node) {
             try {
                 $this->client($node)->ping();
-
-                if ($showDebug)
-                {
-                    echo "client($node)->ping() OK!\n";
-                }
+                $this->showDebug("client($node)->ping() OK!",$showDebug);
 
             } catch (QueryException $E) {
+
+                $this->showDebug("Can`t connect or ping ip/node : " . $node,$showDebug);
                 $this->error = "Can`t connect or ping ip/node : " . $node;
                 return false;
             }
@@ -379,18 +381,20 @@ class Cluster
         {
             foreach ($sql_up as $s_u) {
                 try {
-
-                    if ($showDebug)
-                    {
-                        echo "client($node)->write(".substr($s_u,0,45).")....\n";
-                    }
+                    $this->showDebug("client($node)->write(".substr($s_u,0,45).")....",$showDebug);
 
                     if ($this->client($node)->write($s_u)->isError()) {
                         $need_undo = true;
                         $this->error = "Host $node result error";
+                        $this->showDebug("client($node)->Host $node result error",$showDebug);
+                    }
+                    else
+                    {
+                        // OK
                     }
                 } catch (QueryException $E) {
                     $need_undo = true;
+                    $this->showDebug("client($node)->Host $node result error:".$E->getMessage(),$showDebug);
                     $this->error = "Host $node result error : " . $E->getMessage();
                 }
                 if ($need_undo)
@@ -417,13 +421,9 @@ class Cluster
         {
             foreach ($sql_down as $s_u) {
 
-                if ($showDebug)
-                {
-                    echo "!UNDO!\nclient($node)->write(".substr($s_u,0,45).")....\n";
-                }
-
-
+                $this->showDebug("undo_client($node)->write(".substr($s_u,0,45).")...",$showDebug);
                 if ($this->client($node)->write($s_u)->isError()) {
+                    $this->showDebug("undo_client($node)->error(".substr($s_u,0,45).")...",$showDebug);
                 }
             }
         }
