@@ -417,7 +417,8 @@ class Cluster
 
         // if Undo
         // тут не очень точный метод отката
-        foreach ($undo_ip as $node=>$tmp)
+//        foreach ($undo_ip as $node=>$tmp)
+        foreach ($node_hosts as $node)
         {
             foreach ($sql_down as $s_u) {
 
