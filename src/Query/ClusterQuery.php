@@ -59,10 +59,20 @@ class Migration extends Query
         return $sql;
     }
 
+    /**
+     * @param $split_chars
+     * @return $this
+     */
     public function setAutoSplitQuery($split_chars)
     {
         $this->_split_chars=$split_chars;
+        return $this;
     }
+
+    /**
+     * @param $sql
+     * @return $this
+     */
     public function addSqlUpdate($sql)
     {
         $sql=$this->autoSplit($sql);
@@ -80,8 +90,13 @@ class Migration extends Query
         {
             $this->_sql_up[]=$sql;
         }
-
+        return $this;
     }
+
+    /**
+     * @param $sql
+     * @return $this
+     */
     public function addSqlDowngrade($sql)
     {
         $sql=$this->autoSplit($sql);
@@ -93,6 +108,7 @@ class Migration extends Query
         {
             $this->_sql_down[]=$sql;
         }
+        return $this;
     }
 
     /**
