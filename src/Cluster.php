@@ -426,10 +426,13 @@ class Cluster
         foreach ($node_hosts as $node)
         {
             foreach ($sql_down as $s_u) {
-
                 $this->showDebug("undo_client($node)->write(".substr($s_u,0,45).")...",$showDebug);
-                if ($this->client($node)->write($s_u)->isError()) {
-                    $this->showDebug("undo_client($node)->error(".substr($s_u,0,45).")...",$showDebug);
+
+                try{
+                    $st=$this->client($node)->write($s_u);
+                }
+                catch (Exception $E) {
+                    $this->showDebug("!!!!!!  error(".substr($s_u,0,45).")...".$E->getMessage(),$showDebug);
                 }
             }
         }
