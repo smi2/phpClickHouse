@@ -12,6 +12,10 @@ class Query
      * @var string
      */
     private $cluster_name;
+    /**
+     * @var int
+     */
+    private $timeout=0;
 
     public function __construct($cluster_name)
     {
@@ -34,6 +38,24 @@ class Query
     {
 
     }
+    /**
+     * @param $seconds float
+     * @return $this
+     */
+    public function setTimeout($seconds)
+    {
+        $this->timeout=$seconds;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getTimeout()
+    {
+        return floatval($this->timeout);
+    }
+
     public function getNodesProcessed()
     {
 
