@@ -362,6 +362,11 @@ class Cluster
         // Пропингуем все хосты
         foreach ($node_hosts as $node) {
             try {
+                if ($migration->getTimeout())
+                {
+
+                    $this->client($node)->settings()->max_execution_time($migration->getTimeout());
+                }
                 $this->client($node)->ping();
                 $this->showDebug("client($node)->ping() OK!",$showDebug);
 
