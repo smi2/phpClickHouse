@@ -70,7 +70,7 @@ class Migration extends Query
 {
     private $_sql_up=[];
     private $_sql_down=[];
-    private $_split_chars=false;
+    private $_split_chars=';;';
 
     private function autoSplit($sql)
     {
