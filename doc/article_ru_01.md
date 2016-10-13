@@ -24,7 +24,99 @@
 Драйвер протестированн на php 5.6 и 7 , hhvm 3.9
 
 
-## Установка 
+
+
+Допустим у нас есть несколько сайтов
+1 smi2.ru
+2 smi2.ua
+3 smi2.kz
+
+
+на каждом из них производятся клики и показы статей, article_id
+
+Каждая aricle_id
+- имеет источник ria.ru,Известия,RenTv,EA daily,Газета.ру,Tass...
+- заголовок
+
+Список сайтов и список статей хранится в базе MySQL, которое являются для CH словарями.
+
+
+
+Получается у нас несколько событий которые мы регистрируем :
+Это показ - VIEWS и клик CLICKS, также по каждому событию мы получаем несколько атрибутов:
+ip адрес пользовтеля,
+Имя провайдера - isp
+Имя браузера - browser_name
+Уникальный ID пользователя - user_uuid
+Допустим мы хотим, также используя  внутренный алгоритм, фиксировать: Плохой или хороший клик, это значение good или bad в колонке click_status
+
+Создадим дополнительное поле uuid_sip, которое содержит числовой hash от значения поля user_uuid,
+т/е при вставке CH автоматически вычислит значение поля uuid_sip используя ф-цию sipHash64 от значения поля user_uuid
+Также чтобы не писать каждый раз поле event_date, его значение можно вычислять из поля event_time
+
+Для записи в мы создадим базу данных в CH , `articles` и в нутри нее  таблицу : `events`, со следующей стуктурой :
+
+
+
+```
+event_date	Date	DEFAULT	toDate(event_time)
+event_time	DateTime
+event_type	Enum8('VIEWS' = 1, 'CLICKS' = 2)
+aricle_id	Int32
+ip			String
+isp			String
+browser_name	String
+user_uuid	String
+click_status	String
+uuid_sip		UInt64	DEFAULT	sipHash64(user_uuid)
+```
+
+Подключаемся к CH, через нашу прослойку:
+```php
+$db = new ClickHouseDB\Client($config);
+$db->write('
+    CREATE TABLE IF NOT EXISTS summing_url_views (
+        event_date Date DEFAULT toDate(event_time),
+        event_time DateTime,
+        site_id Int32,
+        site_key String,
+        views Int32,
+        v_00 Int32,
+        v_55 Int32
+    )
+    ENGINE = SummingMergeTree(event_date, (site_id, site_key, event_time, event_date), 8192)
+');
+```
+
+
+
+
+------
+Каждое событие, мы будем писать в CSV файл средствами PHP
+
+Note1 : event_time - это unixtime, в php ф-ция time(), нужно помнить в каком часовом поясе мы пишем это значение.
+
+
+
+
+
+
+
+----
+----
+
+
+----
+
+
+
+----
+
+
+
+## Установка драйвера
+
+
 
 
 ```
