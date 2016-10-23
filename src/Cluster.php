@@ -42,7 +42,7 @@ class Cluster
     /**
      * @var int
      */
-    private $scanTimeOut = 2;
+    private $scanTimeOut=10;
 
     /**
      * @var array
@@ -306,6 +306,31 @@ class Cluster
         return $this->clients[$node];
     }
 
+    /**
+     * @return Client
+     */
+    public function clientLike($cluster,$ip_addr_like)
+    {
+        $nodes=$this->getClusterNodes($cluster);
+        $list_ips_need=explode(';',$ip_addr_like);
+        $find=false;
+        foreach($list_ips_need as $like)
+        {
+            foreach ($nodes as $node)
+            {
+                if (stripos($node,$like)!==false)
+                {
+                    $find=$node;
+                }
+                if ($find) break;
+            }
+            if ($find) break;
+        }
+        if (!$find){
+            $find=$nodes[0];
+        }
+        return $this->client($find);
+    }
     /**
      * @return Client
      */

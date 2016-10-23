@@ -131,6 +131,25 @@ class Client
     }
 
     /**
+     * @param $timeout
+     * @return $this
+     */
+    public function setTimeout($timeout)
+    {
+       return $this->settings()->max_execution_time($timeout);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTimeout()
+    {
+        return $this->settings()->getTimeOut();
+    }
+
+
+
+    /**
      * @return Http
      */
     public function transport()
