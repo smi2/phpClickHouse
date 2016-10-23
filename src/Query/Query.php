@@ -30,6 +30,10 @@ class Query
      */
     public function __construct($sql,$degenerations=[])
     {
+        if (!trim($sql))
+        {
+            throw new QueryException('Empty Query');
+        }
         $this->sql = $sql;
         $this->degenerations=$degenerations;
     }

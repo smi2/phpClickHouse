@@ -613,6 +613,14 @@ class ClientTest extends TestCase
         );
     }
 
+
+    /**
+     * @expectedException \ClickHouseDB\QueryException
+     */
+    public function testWriteEmpty()
+    {
+        $this->db->write('');
+    }
     /**
      *
      */
