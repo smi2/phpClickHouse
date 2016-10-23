@@ -433,6 +433,10 @@ MIT
 
 ChangeLog
 ---
+###  2016-10-23 Release 0.16.10
+- cluster->clientLike($cluster,$ip_addr_like)
+- Delete all migration code from driver, move to https://github.com/smi2/phpMigrationsClickhouse 
+ 
 ###  2016-09-20 Release 0.16.09 
 
 - Version/Release names: [ zero dot year dot month]

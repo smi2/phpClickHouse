@@ -18,7 +18,6 @@ include_once __DIR__ . '/src/Query/Degenerations/Conditions.php';
 include_once __DIR__ . '/src/Query/WriteToFile.php';
 include_once __DIR__ . '/src/Query/WhereInFile.php';
 include_once __DIR__ . '/src/Query/Query.php';
-include_once __DIR__ . '/src/Query/ClusterQuery.php';
 // Transport
 include_once __DIR__ . '/src/Transport/Http.php';
 include_once __DIR__ . '/src/Transport/CurlerRolling.php';
