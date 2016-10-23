@@ -5,7 +5,8 @@ include_once __DIR__ . '/lib_example.php';
 // load production config
 $config = include_once __DIR__ . '/../../_clickhouse_config_product.php';
 
-
+die("Перенесено в отдельный проект https://github.com/smi2/phpMigrationsClickhouse");
+/*
 $cl = new ClickHouseDB\Cluster($config);
 
 $cl->setScanTimeOut(2.5); // 2500 ms
@@ -78,4 +79,4 @@ if (!$cl->sendMigration($mclq,true))
 
 echo "\n----\nEND\n";
 // ----------------------------------------------------------------------
-
+*/

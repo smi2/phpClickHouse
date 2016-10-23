@@ -8,13 +8,13 @@ class Cluster
     /**
      * @var array
      */
-    private $nodes=[];
+    private $nodes = [];
 
 
     /**
      * @var Client[]
      */
-    private $clients=[];
+    private $clients = [];
 
     /**
      * @var Client
@@ -24,16 +24,16 @@ class Cluster
     /**
      * @var array
      */
-    private $badNodes=[];
+    private $badNodes = [];
 
     /**
      * @var string
      */
-    private $error="";
+    private $error = "";
     /**
      * @var array
      */
-    private $resultScan=[];
+    private $resultScan = [];
     /**
      * @var bool
      */
@@ -42,21 +42,21 @@ class Cluster
     /**
      * @var int
      */
-    private $scanTimeOut=2;
+    private $scanTimeOut = 2;
 
     /**
      * @var array
      */
-    private $tables=[];
+    private $tables = [];
 
     /**
      * @var array
      */
-    private $hostsnames=[];
+    private $hostsnames = [];
     /**
      * @var bool
      */
-    private $isScaned=false;
+    private $isScaned = false;
 
     /**
      * @var bool
@@ -71,8 +71,8 @@ class Cluster
      */
     public function __construct($connect_params, $settings = [])
     {
-        $this->defaultClient=new Client($connect_params,$settings);
-        $this->defaultHostName=$this->defaultClient->getConnectHost();
+        $this->defaultClient = new Client($connect_params, $settings);
+        $this->defaultHostName = $this->defaultClient->getConnectHost();
         $this->setNodes(gethostbynamel($this->defaultHostName));
     }
 
@@ -83,11 +83,18 @@ class Cluster
     {
         return $this->defaultClient;
     }
+
+    /**
+     * @param $scanTimeOut
+     */
     public function setScanTimeOut($scanTimeOut)
     {
         $this->scanTimeOut = $scanTimeOut;
     }
 
+    /**
+     * @param $nodes
+     */
     public function setNodes($nodes)
     {
         $this->nodes = $nodes;
@@ -111,44 +118,68 @@ class Cluster
 
 
     /**
+     * Connect all nodes and scan
+     *
      * @return $this
      */
     public function connect()
     {
-        if (!$this->isScaned)
-        {
+        if (!$this->isScaned) {
             $this->rescan();
         }
         return $this;
     }
 
     /**
+     * Проверяете состояние кластера, запрос взят из документации к CH
+     * total_replicas<2 - не подходит для без репликационных кластеров
+     *
+     *
      * @param $replicas
      * @return bool
      */
     private function isReplicasWork($replicas)
     {
-        $ok=true;
-        if (!is_array($replicas))
-        {
+        $ok = true;
+        if (!is_array($replicas)) {
             // @todo нет массива ошибка, т/к мы работем с репликами?
             // @todo Как быть есть в кластере НЕТ реплик ?
             return false;
         }
         foreach ($replicas as $replica) {
-            if ($replica['is_readonly']) {$ok=false;$this->error[]='is_readonly : '.json_encode($replica);}
-            if ($replica['is_session_expired']) {$ok=false;$this->error[]='is_session_expired : '.json_encode($replica);}
-            if ($replica['future_parts']>20) {$ok=false;$this->error[]='future_parts : '.json_encode($replica);}
-            if ($replica['parts_to_check']>10) {$ok=false;$this->error[]='parts_to_check : '.json_encode($replica);}
+            if ($replica['is_readonly']) {
+                $ok = false;
+                $this->error[] = 'is_readonly : ' . json_encode($replica);
+            }
+            if ($replica['is_session_expired']) {
+                $ok = false;
+                $this->error[] = 'is_session_expired : ' . json_encode($replica);
+            }
+            if ($replica['future_parts'] > 20) {
+                $ok = false;
+                $this->error[] = 'future_parts : ' . json_encode($replica);
+            }
+            if ($replica['parts_to_check'] > 10) {
+                $ok = false;
+                $this->error[] = 'parts_to_check : ' . json_encode($replica);
+            }
 
             // @todo : rewrite total_replicas=1 если кластер без реплики , нужно проверять какой класте и сколько в нем реплик
 //            if ($replica['total_replicas']<2) {$ok=false;$this->error[]='total_replicas : '.json_encode($replica);}
 
 
-
-            if ($replica['active_replicas'] < $replica['total_replicas']) {$ok=false;$this->error[]='active_replicas : '.json_encode($replica);}
-            if ($replica['queue_size']>20) {$ok=false;$this->error[]='queue_size : '.json_encode($replica);}
-            if (($replica['log_max_index'] - $replica['log_pointer'])>10) {$ok=false;$this->error[]='log_max_index : '.json_encode($replica);}
+            if ($replica['active_replicas'] < $replica['total_replicas']) {
+                $ok = false;
+                $this->error[] = 'active_replicas : ' . json_encode($replica);
+            }
+            if ($replica['queue_size'] > 20) {
+                $ok = false;
+                $this->error[] = 'queue_size : ' . json_encode($replica);
+            }
+            if (($replica['log_max_index'] - $replica['log_pointer']) > 10) {
+                $ok = false;
+                $this->error[] = 'log_max_index : ' . json_encode($replica);
+            }
             if (!$ok) break;
         }
         return $ok;
@@ -159,23 +190,22 @@ class Cluster
      */
     public function rescan()
     {
-        $this->error=["R"];
-       /*
-        * 1) Получаем список IP
-        * 2) К каждому подключаемся по IP, через activeClient подменяя host на ip
-        * 3) Достаем информацию system.clusters + system.replicas c каждой машины , overwrite { DnsCache + timeOuts }
-        * 4) Определяем нужные машины для кластера/реплики
-        * 5) .... ?
-        */
-        $statementsReplicas=[];
-        $statementsClusters=[];
-        $result=[];
+        $this->error = ["R"];
+        /*
+         * 1) Получаем список IP
+         * 2) К каждому подключаемся по IP, через activeClient подменяя host на ip
+         * 3) Достаем информацию system.clusters + system.replicas c каждой машины , overwrite { DnsCache + timeOuts }
+         * 4) Определяем нужные машины для кластера/реплики
+         * 5) .... ?
+         */
+        $statementsReplicas = [];
+        $statementsClusters = [];
+        $result = [];
 
-        $badNodes=[];
-        $replicasIsOk=true;
+        $badNodes = [];
+        $replicasIsOk = true;
 
-        foreach ($this->nodes as $node)
-        {
+        foreach ($this->nodes as $node) {
             $this->defaultClient()->setHost($node);
             $statementsReplicas[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.replicas');
             $statementsClusters[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.clusters');
@@ -186,77 +216,69 @@ class Cluster
         $this->defaultClient()->executeAsync();
 
 
-        foreach ($this->nodes as $node)
-        {
-            try
-            {
+        foreach ($this->nodes as $node) {
+            try {
                 $r = $statementsReplicas[$node]->rows();
-                foreach ($r as $row)
-                {
-                    $tables[$row['database']][$row['table']][$node]=$row['replica_path'];
+                foreach ($r as $row) {
+                    $tables[$row['database']][$row['table']][$node] = $row['replica_path'];
                 }
-                $result['replicas'][$node] =$r;
-            }
-            catch (\Exception $E)
-            {
-                $result['replicas'][$node]= false;
-                $badNodes[$node]=$E->getMessage();
-                $this->error[]='statementsReplicas:'.$E->getMessage();
+                $result['replicas'][$node] = $r;
+            } catch (\Exception $E) {
+                $result['replicas'][$node] = false;
+                $badNodes[$node] = $E->getMessage();
+                $this->error[] = 'statementsReplicas:' . $E->getMessage();
             }
             // ---------------------------------------------------------------------------------------------------
-            try
-            {
-                $c=$statementsClusters[$node]->rows();
+            $hosts=[];
+            $tables=[];
+            try {
+                $c = $statementsClusters[$node]->rows();
                 $result['clusters'][$node] = $c;
-                foreach ($c as $row)
-                {
-                    $hosts[$row['host_address']][$row['port']]=$row['host_name'];
-                    $result['cluster.list'][$row['cluster']][$row['host_address']]=
-                            [
-                                    'shard_weight'=>$row['shard_weight'],
-                                    'replica_num'=>$row['replica_num'],
-                                    'shard_num'=>$row['shard_num'],
-                                    'is_local'=>$row['is_local']
-                            ];
+                foreach ($c as $row) {
+                    $hosts[$row['host_address']][$row['port']] = $row['host_name'];
+                    $result['cluster.list'][$row['cluster']][$row['host_address']] =
+                        [
+                            'shard_weight' => $row['shard_weight'],
+                            'replica_num' => $row['replica_num'],
+                            'shard_num' => $row['shard_num'],
+                            'is_local' => $row['is_local']
+                        ];
                 }
 
-            }
-            catch (\Exception $E)
-            {
+            } catch (\Exception $E) {
                 $result['clusters'][$node] = false;
 
-                $this->error[]='clusters:'.$E->getMessage();
-                $badNodes[$node]=$E->getMessage();
+                $this->error[] = 'clusters:' . $E->getMessage();
+                $badNodes[$node] = $E->getMessage();
 
             }
-            $this->hostsnames=$hosts;
-            $this->tables=$tables;
+            $this->hostsnames = $hosts;
+            $this->tables = $tables;
             // ---------------------------------------------------------------------------------------------------
             // Проверим что репликации хорошо идут
-            $rIsOk= $this->isReplicasWork($result['replicas'][$node]);
-            $result['replicasIsOk'][$node]=$rIsOk;
-            if (!$rIsOk) $replicasIsOk=false;
+            $rIsOk = $this->isReplicasWork($result['replicas'][$node]);
+            $result['replicasIsOk'][$node] = $rIsOk;
+            if (!$rIsOk) $replicasIsOk = false;
             // ---------------------------------------------------------------------------------------------------
         }
         // badNodes = array(6) {  '222.222.222.44' =>  string(13) "HttpCode:0 ; " , '222.222.222.11' =>  string(13) "HttpCode:0 ; "
-        $this->badNodes=$badNodes;
+        $this->badNodes = $badNodes;
 
         // Востановим DNS имя хоста в клиенте
         $this->defaultClient()->setHost($this->defaultHostName);
 
 
-        $this->isScaned=true;
-        $this->replicasIsOk=$replicasIsOk;
-        $this->error[]="Bad replicasIsOk, in ".json_encode($result['replicasIsOk']);
+        $this->isScaned = true;
+        $this->replicasIsOk = $replicasIsOk;
+        $this->error[] = "Bad replicasIsOk, in " . json_encode($result['replicasIsOk']);
         // ------------------------------------------------
         // @todo Уточнить на боевых падениях и при разношорсных конфигурациях...
-        if (sizeof($this->badNodes))
-        {
-            $this->error[]='Have bad node : '.json_encode($this->badNodes);
-            $this->replicasIsOk=false;
+        if (sizeof($this->badNodes)) {
+            $this->error[] = 'Have bad node : ' . json_encode($this->badNodes);
+            $this->replicasIsOk = false;
         }
-        $this->error=false;
-        $this->resultScan=$result;
+        $this->error = false;
+        $this->resultScan = $result;
         // @todo Мы подключаемся ко всем в списке DNS, нужно пререить что запросы вернули все хосты к которым мы подключались
         return $this;
     }
@@ -268,21 +290,22 @@ class Cluster
     {
         return $this->connect()->replicasIsOk;
     }
+
     /**
      * @return Client
      */
     public function client($node)
     {
         // Создаем клиенты под каждый IP
-        if (empty($this->clients[$node]))
-        {
-            $this->clients[$node]=clone $this->defaultClient();
+        if (empty($this->clients[$node])) {
+            $this->clients[$node] = clone $this->defaultClient();
         }
 
         $this->clients[$node]->setHost($node);
 
         return $this->clients[$node];
     }
+
     /**
      * @return Client
      */
@@ -290,153 +313,92 @@ class Cluster
     {
         return $this->client($this->nodes[0]);
     }
+
+    /**
+     * @param $cluster
+     * @return int
+     */
     public function getClusterCountShard($cluster)
     {
-        $table=$this->getClusterInfoTable($cluster);
-        $c=[];
-        foreach ($table as $row)
-        {
-            $c[$row['shard_num']]=1;
+        $table = $this->getClusterInfoTable($cluster);
+        $c = [];
+        foreach ($table as $row) {
+            $c[$row['shard_num']] = 1;
         }
         return sizeof($c);
     }
+
+    /**
+     * @param $cluster
+     * @return int
+     */
     public function getClusterCountReplica($cluster)
     {
-        $table=$this->getClusterInfoTable($cluster);
-        $c=[];
-        foreach ($table as $row)
-        {
-            $c[$row['replica_num']]=1;
+        $table = $this->getClusterInfoTable($cluster);
+        $c = [];
+        foreach ($table as $row) {
+            $c[$row['replica_num']] = 1;
         }
         return sizeof($c);
     }
+
+    /**
+     * @param $cluster
+     * @return mixed
+     */
     public function getClusterInfoTable($cluster)
     {
         $this->connect();
-        if (empty($this->resultScan['cluster.list'][$cluster])) throw new QueryException('Cluster not find:'.$cluster);
+        if (empty($this->resultScan['cluster.list'][$cluster])) throw new QueryException('Cluster not find:' . $cluster);
         return $this->resultScan['cluster.list'][$cluster];
     }
+
+    /**
+     * @param $cluster
+     * @return array
+     */
     public function getClusterNodes($cluster)
     {
         return array_keys($this->getClusterInfoTable($cluster));
     }
+
+    /**
+     * @return array
+     */
     public function getClusterList()
     {
         $this->connect();
         return array_keys($this->resultScan['cluster.list']);
     }
 
+    /**
+     * Find nodes by : db_name.table_name
+     *
+     * @param $database_table
+     * @return array
+     */
     public function getNodesByTable($database_table)
     {
-        list($db,$table)=explode('.',$database_table);
+        $this->connect();
+        list($db, $table) = explode('.', $database_table);
 
-        if (empty($this->tables[$db][$table]))
-        {
-            throw new QueryException('Not find :'.$database_table);
+        if (empty($this->tables[$db][$table])) {
+            throw new QueryException('Not find :' . $database_table);
         }
         return array_keys($this->tables[$db][$table]);
     }
+
     /**
+     * Error string
+     *
      * @return string
      */
     public function getError()
     {
-        if (is_array($this->error))
-        {
-            return implode(" ; ".$this->error);
+        if (is_array($this->error)) {
+            return implode(" ; " . $this->error);
         }
         return $this->error;
     }
-    public function showDebug($message,$print=false)
-    {
-        $message=str_ireplace(["\n","\r","\t"],'',$message);
-        if ($print) echo date('H:i:s')." ".$message."\n";
-    }
-    public function sendMigration(Cluster\Migration $migration,$showDebug=false)
-    {
-        $node_hosts=$this->getClusterNodes($migration->getClusterName());
 
-        $sql_down=$migration->getSqlDowngrade();
-        $sql_up=$migration->getSqlUpdate();
-
-        // Пропингуем все хосты
-        foreach ($node_hosts as $node) {
-            try {
-                if ($migration->getTimeout())
-                {
-
-                    $this->client($node)->settings()->max_execution_time($migration->getTimeout());
-                }
-                $this->client($node)->ping();
-                $this->showDebug("client($node)->ping() OK!",$showDebug);
-
-            } catch (QueryException $E) {
-
-                $this->showDebug("Can`t connect or ping ip/node : " . $node,$showDebug);
-                $this->error = "Can`t connect or ping ip/node : " . $node;
-                return false;
-            }
-        }
-
-
-        // Выполняем запрос на каждый client(IP) , если хоть одни не отработал то делаем на каждый Down
-        $need_undo=false;
-        $undo_ip=[];
-        foreach ($node_hosts as $node)
-        {
-            foreach ($sql_up as $s_u) {
-                try {
-                    $this->showDebug("client($node)->write(".substr($s_u,0,45).")....",$showDebug);
-
-                    if ($this->client($node)->write($s_u)->isError()) {
-                        $need_undo = true;
-                        $this->error = "Host $node result error";
-                        $this->showDebug("client($node)->Host $node result error",$showDebug);
-                    }
-                    else
-                    {
-                        // OK
-                    }
-                } catch (QueryException $E) {
-                    $need_undo = true;
-                    $this->showDebug("client($node)->Host $node result error:".$E->getMessage(),$showDebug);
-                    $this->error = "Host $node result error : " . $E->getMessage();
-                }
-                if ($need_undo)
-                {
-                    $undo_ip[$node]=1;
-                    break;
-                }
-            }
-            if ($need_undo)
-            {
-                $undo_ip[$node]=1;
-                break;
-            }
-        }
-
-        if (!$need_undo)
-        {
-            return true;
-        }
-
-        // if Undo
-        // тут не очень точный метод отката
-//        foreach ($undo_ip as $node=>$tmp)
-        foreach ($node_hosts as $node)
-        {
-            foreach ($sql_down as $s_u) {
-                $this->showDebug("undo_client($node)->write(".substr($s_u,0,45).")...",$showDebug);
-
-                try{
-                    $st=$this->client($node)->write($s_u);
-                }
-                catch (Exception $E) {
-                    $this->showDebug("!!!!!!  error(".substr($s_u,0,45).")...".$E->getMessage(),$showDebug);
-                }
-            }
-        }
-        return false;
-
-    }
 }
