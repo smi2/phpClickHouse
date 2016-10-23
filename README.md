@@ -434,6 +434,8 @@ MIT
 ChangeLog
 ---
 ###  2016-10-23 Release 0.16.10
+
+- client->setTimeout($seconds)
 - cluster->clientLike($cluster,$ip_addr_like)
 - Delete all migration code from driver, move to https://github.com/smi2/phpMigrationsClickhouse 
  
