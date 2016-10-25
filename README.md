@@ -433,7 +433,11 @@ MIT
 
 ChangeLog
 ---
-###  2016-10-23 Release 0.16.10
+###  2016-10-25 Release 0.16.10
+- fix timeout error and add test
+
+
+###  2016-10-23 
 
 - client->setTimeout($seconds)
 - cluster->clientLike($cluster,$ip_addr_like)
