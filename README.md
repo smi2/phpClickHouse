@@ -38,6 +38,8 @@ $config = [
 ];
 $db = new ClickHouseDB\Client($config);
 $db->database('default');
+$db->setTimeout(1.5); // 1500 ms
+$db->setTimeout(10);  // 10 seconds
 ```
 
 Show tables:
