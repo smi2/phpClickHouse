@@ -651,6 +651,32 @@ class ClientTest extends TestCase
     }
 
     /**
+     * @expectedException \ClickHouseDB\QueryException
+     */
+    public function testInsertTableTimeout()
+    {
+        $this->create_table_summing_url_views();
+
+        $file_data_names = [
+            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data',
+        ];
+
+        foreach ($file_data_names as $file_name) {
+            $this->create_fake_csv_file($file_name, 5);
+        }
+
+        $this->create_table_summing_url_views();
+
+
+        $this->db->setTimeout(0.01);
+
+
+        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+            'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
+        ]);
+        $this->db->ping();
+    }
+    /**
      *
      */
     public function testInsertTable()

@@ -157,8 +157,9 @@ class Statement
 
         $body = $this->response()->body();
         $error_no = $this->response()->error_no();
+        $error=$this->response()->error();
 
-        if (!$error_no) {
+        if (!$error_no && !$error) {
             $parse = $this->parseErrorClickHouse($body);
 
             if ($parse) {
@@ -166,7 +167,7 @@ class Statement
             }
             else {
                 $code = $this->response()->http_code();
-                $message = "HttpCode:" . $this->response()->http_code() . " ; " . $body;
+                $message = "HttpCode:" . $this->response()->http_code() . " ; ".$this->response()->error()." ;" . $body;
             }
         }
         else {
