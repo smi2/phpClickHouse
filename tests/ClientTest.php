@@ -135,6 +135,31 @@ class ClientTest extends TestCase
         ');
     }
 
+
+    public function testConnectTimeout()
+    {
+        $config = [
+            'host'     => '8.8.8.8', // fake ip , use googlde DNS )
+            'port'     => phpunit_clickhouse_port,
+            'username' => '',
+            'password' => ''
+        ];
+        $start_time=microtime(true);
+
+        try
+        {
+            $db = new ClickHouseDB\Client($config);
+            $db->setConnectTimeOut(1);
+            $db->ping();
+        }
+        catch (Exception $E)
+        {
+
+        }
+        $use_time=round(microtime(true)-$start_time);
+        $this->assertEquals(1, $use_time);
+
+    }
     /**
      *
      */
