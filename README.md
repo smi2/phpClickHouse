@@ -437,6 +437,12 @@ MIT
 
 ChangeLog
 ---
+###  2016-10-27 
+- add Connect timeout , $db->setConnectTimeOut(5);
+- change default ConnectTimeOut = 5 seconds. before 1 sec.
+
+   
+
 ###  2016-10-25 Release 0.16.10
 - fix timeout error and add test
 
