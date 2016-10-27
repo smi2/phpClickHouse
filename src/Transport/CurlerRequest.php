@@ -96,7 +96,7 @@ class Request
     /**
      * @var resource
      */
-    private $resultFileHandle=null;
+    private $resultFileHandle = null;
 
     /**
      * Request constructor.
@@ -113,16 +113,16 @@ class Request
         $this->options = array(
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_TIMEOUT        => 10,
-            CURLOPT_CONNECTTIMEOUT => 1,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_HEADER         => TRUE,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_CONNECTTIMEOUT => 5,    // Количество секунд ожидания при попытке соединения
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_HEADER => TRUE,
             CURLOPT_FOLLOWLOCATION => TRUE,
-            CURLOPT_AUTOREFERER    => 1, // при редиректе подставлять в «Referer:» значение из «Location:»
-            CURLOPT_BINARYTRANSFER => 1, // передавать в binary-safe
+            CURLOPT_AUTOREFERER => 1,       // при редиректе подставлять в «Referer:» значение из «Location:»
+            CURLOPT_BINARYTRANSFER => 1,    // передавать в binary-safe
             CURLOPT_RETURNTRANSFER => TRUE,
-            CURLOPT_USERAGENT      => 'smi2/PHPClickHouse/client',
+            CURLOPT_USERAGENT => 'smi2/PHPClickHouse/client',
         );
     }
 
@@ -221,8 +221,7 @@ class Request
             stream_filter_append($this->infile_handle, 'zlib.deflate', STREAM_FILTER_READ, ["window" => 30]);
 
             $this->options[CURLOPT_SAFE_UPLOAD] = 1;
-        }
-        else {
+        } else {
             $this->options[CURLOPT_INFILESIZE] = filesize($file_name);
         }
 
@@ -435,7 +434,7 @@ class Request
      */
     public function timeOut($seconds = 10)
     {
-        return $this->timeOutMs($seconds*1000);
+        return $this->timeOutMs($seconds * 1000);
     }
 
     /**
@@ -494,18 +493,17 @@ class Request
      */
     public function isResultFile()
     {
-        return ($this->resultFileHandle?true:false);
+        return ($this->resultFileHandle ? true : false);
     }
 
     /**
      * @param $h resource
      * @return $this
      */
-    public function setResultFileHandle($h,$zlib=false)
+    public function setResultFileHandle($h, $zlib = false)
     {
-        $this->resultFileHandle=$h;
-        if ($zlib)
-        {
+        $this->resultFileHandle = $h;
+        if ($zlib) {
             $params = array('level' => 6, 'window' => 15, 'memory' => 9);
             stream_filter_append($this->resultFileHandle, 'zlib.deflate', STREAM_FILTER_WRITE, $params);
         }
@@ -635,8 +633,7 @@ class Request
             $curl_opt[CURLOPT_HTTPGET] = TRUE;
             $curl_opt[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
             $curl_opt[CURLOPT_POSTFIELDS] = false;
-        }
-        else {
+        } else {
             if (strtoupper($method) === 'POST') {
                 $curl_opt[CURLOPT_POST] = TRUE;
             }
@@ -667,10 +664,9 @@ class Request
             $curl_opt[CURLOPT_PUT] = true;
         }
 
-        if ($this->resultFileHandle)
-        {
-            $curl_opt[CURLOPT_FILE]=$this->resultFileHandle;
-            $curl_opt[CURLOPT_HEADER]=false;
+        if ($this->resultFileHandle) {
+            $curl_opt[CURLOPT_FILE] = $this->resultFileHandle;
+            $curl_opt[CURLOPT_HEADER] = false;
         }
         curl_setopt_array($this->handle, $curl_opt);
         return true;
