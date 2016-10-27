@@ -147,6 +147,25 @@ class Client
         return $this->settings()->getTimeOut();
     }
 
+    /**
+     * Количество секунд ожидания
+     *
+     * @param int $connectTimeOut
+     */
+    public function setConnectTimeOut($connectTimeOut)
+    {
+        $this->transport()->setConnectTimeOut($connectTimeOut);
+    }
+
+    /**
+     * Количество секунд ожидания
+     *
+     * @return int
+     */
+    public function getConnectTimeOut()
+    {
+        return $this->transport()->getConnectTimeOut();
+    }
 
 
     /**

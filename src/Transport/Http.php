@@ -54,7 +54,14 @@ class Http
     /**
      * @var array
      */
-    private $_query_degenerations=[];
+    private $_query_degenerations = [];
+
+    /**
+     * Количество секунд ожидания при попытке соединения
+     *
+     * @var int
+     */
+    private $_connectTimeOut = 5;
 
     /**
      * Http constructor.
@@ -75,14 +82,16 @@ class Http
     }
 
 
-    public function setCurler() {
+    public function setCurler()
+    {
         $this->_curler = new CurlerRolling();
     }
 
     /**
      * @return CurlerRolling
      */
-    public function getCurler() {
+    public function getCurler()
+    {
         return $this->_curler;
     }
 
@@ -156,7 +165,7 @@ class Http
         }
 
         $new->timeOut($this->settings()->getTimeOut());
-        $new->connectTimeOut(1)->keepAlive();// one sec
+        $new->connectTimeOut($this->_connectTimeOut)->keepAlive();// one sec
         $new->verbose($this->_verbose);
 
         return $new;
@@ -179,7 +188,7 @@ class Http
         $url = $this->getUrl($urlParams);
 
         $extendinfo = [
-            'sql'   => $sql,
+            'sql' => $sql,
             'query' => $query
         ];
 
@@ -237,11 +246,31 @@ class Http
     }
 
     /**
+     * Количество секунд ожидания
+     *
+     * @param int $connectTimeOut
+     */
+    public function setConnectTimeOut($connectTimeOut)
+    {
+        $this->_connectTimeOut = $connectTimeOut;
+    }
+
+    /**
+     * Количество секунд ожидания
+     *
+     * @return int
+     */
+    public function getConnectTimeOut()
+    {
+        return $this->_connectTimeOut;
+    }
+
+    /**
      * @param Query $query
      * @param null $whereInFile
      * @return Request
      */
-    public function getRequestRead(Query $query, $whereInFile = null,$writeToFile=null)
+    public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
     {
         $urlParams = ['readonly' => 1];
         $query_as_string = false;
@@ -257,7 +286,7 @@ class Http
         // if result to file
         if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat()) {
             $query->setFormat($writeToFile->fetchFormat());
-            $urlParams['extremes']=false;
+            $urlParams['extremes'] = false;
         }
         // ---------------------------------------------------------------------------------
         // makeRequest read
@@ -269,14 +298,12 @@ class Http
         }
         // ---------------------------------------------------------------------------------
         // result to file
-        if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat())
-        {
+        if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat()) {
 
-            $fout=fopen($writeToFile->fetchFile(),'w');
-            $isGz=$writeToFile->getGzip();
+            $fout = fopen($writeToFile->fetchFile(), 'w');
+            $isGz = $writeToFile->getGzip();
 
-            if ($isGz)
-            {
+            if ($isGz) {
                 // write gzip header
 //                "\x1f\x8b\x08\x00\x00\x00\x00\x00"
 //                fwrite($fout, "\x1F\x8B\x08\x08".pack("V", time())."\0\xFF", 10);
@@ -288,10 +315,7 @@ class Http
             }
 
 
-
-
-
-            $request->setResultFileHandle($fout,$isGz)->setCallbackFunction(function (Request $request) {
+            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (Request $request) {
                 fclose($request->getResultFileHandle());
             });
         }
@@ -302,12 +326,13 @@ class Http
 
     public function cleanQueryDegeneration()
     {
-        $this->_query_degenerations=[];
+        $this->_query_degenerations = [];
         return true;
     }
+
     public function addQueryDegeneration(Query\Degeneration $degeneration)
     {
-        $this->_query_degenerations[]=$degeneration;
+        $this->_query_degenerations[] = $degeneration;
         return true;
     }
 
@@ -330,30 +355,29 @@ class Http
     {
 
         // add Degeneration query
-        foreach ($this->_query_degenerations as $degeneration)
-        {
+        foreach ($this->_query_degenerations as $degeneration) {
             $degeneration->bindParams($bindings);
         }
 
-        return new Query($sql,$this->_query_degenerations);
+        return new Query($sql, $this->_query_degenerations);
     }
+
     /**
      * @param $sql
      * @param $bindings
      * @param $whereInFile
      * @return Request
      */
-    private function prepareSelect($sql, $bindings, $whereInFile,$writeToFile=null)
+    private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null)
     {
-        if ($sql instanceof Query)
-        {
+        if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
         }
 
 
-        $query=$this->prepareQuery($sql,$bindings);
+        $query = $this->prepareQuery($sql, $bindings);
         $query->setFormat('JSON');
-        return $this->getRequestRead($query, $whereInFile,$writeToFile);
+        return $this->getRequestRead($query, $whereInFile, $writeToFile);
 
     }
 
@@ -362,14 +386,13 @@ class Http
      * @param $bindings
      * @return Request
      */
-    private function prepareWrite($sql, $bindings=[])
+    private function prepareWrite($sql, $bindings = [])
     {
-        if ($sql instanceof Query)
-        {
+        if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
         }
 
-        $query=$this->prepareQuery($sql,$bindings);
+        $query = $this->prepareQuery($sql, $bindings);
         return $this->getRequestWrite($query);
     }
 
@@ -388,9 +411,9 @@ class Http
      * @param null $whereInFile
      * @return Statement
      */
-    public function select($sql, array $bindings = [], $whereInFile = null,$writeToFile=null)
+    public function select($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
     {
-        $request = $this->prepareSelect($sql, $bindings, $whereInFile,$writeToFile);
+        $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
         $code = $this->_curler->execOne($request);
 
         return new Statement($request);
@@ -402,9 +425,9 @@ class Http
      * @param null $whereInFile
      * @return Statement
      */
-    public function selectAsync($sql, array $bindings = [], $whereInFile = null,$writeToFile=null)
+    public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
     {
-        $request = $this->prepareSelect($sql, $bindings, $whereInFile,$writeToFile);
+        $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
         $this->_curler->addQueLoop($request);
         return new Statement($request);
     }
