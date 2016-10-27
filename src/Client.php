@@ -132,7 +132,7 @@ class Client
 
     /**
      * @param $timeout
-     * @return $this
+     * @return Settings
      */
     public function setTimeout($timeout)
     {
