@@ -91,7 +91,7 @@ class Request
     /**
      * @var int
      */
-    private $_dns_cache = 10;
+    private $_dns_cache = 120;
 
     /**
      * @var resource
@@ -416,6 +416,8 @@ class Request
     }
 
     /**
+     * Количество секунд ожидания при попытке соединения. Используйте 0 для бесконечного ожидания.
+     *
      * @param int $seconds
      * @return $this
      */
@@ -426,6 +428,8 @@ class Request
     }
 
     /**
+     * Максимально позволенное количество секунд для выполнения cURL-функций.
+     *
      * @param int $seconds
      * @return $this
      */
@@ -435,6 +439,8 @@ class Request
     }
 
     /**
+     * Максимально позволенное количество миллисекунд для выполнения cURL-функций.
+     *
      * @param int $ms
      * @return $this
      */
@@ -539,6 +545,8 @@ class Request
     }
 
     /**
+     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     *
      * @param $set
      * @return $this
      */
@@ -549,6 +557,8 @@ class Request
     }
 
     /**
+     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     *
      * @return int
      */
     public function getDnsCache()
@@ -641,7 +651,7 @@ class Request
                 }
             }
         }
-
+        // CURLOPT_DNS_CACHE_TIMEOUT - Количество секунд, в течение которых в памяти хранятся DNS-записи.
         $curl_opt[CURLOPT_DNS_CACHE_TIMEOUT] = $this->getDnsCache();
         $curl_opt[CURLOPT_URL] = $this->url;
 
