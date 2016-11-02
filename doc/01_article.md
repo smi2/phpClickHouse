@@ -164,8 +164,10 @@ CH - https://habrahabr.ru/company/yandex/blog/303282/
 
 Вы можете спокойно использовать наш последний опубликованный билд [http://guiclickhouse.smi2.ru/](http://guiclickhouse.smi2.ru/).
 
-![Video](https://api.monosnap.com/rpc/file/download?id=rIEnBkDoh0jMmhGDsu0umaqk5F0srt)
-video: https://api.monosnap.com/rpc/file/download?id=rIEnBkDoh0jMmhGDsu0umaqk5F0srt
+
+@todo insert video:
+
+https://monosnap.com/file/rIEnBkDoh0jMmhGDsu0umaqk5F0srt
 
 
 ### Наш PHP-драйвер для ClickHouse: возможности и особенности
