@@ -5,21 +5,11 @@ include_once __DIR__ . '/../include.php';
 
 // Конфигрурация
 $config=['host'=>'192.168.1.20','port'=>'8123','username'=>'default','password'=>''];
-
-
 $client=new \ClickHouseDB\Client($config);
-
-
 // проверим соединение с базой
 $client->ping();
-
-
-
-//
 $client->write('CREATE DATABASE IF NOT EXISTS articles');
-
 $client->write('DROP TABLE IF EXISTS articles.events');
-
 $client->write("
 CREATE TABLE articles.events 
 (event_date  Date DEFAULT toDate(event_time),
@@ -50,14 +40,87 @@ date_default_timezone_set('Europe/Moscow');
 
 $client->insert('events',
     [
-        [time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow','xcvfdsazxc',''],
-        [time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow','xcvfdsazxc','http://yandex.ru?utm_campaign=abc'],
-        [time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow','xcvfdsazxc','http://smi2.ru?utm_campaign=abc'],
-        [time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow','xcvfdsazxc',''],
+        [time(), 'CLICKS', 1, 1234, '192.168.1.11', 'Moscow','user_11',''],
+        [time(), 'CLICKS', 1, 1235, '192.168.1.11', 'Moscow','user_11','http://yandex.ru?utm_campaign=abc'],
+        [time(), 'CLICKS', 1, 1236, '192.168.1.11', 'Moscow','user_11','http://smi2.ru?utm_campaign=abc'],
+        [time(), 'CLICKS', 1, 1237, '192.168.1.11', 'Moscow','user_11',''],
+        [time(), 'CLICKS', 1, 1237, '192.168.1.13', 'Moscow','user_13',''],
+        [time(), 'CLICKS', 1, 1237, '192.168.1.14', 'Moscow','user_14',''],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.11', 'Moscow','user_11',''],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.12', 'Moscow','user_12',''],
+
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Rwanda','user_55',  'http://smi2.ru?utm_campaign=abc'],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Banaadir','user_54','http://smi2.ru?utm_campaign=abc'],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Tobruk','user_32',  'http://smi2.ru?utm_campaign=CM1'],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Gisborne','user_12','http://smi2.ru?utm_campaign=CM1'],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Moscow','user_43',  'http://smi2.ru?utm_campaign=CM3'],
     ],
     ['event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city','user_uuid','referer']
 );
 // Достанем результат вставки данных
 print_r(
-        $client->select('SELECT * FROM events')->rows()
+    $client->select('SELECT * FROM events')->rows()
+);
+
+
+// Допустим нам нужно посчитать сколько уникальных пользователей просмотрело за сутки
+print_r(
+    $client->select('SELECT event_date,uniqCombined(user_uuid) as count_users FROM events GROUP BY event_date ORDER BY event_date')->rows()
+);
+
+
+
+//Сколько пользователей которые просматривали совершили клики
+print_r(
+    $client->select("
+SELECT 
+  user_uuid,
+  count() as clicks
+FROM 
+  articles.events
+WHERE
+  event_type='CLICKS'
+  AND 
+  user_uuid IN 
+  (
+      SELECT user_uuid FROM articles.events WHERE event_type='VIEWS' GROUP BY user_uuid
+  )
+GROUP BY user_uuid
+"
+)->rows()
+);
+
+
+
+
+// Посчитаем ботов, это очень грубо, но возможно оценить через кол-во запросов с одного IP и кол-во уникальных UUID
+print_r(
+    $client->select("
+
+
+SELECT ip,uniqCombined(user_uuid) as count_users FROM events 
+WHERE event_date=today()
+GROUP BY ip
+HAVING count_users >= 4
+/* показывать в отчёте только IP, по которым было хотя бы 4 уникальных посетителей. */
+
+
+
+
+"
+    )->rows()
+);
+
+// Какие UTM метки давали большое кол-во показов:
+
+print_r(
+    $client->select("
+
+SELECT utm,count() as views FROM events 
+WHERE event_date=today() AND event_type='VIEWS' AND utm<>''
+GROUP BY utm
+ORDER BY views DESC 
+
+"
+    )->rows()
 );
