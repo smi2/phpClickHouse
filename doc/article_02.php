@@ -26,6 +26,7 @@ utm    String DEFAULT extractURLParameter(referer,'utm_campaign')
 
 ");
 
+
 // Выбираем default базу
 $client->database('articles');
 
@@ -97,12 +98,12 @@ GROUP BY user_uuid
 print_r(
     $client->select("
 
-
+/* показывать в отчёте только IP, по которым было хотя бы 4 уникальных посетителей. */
 SELECT ip,uniqCombined(user_uuid) as count_users FROM events 
 WHERE event_date=today()
 GROUP BY ip
 HAVING count_users >= 4
-/* показывать в отчёте только IP, по которым было хотя бы 4 уникальных посетителей. */
+
 
 
 
