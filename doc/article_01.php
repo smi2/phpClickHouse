@@ -63,28 +63,28 @@ $stat = $client->insert('events',
 print_r(
         $client->select('SELECT * FROM events')->rows()
 );
-
-
-$UserEvent=new SplObjectStorage();
-
-$row=
-[
-    'event_date' =>$UserEvent->date,
-    'event_time' =>$UserEvent->time,
-    'event_type' =>$UserEvent->type,
-    'site_id' =>$UserEvent->site_id,
-    'aricle_id' =>$UserEvent->aricle_id,
-    'ip' =>$UserEvent->ip,
-    'city' =>$UserEvent->city,
-    'user_uuid' =>$UserEvent->user_uuid,
-    'referer' =>$UserEvent->referer,
-    'utm' =>$UserEvent->utm,
-];
-
-
-
-
-// store
-$filename='/tmp/articles.events_version1_'.date("YmdHi").'.csv';
-$text=implode("\t",$row);
-file_put_contents($filename,$text."\n",FILE_APPEND);
+//
+//
+//$UserEvent=new SplObjectStorage();
+//
+//$row=
+//[
+//    'event_date' =>$UserEvent->date,
+//    'event_time' =>$UserEvent->time,
+//    'event_type' =>$UserEvent->type,
+//    'site_id' =>$UserEvent->site_id,
+//    'aricle_id' =>$UserEvent->aricle_id,
+//    'ip' =>$UserEvent->ip,
+//    'city' =>$UserEvent->city,
+//    'user_uuid' =>$UserEvent->user_uuid,
+//    'referer' =>$UserEvent->referer,
+//    'utm' =>$UserEvent->utm,
+//];
+//
+//
+//
+//
+//// store
+//$filename='/tmp/articles.events_version1_'.date("YmdHi").'.csv';
+//$text=implode("\t",$row);
+//file_put_contents($filename,$text."\n",FILE_APPEND);

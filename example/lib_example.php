@@ -180,7 +180,7 @@ function makeSomeDataFileBigOldDates($file_name, $size = 10)
  * @param int $size
  * @return bool
  */
-function makeSomeDataFileBig($file_name, $size = 10)
+function makeSomeDataFileBig($file_name, $size = 10,$shift=0)
 {
     if (is_file($file_name)) {
         echo "Exist file  [$file_name]: ± rows... size = " . humanFileSize(filesize($file_name)) . " \n";
@@ -201,7 +201,7 @@ function makeSomeDataFileBig($file_name, $size = 10)
                 for ($hours = 0; $hours < 24; $hours++) {
                     $z++;
 
-                    $dt = strtotime('-' . $dates . ' day');
+                    $dt = strtotime('-' . ($dates+$shift) . ' day');
                     $dt = strtotime('-' . $hours . ' hour', $dt);
 
                     $j = [];
