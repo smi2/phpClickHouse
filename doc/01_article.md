@@ -371,24 +371,24 @@ print_r(
 Допустим, что у нас есть некий класс UserEvent, который позволяет получить все необходимые данные для вставки, данные проверены на валидность внутри класса:
 ```php
 $row = [
-    'event_date' => $UserEvent->date,
-    'event_time' => $UserEvent->time,
-    'event_type' => $UserEvent->type,
-    'site_id'    => $UserEvent->site_id,
-    'aricle_id'  => $UserEvent->aricle_id,
-    'ip'         => $UserEvent->ip,
-    'city'       => $UserEvent->city,
-    'user_uuid'  => $UserEvent->user_uuid,
-    'referer'    => $UserEvent->referer,
-    'utm'        => $UserEvent->utm,
+    'event_date' => $userEvent->getDate(),
+    'event_time' => $userEvent->getTime(),
+    'event_type' => $userEvent->getType(),
+    'site_id'    => $userEvent->getSiteId(),
+    'aricle_id'  => $userEvent->getArticleId(),
+    'ip'         => $userEvent->getIp(),
+    'city'       => $userEvent->getCity(),
+    'user_uuid'  => $userEvent->getUserUuid(),
+    'referer'    => $userEvent->getReferer(),
+    'utm'        => $userEvent->getUtm(),
 ];
 ```
 
 Запись будем производить в файл, ротируемый ежеминутно, следующим способом (допускаем все недостатки — ошибки записи, блокировки, и т. д . —  строка всегда записывается):    
 ```php
-$filename = '/tmp/articles.events_version1_' . date('YmdHi') . '.csv';
-$text = implode("\t", $row);
-file_put_contents($filename, $text . "\n", FILE_APPEND);
+$fp = fopen('/tmp/articles.events_version1_' . date('YmdHi') . '.csv', 'w');
+fputcsv($fp, $row);
+fclose($fp);
 ```
 В примере на GitHub, для тестов, сделан эмулятор класса UserEvent и file_put_contents.
 
