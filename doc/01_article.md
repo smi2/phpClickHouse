@@ -234,33 +234,33 @@ Cтоит сразу оговорится, драйвер не использу�
 Для записи данных о событиях создадим на сервере ClickHouse базу данных articles и внутри — неё таблицу events со следующей структурой:
 
 ```sql
-event_date  Date
-event_time  DateTime
-event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2)
-site_id   Int32
-aricle_id   Int32
-ip          String
-city    String
-user_uuid   String
-referer    String
-utm    String
+event_date Date
+event_time DateTime
+event_type Enum8('VIEWS' = 1, 'CLICKS' = 2)
+site_id Int32
+aricle_id Int32
+ip String
+city String
+user_uuid String
+referer String
+utm String
 ```
 Сначала рассмотрим создание базы данных и таблицы с помощью нашего **графического клиента**. Подключаемся через графический клиент к серверу ClickHouse и [выполняем запрос на создание новой базы данных и новой таблицы](https://monosnap.com/file/jXQ69WRy8cOyu2KJTlMSYOY32bMsQO):  
 ```sql
 CREATE DATABASE articles
 ;;
-CREATE TABLE articles.events 
-(event_date  Date,
-event_time  DateTime,
-event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
-site_id   Int32,
-aricle_id   Int32,
-ip          String,
-city    String,
-user_uuid   String,
-referer    String,
-utm    String
-) engine=MergeTree(event_date, (site_id, event_date,aricle_id), 8192)
+CREATE TABLE articles.events (
+    event_date Date,
+    event_time DateTime,
+    event_type Enum8('VIEWS' = 1, 'CLICKS' = 2),
+    site_id Int32,
+    aricle_id Int32,
+    ip String,
+    city String,
+    user_uuid String,
+    referer String,
+    utm String
+) ENGINE = MergeTree(event_date, (site_id, event_date, aricle_id), 8192)
 ```
 
 Поясним некоторые параметры этого запроса:
@@ -290,36 +290,41 @@ git clone [https://github.com/smi2/phpClickHouse.git](https://github.com/smi2/ph
 Теперь выполняем запрос на подключение к серверу, создание БД и таблицы:
 ```php
 <?php
+
 // Конфигурация
-$config=['host'=>'192.168.1.20','port'=>'8123','username'=>'default','password'=>''];
+$config = [
+    'host'     => '192.168.1.20',
+    'port'     => '8123',
+    'username' => 'default',
+    'password' => ''
+];
 
 // Создаем клиента
-$client=new \ClickHouseDB\Client($config);
+$client = new \ClickHouseDB\Client($config);
 
 // Проверяем соединение с базой
 $client->ping();
 
-// Отправляем запрос на создание 
+// Отправляем запрос на создание
 $client->write('CREATE DATABASE IF NOT EXISTS articles');
 $client->write("
-
-CREATE TABLE IF NOT EXISTS articles.events (
-    event_date  Date,
-    event_time  DateTime,
-    event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
-    site_id   Int32,
-    aricle_id   Int32,
-    ip          String,
-    city    String,
-    user_uuid   String,
-    referer    String,
-    utm    String
-    ) 
-    engine=MergeTree(event_date, (site_id, event_date,aricle_id), 8192)
+    CREATE TABLE IF NOT EXISTS articles.events (
+        event_date Date,
+        event_time DateTime,
+        event_type Enum8('VIEWS' = 1, 'CLICKS' = 2),
+        site_id Int32,
+        aricle_id Int32,
+        ip String,
+        city String,
+        user_uuid String,
+        referer String,
+        utm String
+    ) ENGINE = MergeTree(event_date, (site_id, event_date, aricle_id), 8192)
 ");
 
 // Выбираем default базу
 $client->database('articles');
+
 // Получаем список таблиц
 print_r($client->showTables());
 ```
@@ -340,14 +345,15 @@ print_r($client->showTables());
 
 Вставим данные, которые будем использовать для тестирования:
 ```php
-$client->insert('events',
+$client->insert(
+    'events',
     [
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow','xcvfdsazxc','http://yandex.ru',''],
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
+        [date('Y-m-d'), time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
+        [date('Y-m-d'), time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow', 'xcvfdsazxc', 'http://yandex.ru', ''],
+        [date('Y-m-d'), time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
+        [date('Y-m-d'), time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
     ],
-    ['event_date', 'event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city','user_uuid','referer','utm']
+    ['event_date', 'event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city', 'user_uuid', 'referer', 'utm']
 );
 ```
 Такой метод вставки подходит только для маленьких таблиц или таблиц справочников, т/к заставляет PHP перегонять массив в строку.  
@@ -355,7 +361,7 @@ $client->insert('events',
 Получим результат вставки данных:
 ```php
 print_r(
-        $client->select('SELECT * FROM events')->rows()
+    $client->select('SELECT * FROM events')->rows()
 );
 ```
 Подробнее про чтение данные написано ниже.
@@ -364,49 +370,46 @@ print_r(
 
 Допустим, что у нас есть некий класс UserEvent, который позволяет получить все необходимые данные для вставки, данные проверены на валидность внутри класса:
 ```php
-
-$row=
-[
-    'event_date' =>$UserEvent->date,
-    'event_time' =>$UserEvent->time, 
-    'event_type' =>$UserEvent->type, 
-    'site_id' =>$UserEvent->site_id, 
-    'aricle_id' =>$UserEvent->aricle_id, 
-    'ip' =>$UserEvent->ip, 
-    'city' =>$UserEvent->city, 
-    'user_uuid' =>$UserEvent->user_uuid, 
-    'referer' =>$UserEvent->referer, 
-    'utm' =>$UserEvent->utm, 
+$row = [
+    'event_date' => $UserEvent->date,
+    'event_time' => $UserEvent->time,
+    'event_type' => $UserEvent->type,
+    'site_id'    => $UserEvent->site_id,
+    'aricle_id'  => $UserEvent->aricle_id,
+    'ip'         => $UserEvent->ip,
+    'city'       => $UserEvent->city,
+    'user_uuid'  => $UserEvent->user_uuid,
+    'referer'    => $UserEvent->referer,
+    'utm'        => $UserEvent->utm,
 ];
 ```
 
 Запись будем производить в файл, ротируемый ежеминутно, следующим способом (допускаем все недостатки — ошибки записи, блокировки, и т. д . —  строка всегда записывается):    
 ```php
-
-$filename='/tmp/articles.events_version1_'.date("YmdHi").'.csv';
-$text=implode("\t",$row);
-file_put_contents($filename,$text."\n",FILE_APPEND);
+$filename = '/tmp/articles.events_version1_' . date('YmdHi') . '.csv';
+$text = implode("\t", $row);
+file_put_contents($filename, $text . "\n", FILE_APPEND);
 ```
 В примере на GitHub, для тестов, сделан эмулятор класса UserEvent и file_put_contents.
 
 Допустим, что у нас накопилось 5—10 таких файлов, и мы хотим их отправить в базу:
 
 ```php
-$file_data_names=
+$fileNames = [
+    '/tmp/articles.events_version1_201612121201.csv',
+    '/tmp/articles.events_version1_201612121301.csv',
+    '/tmp/articles.events_version1_201612121401.csv',
+];
 
-[
-	'/tmp/articles.events_version1_201612121201.csv',
-	'/tmp/articles.events_version1_201612121301.csv',
-	'/tmp/articles.events_version1_201612121401.csv'	
-]
-// Включаем сжатие 
+// Включаем сжатие
 $client->enableHttpCompression(true);
-$result_insert = $client->insertBatchFiles('events', $file_data_names, 
-['event_date', 'event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city','user_uuid','referer','utm']
-);
-// Можем получить время, за которое данные были доставлены 
-foreach ($file_data_names as $fileName) {
-    echo $fileName . " : " . $result_insert[$fileName]->totalTimeRequest() . "\n";
+$insertResult = $client->insertBatchFiles('events', $fileNames, [
+    'event_date', 'event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city', 'user_uuid', 'referer', 'utm'
+]);
+
+// Можем получить время, за которое данные были доставлены
+foreach ($fileNames as $fileName) {
+    echo $fileName . ' : ' . $insertResult[$fileName]->totalTimeRequest() . "\n";
 }
 ```
 
@@ -417,43 +420,44 @@ foreach ($file_data_names as $fileName) {
 
 Поле utm будем заполнять из поля referer, если в нём указан utm_campaign:
 
-через ф-цию extractURLParameter(referer,’utm_campaign’)
+через ф-цию extractURLParameter(referer, ’utm_campaign’)
 
 Пересоздадим таблицу:
 ```sql
 CREATE TABLE articles.events (
-    event_date  Date DEFAULT toDate(event_time),
-    event_time  DateTime,
-    event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
-    site_id   Int32,
-    aricle_id   Int32,
-    ip          String,
-    city    String,
-    user_uuid   String,
-    referer    String,
-    utm    String DEFAULT extractURLParameter(referer,'utm_campaign')
-) engine=MergeTree(event_date, (site_id, event_date,aricle_id), 8192)
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime,
+    event_type Enum8('VIEWS' = 1, 'CLICKS' = 2),
+    site_id Int32,
+    aricle_id Int32,
+    ip String,
+    city String,
+    user_uuid String,
+    referer String,
+    utm String DEFAULT extractURLParameter(referer,'utm_campaign')
+) ENGINE = MergeTree(event_date, (site_id, event_date, aricle_id), 8192)
 ```
 
 Изменим запись:
 
 @TODO:**Убрать под споллер**
 ```php
-$client->insert('events',
+$client->insert(
+    'events',
     [
-        [time(), 'CLICKS', 1, 1234, '192.168.1.11', 'Moscow','user_11',''],
-        [time(), 'CLICKS', 1, 1235, '192.168.1.11', 'Moscow','user_11','http://yandex.ru?utm_campaign=abc'],
-        [time(), 'CLICKS', 1, 1236, '192.168.1.11', 'Moscow','user_11','http://smi2.ru?utm_campaign=abc'],
-        [time(), 'CLICKS', 1, 1237, '192.168.1.11', 'Moscow','user_11',''],
-        [time(), 'CLICKS', 1, 1237, '192.168.1.13', 'Moscow','user_13',''],
-        [time(), 'CLICKS', 1, 1237, '192.168.1.14', 'Moscow','user_14',''],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.11', 'Moscow','user_11',''],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.12', 'Moscow','user_12',''],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Rwanda','user_55',  'http://smi2.ru?utm_campaign=abc'],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Banaadir','user_54','http://smi2.ru?utm_campaign=abc'],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Tobruk','user_32',  'http://smi2.ru?utm_campaign=CM1'],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Gisborne','user_12','http://smi2.ru?utm_campaign=CM1'],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Moscow','user_43',  'http://smi2.ru?utm_campaign=CM3'],
+        [time(), 'CLICKS', 1, 1234, '192.168.1.11', 'Moscow',   'user_11', ''],
+        [time(), 'CLICKS', 1, 1235, '192.168.1.11', 'Moscow',   'user_11', 'http://yandex.ru?utm_campaign=abc'],
+        [time(), 'CLICKS', 1, 1236, '192.168.1.11', 'Moscow',   'user_11', 'http://smi2.ru?utm_campaign=abc'],
+        [time(), 'CLICKS', 1, 1237, '192.168.1.11', 'Moscow',   'user_11', ''],
+        [time(), 'CLICKS', 1, 1237, '192.168.1.13', 'Moscow',   'user_13', ''],
+        [time(), 'CLICKS', 1, 1237, '192.168.1.14', 'Moscow',   'user_14', ''],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.11', 'Moscow',   'user_11', ''],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.12', 'Moscow',   'user_12', ''],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.1',  'Rwanda',   'user_55', 'http://smi2.ru?utm_campaign=abc'],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.1',  'Banaadir', 'user_54', 'http://smi2.ru?utm_campaign=abc'],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.1',  'Tobruk',   'user_32', 'http://smi2.ru?utm_campaign=CM1'],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.1',  'Gisborne', 'user_12', 'http://smi2.ru?utm_campaign=CM1'],
+        [time(), 'VIEWS',  1, 1237, '192.168.1.1',  'Moscow',   'user_43', 'http://smi2.ru?utm_campaign=CM3'],
     ],
     ['event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city','user_uuid','referer']
 );
@@ -465,11 +469,13 @@ $client->insert('events',
 ```php
 $state1 = $db->selectAsync('SELECT 1 as ping');
 $state2 = $db->selectAsync('SELECT 2 as ping');
+
 // Отправка запросов в CH
 $db->executeAsync();
-// Результат 
-print_r($state1->rows())
-print_r($state2->rows())
+
+// Результат
+print_r($state1->rows());
+print_r($state2->rows());
 ```
 
 Или вариант без асинхронности:
@@ -479,7 +485,6 @@ $statement = $db->select('SELECT 33 as ping');
 
 Результат запросов —  это объект Statement, которые умеет делать следующее:
 ```php
-
 // Посчитать количество строк в результирующем наборе 
 $statement->count();
 
@@ -511,45 +516,69 @@ print_r($result->statistics());
 Допустим, нам нужно посчитать, сколько уникальных пользователей просмотрело статьи по дням:
 ```sql
 SELECT 
-event_date,uniqCombined(user_uuid) as count_users 
-FROM events 
-GROUP BY event_date 
-ORDER BY event_date
+    event_date,
+    uniqCombined(user_uuid) as count_users
+FROM
+    events
+GROUP BY
+    event_date
+ORDER BY
+    event_date
 ```
 
 Сколько пользователей, которые просматривали статьи, совершили клики: 
 ```sql
 SELECT 
-  user_uuid,
-  count() as clicks
+    user_uuid,
+    count() as clicks
 FROM 
-  articles.events
+    articles.events
 WHERE
-  event_type='CLICKS'
-  AND 
-  user_uuid IN 
-  (
-      SELECT user_uuid FROM articles.events WHERE event_type='VIEWS' GROUP BY user_uuid
-  )
-GROUP BY user_uuid 
+    event_type = 'CLICKS'
+    AND user_uuid IN (
+        SELECT
+            user_uuid
+        FROM
+            articles.events
+        WHERE
+            event_type = 'VIEWS'
+        GROUP BY
+            user_uuid
+    )
+GROUP BY
+    user_uuid
 ```
 
 Посчитаем ботов, сделав грубую оценку через количество запросов с одного IP и количество во уникальных ID пользователей:
 ```sql
 /* показывать в отчёте только IP, по которым было хотя бы 4 уникальных посетителей. */
-SELECT ip,uniqCombined(user_uuid) as count_users FROM events 
-WHERE event_date=today()
-GROUP BY ip
-HAVING count_users >= 4
+SELECT
+    ip,
+    uniqCombined(user_uuid) as count_users
+FROM
+    events
+WHERE
+    event_date = today()
+GROUP BY
+    ip
+HAVING
+    count_users >= 4
 ```
 
 
 Какие UTM-метки давали большее количество показов:
 ```sql
-SELECT utm,count() as views FROM events 
-WHERE event_date=today() AND event_type='VIEWS' AND utm<>''
-GROUP BY utm
-ORDER BY views DESC
+SELECT
+    utm,
+    count() as views FROM events
+WHERE
+    event_date = today()
+    AND event_type = 'VIEWS'
+    AND utm <> ''
+GROUP BY
+    utm
+ORDER BY
+    views DESC
 ```
 
 ### Использование внешних данных для обработки запроса
@@ -568,9 +597,12 @@ ORDER BY views DESC
 Создадим CSV-файл `'/tmp/articles_list.csv'`, в котором перечислим все нужные для запроса `aricle_id`, и попросим ClickHouse создать временную таблицу namex, содержащую одну колонку:
 ```php
 $whereIn = new \ClickHouseDB\WhereInFile();
-$whereIn->attachFile('/tmp/articles_list.csv', 'namex', ['article_id' => 'Int32'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
-// Тогда содержимое файла CSV можно использовать на сервере: 
-$sql= "НАписать запрос пример"
+$whereIn->attachFile(
+    '/tmp/articles_list.csv', 'namex', ['article_id' => 'Int32'], \ClickHouseDB\WhereInFile::FORMAT_CSV
+);
+
+// Тогда содержимое файла CSV можно использовать на сервере:
+$sql = 'Написать пример запроса';
 $result = $db->select($sql, [], $whereIn);
 ```
 
