@@ -16,13 +16,13 @@ CREATE TABLE articles.events
 event_time  DateTime,
 event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
 site_id   Int32,
-aricle_id   Int32,
+article_id   Int32,
 ip          String,
 city    String,
 user_uuid   String,
 referer    String,
 utm    String DEFAULT extractURLParameter(referer,'utm_campaign')
-) engine=MergeTree(event_date, (site_id, event_date,aricle_id), 8192)
+) engine=MergeTree(event_date, (site_id, event_date,article_id), 8192)
 
 ");
 
@@ -56,7 +56,7 @@ $client->insert('events',
         [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Gisborne','user_12','http://smi2.ru?utm_campaign=CM1'],
         [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Moscow','user_43',  'http://smi2.ru?utm_campaign=CM3'],
     ],
-    ['event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city','user_uuid','referer']
+    ['event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer']
 );
 // Достанем результат вставки данных
 print_r(
@@ -80,7 +80,7 @@ SELECT
 FROM 
   articles.events
 WHERE
-  event_type='CLICKS'
+  event_type='CLICKS' AND site_id=1
   AND 
   user_uuid IN 
   (
@@ -100,7 +100,7 @@ print_r(
 
 /* показывать в отчёте только IP, по которым было хотя бы 4 уникальных посетителей. */
 SELECT ip,uniqCombined(user_uuid) as count_users FROM events 
-WHERE event_date=today()
+WHERE event_date=today() AND site_id=1
 GROUP BY ip
 HAVING count_users >= 4
 
@@ -118,7 +118,7 @@ print_r(
     $client->select("
 
 SELECT utm,count() as views FROM events 
-WHERE event_date=today() AND event_type='VIEWS' AND utm<>''
+WHERE event_date=today() AND event_type='VIEWS' AND utm<>'' AND site_id=1
 GROUP BY utm
 ORDER BY views DESC 
 

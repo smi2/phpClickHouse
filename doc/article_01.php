@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS articles.events (
     event_time  DateTime,
     event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
     site_id   Int32,
-    aricle_id   Int32,
+    article_id   Int32,
     ip          String,
     city    String,
     user_uuid   String,
     referer    String,
     utm    String
     ) 
-    engine=MergeTree(event_date, (site_id, event_date,aricle_id), 8192)
+    engine=MergeTree(event_date, (site_id, event_date,article_id), 8192)
 ");
 
 // Выбираем default базу
@@ -56,35 +56,10 @@ $stat = $client->insert('events',
         [date('Y-m-d'),time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
         [date('Y-m-d'),time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
     ],
-    ['event_date', 'event_time', 'event_type', 'site_id', 'aricle_id', 'ip', 'city','user_uuid','referer','utm']
+    ['event_date', 'event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer','utm']
 );
 
 // Достанем результат вставки данных
 print_r(
         $client->select('SELECT * FROM events')->rows()
 );
-//
-//
-//$UserEvent=new SplObjectStorage();
-//
-//$row=
-//[
-//    'event_date' =>$UserEvent->date,
-//    'event_time' =>$UserEvent->time,
-//    'event_type' =>$UserEvent->type,
-//    'site_id' =>$UserEvent->site_id,
-//    'aricle_id' =>$UserEvent->aricle_id,
-//    'ip' =>$UserEvent->ip,
-//    'city' =>$UserEvent->city,
-//    'user_uuid' =>$UserEvent->user_uuid,
-//    'referer' =>$UserEvent->referer,
-//    'utm' =>$UserEvent->utm,
-//];
-//
-//
-//
-//
-//// store
-//$filename='/tmp/articles.events_version1_'.date("YmdHi").'.csv';
-//$text=implode("\t",$row);
-//file_put_contents($filename,$text."\n",FILE_APPEND);
