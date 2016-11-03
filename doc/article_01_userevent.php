@@ -18,7 +18,7 @@ class UserEvent
      */
     public function getTime()
     {
-        return time();
+        return date('Y-m-d H:i:s');
     }
 
     /**
@@ -89,7 +89,7 @@ class UserEvent
 
         return mt_rand(0, 10) > 6
             ? $referers[array_rand($referers)] . $this->getUtm()
-            : '';
+            : '\'\'';
     }
 
     /**

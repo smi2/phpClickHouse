@@ -56,7 +56,7 @@ class WhereInFile
      * @param $structure
      * @param string $format
      */
-    public function attachFile($file_name, $table_name, $structure, $format = 'CSV')
+    public function attachFile($file_name, $table_name, $structure, $format = 'InsertRow')
     {
         if (!is_readable($file_name)) {
             throw new QueryException('Can`t read file: ' . $file_name);

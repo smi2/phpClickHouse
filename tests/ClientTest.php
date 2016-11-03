@@ -136,6 +136,50 @@ class ClientTest extends TestCase
     }
 
 
+    public function testRFCCSVWrite()
+    {
+        $fileName=$this->tmp_path.'__testRFCCSVWrite';
+
+        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        $this->db->write('CREATE TABLE testRFCCSVWrite ( 
+           event_date Date DEFAULT toDate(event_time),
+           event_time DateTime,
+           strs String,
+           flos Float32,
+           ints Int32  
+        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+
+        @unlink($fileName);
+
+        $data=[
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>1.1,'ints'=>1],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2]
+        ];
+
+        // 1.1 + 2.3 = 3.3999999761581
+        //
+        foreach ($data as $row)
+        {
+            file_put_contents($fileName,\ClickHouseDB\CSV::quoteRow($row)."\n",FILE_APPEND);
+        }
+        $this->db->insertBatchFiles('testRFCCSVWrite', [$fileName], [
+            'event_time',
+            'strs',
+            'flos',
+            'ints',
+        ]);
+
+        $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
+
+        $this->assertEquals(3, $row['ints']);
+        $this->assertEquals(3.4, $row['flos']);
+
+
+        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        unlink($fileName);
+
+        return true;
+    }
     public function testConnectTimeout()
     {
         $config = [

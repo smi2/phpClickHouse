@@ -15,7 +15,7 @@ Web интерфейс:https://github.com/smi2/clickhouse-frontend
 * Поддержка сжатия на лету, при записи данных в CH,
 * Асинхронное выполнение запросов на чтение,
 * Асинхронное выполнение запросов на вставку данных,
-* Запрос на чтение, используея локальный CSV файл, select * from X where id in (_local_csv_file_),  
+* Запрос на чтение, используея локальный InsertRow файл, select * from X where id in (_local_csv_file_),  
 * Работа с партициями таблиц,
 * Вставка массива в колонку,
 * Запись результата запроса напрямую в файл,
@@ -102,7 +102,7 @@ $db->write('
 
 
 ------
-Каждое событие, мы будем писать в CSV файл средствами PHP
+Каждое событие, мы будем писать в InsertRow файл средствами PHP
 
 Note1 : event_time - это unixtime, в php ф-ция time(), нужно помнить в каком часовом поясе мы пишем это значение.
 
@@ -262,15 +262,15 @@ $stat = $db->insert('summing_url_views',
 );
 ```
 
-Асинхронная вставка CSV файлов `$db->insertBatchFiles(имя_таблицы, [список_файлов] , [колонки])`
+Асинхронная вставка InsertRow файлов `$db->insertBatchFiles(имя_таблицы, [список_файлов] , [колонки])`
 
 
 
 ```php
 $file_data_names = [
-    '/tmp/clickHouseDB_test.1.CSV',
-    '/tmp/clickHouseDB_test.2.CSV',
-    '/tmp/clickHouseDB_test.3.CSV',
+    '/tmp/clickHouseDB_test.1.InsertRow',
+    '/tmp/clickHouseDB_test.2.InsertRow',
+    '/tmp/clickHouseDB_test.3.InsertRow',
 ];
 
 // insert all files
@@ -317,7 +317,7 @@ $db->executeAsync();
 
 #### Запросы на чтение используя локальный файл
 
-Допустим у нас есть созданыый CSV файл, содержащий две колонки site_id,site_hash 
+Допустим у нас есть созданыый InsertRow файл, содержащий две колонки site_id,site_hash 
  
 Мы хотим выполнить запрос where site_id,site_hash in ( содержимое файла ) 
 

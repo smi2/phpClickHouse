@@ -440,7 +440,8 @@ ChangeLog
 ###  2016-11-03
 - $db->enableLogQueries(true) - write to system.query_log
 - $db->enableExtremes(true); - default extremes now, disabled 
- 
+- $db->isExists($database,$table) 
+- CSV + InsertRow class
  
 ###  2016-10-27 
 - add Connect timeout , $db->setConnectTimeOut(5);

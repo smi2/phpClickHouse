@@ -35,7 +35,10 @@ class Client
      */
     private $_connect_port = false;
 
-
+    /**
+     * @var array
+     */
+    private $_support_format=['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames'];
     /**
      * Client constructor.
      * @param $connect_params
@@ -377,7 +380,7 @@ class Client
         $sql .= ' VALUES ';
 
         foreach ($values as $row) {
-            $sql .= ' (' . CSV::quoteRow($row) . '), ';
+            $sql .= ' (' . InsertRow::quoteRow($row) . '), ';
         }
         $sql = trim($sql, ', ');
 
@@ -390,10 +393,15 @@ class Client
      * @param $columns_array
      * @return array
      */
-    public function insertBatchFiles($table_name, $file_names, $columns_array)
+    public function insertBatchFiles($table_name, $file_names, $columns_array,$format="CSV")
     {
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
+        }
+
+        if (!in_array($format,$this->_support_format))
+        {
+            throw new QueryException('Format not support in insertBatchFiles');
         }
 
         $result = [];
@@ -403,7 +411,7 @@ class Client
                 throw  new QueryException('Cant read file: ' . $fileName);
             }
 
-            $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT CSV ';
+            $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
             $result[$fileName] = $this->transport()->writeAsyncCSV($sql, $fileName);
         }
 
@@ -482,6 +490,14 @@ class Client
         ')->rowsAsTree('table');
     }
 
+    public function isExists($database,$table)
+    {
+        return $this->select('
+            SELECT *
+            FROM system.tables 
+            WHERE name=\''.$table.'\' AND database=\''.$database.'\''
+        )->rowsAsTree('name');
+    }
     /**
      * @param $table
      * @param int $limit

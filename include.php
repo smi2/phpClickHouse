@@ -1,5 +1,6 @@
 <?php
 // Functions
+include_once __DIR__ . '/src/InsertRow.php';
 include_once __DIR__ . '/src/CSV.php';
 // Exception
 include_once __DIR__ . '/src/Exception/Exception.php';

@@ -72,7 +72,7 @@ print_r(
 );
 
 
-// Для  WHERE IN - создаем файл CSV
+// Для  WHERE IN - создаем файл InsertRow
 $hand = fopen('/tmp/articles_list.csv', 'w');
 foreach ([1237, 27, 1234] as $article_id) {
     fputcsv($hand, [$article_id]);
