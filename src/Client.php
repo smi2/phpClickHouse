@@ -256,11 +256,39 @@ class Client
     }
 
     /**
+     * Логгировать запросы и писать лог в системную таблицу. <database>system</database> <table>query_log</table>
+     *
      * @param bool $flag
+     * @return $this
+     */
+    public function enableLogQueries($flag = true)
+    {
+        $this->settings()->set('log_queries',intval($flag));
+        return $this;
+    }
+
+    /**
+     * Сжимать результат, если клиент по HTTP сказал, что он понимает данные, сжатые методом gzip или deflate
+     *
+     * @param bool $flag
+     * @return $this
      */
     public function enableHttpCompression($flag = true)
     {
         $this->settings()->enableHttpCompression($flag);
+        return $this;
+    }
+
+    /**
+     * Считать минимумы и максимумы столбцов результата. Они могут выводиться в JSON-форматах.
+     *
+     * @param bool $flag
+     * @return $this
+     */
+    public function enableExtremes($flag = true)
+    {
+        $this->settings()->set('extremes',intval($flag));
+        return $this;
     }
 
     /**

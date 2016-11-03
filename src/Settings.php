@@ -28,7 +28,7 @@ class Settings
     public function __construct(Http $client)
     {
         $default = [
-            'extremes'                => true,
+            'extremes'                => false,
             'readonly'                => true,
             'max_execution_time'      => 20,
             'enable_http_compression' => 0

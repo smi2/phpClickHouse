@@ -437,6 +437,11 @@ MIT
 
 ChangeLog
 ---
+###  2016-11-03
+- $db->enableLogQueries(true) - write to system.query_log
+- $db->enableExtremes(true); - default extremes now, disabled 
+ 
+ 
 ###  2016-10-27 
 - add Connect timeout , $db->setConnectTimeOut(5);
 - change default ConnectTimeOut = 5 seconds. before 1 sec.

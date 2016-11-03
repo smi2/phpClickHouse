@@ -451,9 +451,11 @@ class ClientTest extends TestCase
     {
         $this->create_table_summing_url_views();
         $this->insert_data_table_summing_url_views();
-
+        $this->db->enableExtremes(true);
 
         $state = $this->db->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
+
+        $this->db->enableExtremes(false);
 
         $this->assertFalse($state->isError());
 
@@ -717,8 +719,10 @@ class ClientTest extends TestCase
 
         $this->assertEquals(122, $st->fetchOne('sum_x'));
         $this->assertEquals(9, $st->fetchOne('min_x'));
-
+        $this->db->enableExtremes(true);
         $st = $this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
+
+        $this->db->enableExtremes(false);
 
 
         $this->assertEquals(4, $st->count());
