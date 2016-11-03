@@ -438,10 +438,12 @@ MIT
 ChangeLog
 ---
 ###  2016-11-03
-- $db->enableLogQueries(true) - write to system.query_log
-- $db->enableExtremes(true); - default extremes now, disabled 
-- $db->isExists($database,$table) 
-- CSV + InsertRow class
+- `$db->enableLogQueries(true)` - write to system.query_log
+- `$db->enableExtremes(true);` - default extremes now, disabled 
+- `$db->isExists($database,$table)` 
+- Rename CSV to InsertRow class, create new class CSV 
+- CSV RFC4180 - `\ClickHouseDB\CSV::quoteRow(Array))."\n"`
+
  
 ###  2016-10-27 
 - add Connect timeout , $db->setConnectTimeOut(5);
