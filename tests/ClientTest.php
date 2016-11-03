@@ -153,7 +153,9 @@ class ClientTest extends TestCase
 
         $data=[
             ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>1.1,'ints'=>1],
-            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2]
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'STRING','flos'=>0,'ints'=>0],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"SOMET\nRI\n\"N\"G\\XX_ABCDEFG",'flos'=>0,'ints'=>0]
         ];
 
         // 1.1 + 2.3 = 3.3999999761581
@@ -168,6 +170,12 @@ class ClientTest extends TestCase
             'flos',
             'ints',
         ]);
+
+
+        $st=$this->db->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
+        $this->assertEquals('5774439760453101066', $st->fetchOne('hash'));
+
+
 
         $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
 
