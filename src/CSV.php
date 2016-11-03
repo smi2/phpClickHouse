@@ -54,7 +54,7 @@ class CSV
                 $value = InsertRow::quoteValue($value);
 
                 $result_array = implode($delimiter, $value);
-                return '[' . $result_array . ']';
+                return '"[' . $result_array . ']"';
             }
 
             if (null === $value) {

@@ -140,22 +140,27 @@ class ClientTest extends TestCase
     {
         $fileName=$this->tmp_path.'__testRFCCSVWrite';
 
+        $array_value_test="\n1\n2's'";
+
         $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
         $this->db->write('CREATE TABLE testRFCCSVWrite ( 
            event_date Date DEFAULT toDate(event_time),
            event_time DateTime,
            strs String,
            flos Float32,
-           ints Int32  
+           ints Int32,
+           arr1 Array(UInt8),  
+           arrs Array(String)  
         ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
 
         @unlink($fileName);
 
         $data=[
-            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>1.1,'ints'=>1],
-            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2],
-            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'STRING','flos'=>0,'ints'=>0],
-            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"SOMET\nRI\n\"N\"G\\XX_ABCDEFG",'flos'=>0,'ints'=>0]
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>1.1,'ints'=>1,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'STRING','flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"SOMET\nRI\n\"N\"G\\XX_ABCDEFG",'flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]],
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"ID_ARRAY",'flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC",$array_value_test]]
         ];
 
         // 1.1 + 2.3 = 3.3999999761581
@@ -164,16 +169,24 @@ class ClientTest extends TestCase
         {
             file_put_contents($fileName,\ClickHouseDB\CSV::quoteRow($row)."\n",FILE_APPEND);
         }
+
         $this->db->insertBatchFiles('testRFCCSVWrite', [$fileName], [
             'event_time',
             'strs',
             'flos',
             'ints',
+            'arr1',
+            'arrs',
         ]);
 
-
         $st=$this->db->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
+
+
         $this->assertEquals('5774439760453101066', $st->fetchOne('hash'));
+
+        $ID_ARRAY=$this->db->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
+
+        $this->assertEquals($array_value_test, $ID_ARRAY);
 
 
 
