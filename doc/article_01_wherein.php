@@ -32,7 +32,7 @@ $client->write("
         user_uuid String,
         referer String,
         utm String DEFAULT extractURLParameter(referer, 'utm_campaign')
-    ) ENGINE = MergeTree(event_date, (site_id, event_date, article_id), 8192)
+    ) ENGINE = MergeTree(event_date, (site_id, event_type, article_id), 8192)
 ");
 
 

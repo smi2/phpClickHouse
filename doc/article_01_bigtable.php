@@ -113,10 +113,11 @@ print_r(
             event_date
         ORDER BY
             event_date
+        LIMIT 4
     ')->rows()
 );
-
-
+//
+//
 // Сколько пользователей, которые просматривали и совершили клики
 print_r(
     $client->select("
@@ -126,7 +127,7 @@ print_r(
         FROM
             articles.events
         WHERE
-            event_type = 'CLICKS'
+            event_type IN ( 'CLICKS' )
             AND site_id = 1
             AND user_uuid IN  (
                 SELECT
@@ -134,51 +135,34 @@ print_r(
                 FROM
                     articles.events
                 WHERE
-                    event_type = 'VIEWS'
+                    event_type IN ( 'VIEWS' ) AND site_id = 1
                 GROUP BY
                     user_uuid
             )
         GROUP BY user_uuid
+        LIMIT 5
     ")->rows()
 );
+//
 
 
-// Посчитаем ботов, это очень грубо, но возможно оценить через кол-во запросов с одного IP и кол-во уникальных UUID
-print_r(
-    $client->select('
-        /* показывать в отчёте только IP, по которым было хотя бы 4 уникальных посетителей. */
-        SELECT
-            ip,
-            uniqCombined(user_uuid) as count_users
-        FROM
-            events
-        WHERE
-            event_date = today()
-            AND site_id=1
-        GROUP BY
-            ip
-        HAVING
-            count_users >= 4
-    ')->rows()
-);
-
-
-// Какие UTM метки давали большое кол-во показов:
+//
+// Какие UTM метки давали большое кол-во показов и кликов
 print_r(
     $client->select("
         SELECT
             utm,
-            count() as views
+            countIf(event_type IN('VIEWS')) as views,
+            countIf(event_type IN('CLICKS')) as clicks
         FROM
             events
         WHERE
             event_date = today()
-            AND event_type = 'VIEWS'
-            AND utm <> ''
             AND site_id = 1
         GROUP BY
             utm
         ORDER BY
             views DESC
+        LIMIT 15
     ")->rows()
 );
