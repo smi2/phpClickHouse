@@ -133,9 +133,14 @@
 * примерно 10 млрд строк в базе за месяц
 
 Данные хранятся на 6 серверах SX131 от Hetzner с 3 шардами по 2 реплики.
+<details>
+  <summary>Real request</summary>
+
+    ![Real request](https://habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif)
+
+</details>
 
 
->! ![Real request](https://habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif)
 # Особенности ClickHouse
 
 Как у любого продукта для работы с данными, у [ClickHouse ](https://clickhouse.yandex/reference_ru.html#%D0%9E%D1%81%D0%BE%D0%B1%D0%B5%D0%BD%D0%BD%D0%BE%D1%81%D1%82%D0%B8%20ClickHouse,%20%D0%BA%D0%BE%D1%82%D0%BE%D1%80%D1%8B%D0%B5%20%D0%BC%D0%BE%D0%B3%D1%83%D1%82%20%D1%81%D1%87%D0%B8%D1%82%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B5%D0%B4%D0%BE%D1%81%D1%82%D0%B0%D1%82%D0%BA%D0%B0%D0%BC%D0%B8)
