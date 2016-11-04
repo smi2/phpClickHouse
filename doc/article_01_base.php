@@ -19,7 +19,9 @@ $client->ping();
 
 // Создаём таблицу
 $client->write('CREATE DATABASE IF NOT EXISTS articles');
+
 $client->write('DROP TABLE IF EXISTS articles.events');
+
 $client->write("
     CREATE TABLE articles.events (
         event_date Date DEFAULT toDate(event_time),

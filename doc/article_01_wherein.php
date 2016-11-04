@@ -55,6 +55,7 @@ $client->insert('events',
         [time(), 'CLICKS', 1, 1237, '192.168.1.11', 'Moscow', 'user_11', ''],
         [time(), 'CLICKS', 1, 1237, '192.168.1.13', 'Moscow', 'user_13', ''],
         [time(), 'CLICKS', 1, 1237, '192.168.1.14', 'Moscow', 'user_14', ''],
+
         [time(), 'VIEWS',  1, 1237, '192.168.1.11', 'Moscow', 'user_11', ''],
         [time(), 'VIEWS',  1, 1237, '192.168.1.12', 'Moscow', 'user_12', ''],
 

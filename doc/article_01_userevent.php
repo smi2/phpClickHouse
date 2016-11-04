@@ -18,6 +18,7 @@ class UserEvent
      */
     public function getTime()
     {
+        // Если используется файл TSV, можно использовать return time();
         return date('Y-m-d H:i:s');
     }
 
