@@ -186,8 +186,7 @@
 Вы можете спокойно использовать наш [последний опубликованный билд](http://guiclickhouse.smi2.ru/).
 
 
-```
-
+![Clickhouse GUI](https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif)
 Видос - [https://monosnap.com/file/rIEnBkDoh0jMmhGDsu0umaqk5F0srt](https://monosnap.com/file/rIEnBkDoh0jMmhGDsu0umaqk5F0srt)
 
 ## Наш PHP-драйвер для ClickHouse: возможности и особенности
