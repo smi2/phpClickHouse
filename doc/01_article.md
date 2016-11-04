@@ -346,7 +346,7 @@ foreach ($file_data_names as $fileName) {
 }
 ```
 
-Стоит отметить, что работа с **CSV-файлами** также поддерживаются. Для них нужно использовать функцию `insertBatchFiles()`, аналогичную функции `insertBatchTSVFiles()`. Однако при использовании TSV-файлов появляется дополнительная возможность вставлять в поле DateTime дату и время в формате unix timestamp. Подробнее о поддержке формата TabSeparated см. в [документации ClickHouse](https://clickhouse.yandex/reference_ru.html#TabSeparated).
+Стоит отметить, что работа с **CSV-файлами** также поддерживается. Для них нужно использовать функцию `insertBatchFiles()`, аналогичную функции `insertBatchTSVFiles()`. Однако при использовании TSV-файлов появляется дополнительная возможность вставлять в поле DateTime дату и время в формате unix timestamp. Подробнее о поддержке формата TabSeparated см. в [документации ClickHouse](https://clickhouse.yandex/reference_ru.html#TabSeparated).
 
 [ClickHouse использует формат CSV](https://clickhouse.yandex/reference_ru.html#CSV), соответствующий [RFC 4180](https://tools.ietf.org/html/rfc4180). При этом стандартные средства PHP, а именно функция `fputcsv()`, не полностью соответствует требованиям формата (см. [отчет об ошибке](https://bugs.php.net/bug.php?id=50686)).
 
