@@ -60,7 +60,7 @@
 * Отсутствие нормального кластера и репликации данных. Приходилось делать горячую копию данных, т. е. клон сервера
 * Первые версии приходилось регулярно перегружать из-за утечек памяти и зависаний сервиса
 * Зависание процессов на запись или запросов на чтение. Приходилось убивать долгие процессы через event handlers nagios
-* Сложность загрузки данных. Есть только отдельный консольный инструмент cpimport. Пришлось реализовывать обертку, которая разбирает результат работы утилиты из STDOut на ошибки и статистику результата выполнения вставки
+* Сложность загрузки данных. Есть только отдельный консольный инструмент cpimport. Пришлось реализовывать обертку, которая разбирает вывод утилиты в stdout на ошибки и статистику результата выполнения вставки
 * Условная однопоточность: или пишем, или читаем. Потребляется большой объем системных ресурсов
 
 ## И тут «Яндекс» выложил в открытый доступ ClickHouse 
@@ -149,7 +149,7 @@ https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
 
 Драйвер протестирован на PHP 5.6 и 7, HHVM 3.9.
 
-Хотим сразу предупредить читателей, что драйвер не использует готовые решения в виде guzzle(PSR-7) и PSR-4 реализован через файл include.php. Надеемся, что этот факт не отпугнет вас от дальнейшего чтения.
+Хотим сразу предупредить читателей, что драйвер не использует готовые решения вроде Guzzle (и PSR-7 вообще), а PSR-4 реализован через файл `include.php`. Надеемся, что этот факт не отпугнет вас от дальнейшего чтения.
 
 # Примеры работы с ClickHouse
 
@@ -175,13 +175,13 @@ https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
     event_date  Date
     event_time  DateTime
     event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2)
-    site_id   Int32
-    article_id   Int32
+    site_id     Int32
+    article_id  Int32
     ip          String
-    city    String
+    city        String
     user_uuid   String
-    referer    String
-    utm    String
+    referer     String
+    utm         String
 ```
 Сначала рассмотрим создание базы данных и таблицы с помощью нашего **графического клиента**. Подключаемся через графический клиент к серверу ClickHouse и выполняем запрос на создание новой базы данных и новой таблицы:  
 ```sql
@@ -191,13 +191,13 @@ CREATE TABLE articles.events (
     event_date  Date,
     event_time  DateTime,
     event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
-    site_id   Int32,
-    article_id   Int32,
+    site_id     Int32,
+    article_id  Int32,
     ip          String,
-    city    String,
+    city        String,
     user_uuid   String,
-    referer    String,
-    utm    String
+    referer     String,
+    utm         String
 ) engine=MergeTree(event_date, (site_id, event_type, article_id), 8192)
 ```
 
@@ -235,13 +235,13 @@ $client->write("CREATE TABLE IF NOT EXISTS articles.events (
     event_date  Date,
     event_time  DateTime,
     event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
-    site_id   Int32,
-    article_id   Int32,
+    site_id     Int32,
+    article_id  Int32,
     ip          String,
-    city    String,
+    city        String,
     user_uuid   String,
-    referer    String,
-    utm    String
+    referer     String,
+    utm         String
     ) 
     engine=MergeTree(event_date, (site_id, event_type, article_id), 8192)
 ");
@@ -267,13 +267,13 @@ print_r($client->showTables());
 ```php
 $client->insert('events',
 [
-    [date('Y-m-d'),time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-    [date('Y-m-d'),time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow','xcvfdsazxc','http://yandex.ru',''],
-    [date('Y-m-d'),time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-    [date('Y-m-d'),time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
+    [date('Y-m-d'), time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ,''],
+    [date('Y-m-d'), time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow', 'xcvfdsazxc', 'http://yandex.ru', ''],
+    [date('Y-m-d'), time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
+    [date('Y-m-d'), time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
 ],
 [
-    'event_date', 'event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer','utm'
+    'event_date', 'event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city', 'user_uuid', 'referer', 'utm'
 ]
 );
 ```
@@ -326,9 +326,9 @@ $file_data_names=
 [
 	'/tmp/articles.events_version1_201612121201.TSV',
 	'/tmp/articles.events_version1_201612121301.TSV',
-	'/tmp/articles.events_version1_201612121401.TSV'	
+	'/tmp/articles.events_version1_201612121401.TSV'
 ]
-// Включаем сжатие 
+// Включаем сжатие
 $client->enableHttpCompression(true);
 // Отправляем TSV-файлы в ClickHouse
 $result_insert = $client->insertBatchTSVFiles('events', [$fileName], [
@@ -353,9 +353,9 @@ foreach ($file_data_names as $fileName) {
 
 [ClickHouse использует формат CSV](https://clickhouse.yandex/reference_ru.html#CSV), соответствующий [RFC 4180](https://tools.ietf.org/html/rfc4180). При этом стандартные средства PHP, а именно функция `fputcsv()`, не полностью соответствует требованиям формата (см. [отчет об ошибке](https://bugs.php.net/bug.php?id=50686)).
 
-Для полноценной поддержки форматов TSV и CSV-файлов нами были реализованы преобразовали массива в строки: `FormatLine::CSV()` и `FormatLine::TSV()`, которые используют возможность ClickHouse хранить в колонках данные в виде массивов.
+Для полноценной поддержки форматов TSV и CSV-файлов нами были реализованы преобразователи массива в строки: `FormatLine::CSV()` и `FormatLine::TSV()`, которые используют возможность ClickHouse хранить в колонках данные в виде массивов.
 
-При больших объемах вставляемых из файлов данных включаем режим сжатия. В этом случае используется потоковое сжатие без создания временных файлов, что позволяет экономить на сетевых ресурсах сервера, немного увеличивая нагрузку на CPU. Скорость передачи данных возрастает, и суммарное время, затраченное на обработку одного файла, уменьшается в несколько раз.
+При больших объемах вставляемых из файлов данных включаем режим сжатия. В этом случае используется потоковое сжатие без создания временных файлов, что позволяет экономить на сетевых ресурсах сервера, немного увеличивая нагрузку на CPU. Скорость передачи данных возрастает, и суммарное время, затрачиваемое на обработку одного файла, уменьшается в несколько раз.
 
 В нашем примере для каждой строки мы передаем поле `event_date`, хотя эта же дата передается в поле `event_time`. Можно сэкономить ресурсы и не передавать каждый раз поля, которые можно вычислить на сервере ClickHouse из другого поля. Подробнее о **значениях по умолчанию** см. в [документации по ClickHouse](https://clickhouse.yandex/reference_ru.html#Значения%20по%20умолчанию).
 
@@ -367,13 +367,13 @@ CREATE TABLE articles.events (
     event_date  Date DEFAULT toDate(event_time),
     event_time  DateTime,
     event_type  Enum8('VIEWS' = 1, 'CLICKS' = 2),
-    site_id   Int32,
-    article_id   Int32,
+    site_id     Int32,
+    article_id  Int32,
     ip          String,
-    city    String,
+    city        String,
     user_uuid   String,
-    referer    String,
-    utm    String DEFAULT extractURLParameter(referer,'utm_campaign')
+    referer     String,
+    utm         String DEFAULT extractURLParameter(referer, 'utm_campaign')
 ) engine=MergeTree(event_date, (site_id, event_type,article_id), 8192)
 ```
 
@@ -381,12 +381,12 @@ CREATE TABLE articles.events (
 ```php
 $client->insert('events',
     [
-        [time(), 'CLICKS', 1, 1234, '192.168.1.11', 'Moscow','user_11',''],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Tobruk','user_32',  'http://smi2.ru?utm_campaign=CM1'],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Gisborne','user_12','http://smi2.ru?utm_campaign=CM1'],
-        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Moscow','user_43',  'http://smi2.ru?utm_campaign=CM3'],
+        [time(), 'CLICKS', 1, 1234, '192.168.1.11', 'Moscow', 'user_11', ''],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Tobruk', 'user_32',  'http://smi2.ru?utm_campaign=CM1'],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Gisborne', 'user_12', 'http://smi2.ru?utm_campaign=CM1'],
+        [time(), 'VIEWS' , 1, 1237, '192.168.1.1', 'Moscow', 'user_43', 'http://smi2.ru?utm_campaign=CM3'],
     ],
-    ['event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer']
+    ['event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city', 'user_uuid', 'referer']
 );
 ```
 
@@ -394,8 +394,8 @@ $client->insert('events',
 
 Меньше слов — больше кода!.. Приведем простой пример, как два запроса выполняются параллельно через драйвер:
 ```php
-$state1 = $db->selectAsync('SELECT 1 as ping');
-$state2 = $db->selectAsync('SELECT 2 as ping');
+$state1 = $db->selectAsync('SELECT 1 AS ping');
+$state2 = $db->selectAsync('SELECT 2 AS ping');
 
 // Отправка запросов в ClickHouse 
 $db->executeAsync();
@@ -407,26 +407,26 @@ print_r($state2->rows())
 
 Вариант без асинхронности:
 ```php
-$statement = $db->select(''SELECT 33 as ping'); 
+$statement = $db->select('SELECT 33 AS ping');
 ```
 
-Результат запросов —  это объект `Statement`, которые умеет делать следующее:
+Результат запросов — это объект `Statement`, который умеет делать следующее:
 ```php
-// Посчитать количество строк в результирующем наборе 
+// Получить количество строк в результирующем наборе
 $statement->count();
-// Посчитать, не менее скольких строчек получилось бы, если бы не было LIMIT-а или rows_before_limit_at_least
+// Получить минимальное количество строк, которое получилось бы без LIMIT-а ()
 $statement->countAll();
-// Получить первую строку ответа как массив 
+// Получить первую строку ответа как массив
 $statement->fetchOne();
-// Получить тотальные значения, если в запросе SELECT используется WITH TOTALS
+// Получить "тотальные" значения, если в запросе SELECT используется WITH TOTALS
 print_r($statement->totals());
-// Получить все строки в виде массива 
+// Получить все строки в виде массива
 print_r($statement->rows());
 // Получить суммарное время, потраченное на соединение с базой и получение ответа, данные из curl
 print_r($statement->totalTimeRequest());
 // Получить полный ответ curl_info 
 print_r($statement->responseInfo());
-// Получить информацию о выполнении запроса предоставленные ClickHouse
+// Получить информацию о выполнении запроса, предоставленную ClickHouse
 print_r($result->statistics());
 ```
 
@@ -434,7 +434,7 @@ print_r($result->statistics());
 ```sql
        SELECT
             event_date,
-            uniqCombined(user_uuid) as count_users
+            uniqCombined(user_uuid) AS count_users
         FROM
             events
         WHERE
@@ -450,7 +450,7 @@ print_r($result->statistics());
 ```sql
        SELECT
             user_uuid,
-            count() as clicks
+            count() AS clicks
         FROM
             articles.events
         WHERE
@@ -470,12 +470,12 @@ print_r($result->statistics());
         LIMIT 5
 ```
 
-Какие UTM-метки давали большее количество просмотров и кликов:
+Какие UTM-метки давали наибольшее количество просмотров и кликов:
 ```sql
        SELECT
             utm,
-            countIf(event_type IN('VIEWS')) as views,
-            countIf(event_type IN('CLICKS')) as clicks
+            countIf(event_type IN('VIEWS')) AS views,
+            countIf(event_type IN('CLICKS')) AS clicks
         FROM
             events
         WHERE
@@ -497,19 +497,19 @@ WHERE article_id IN (1,2,3,4,5,6,7,8,9)
 
 В данном примере все будет прекрасно работать. Но что делать, если идентификаторов тысячи или десятки тысяч? В этом случае пригодится функционал ClickHouse, который позволяет использовать [внешние данные для обработки запроса](https://clickhouse.yandex/reference_ru.html#Внешние%20данные%20для%20обработки%20запроса).
 
-Рассмотрим эту возможность ClickHouse на примере. Создадим CSV-файл `'/tmp/articles_list.csv'`, в котором перечислим все нужные для запроса `article_id`, и попросим ClickHouse создать временную таблицу namex, содержащую одну колонку:
+Рассмотрим эту возможность ClickHouse на примере. Создадим CSV-файл `'/tmp/articles_list.csv'`, в котором перечислим все нужные для запроса `article_id`, и попросим ClickHouse создать временную таблицу `namex`, содержащую одну колонку:
 ```php
 $whereIn = new \ClickHouseDB\WhereInFile();
 $whereIn->attachFile('/tmp/articles_list.csv', 'namex', ['article_id' => 'Int32'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
 ```
 
-Тогда содержимое CSV-файл можно использовать на сервере: 
+Тогда содержимое CSV-файла можно использовать на сервере:
 ```php
 $sql = "
     SELECT 
       article_id, 
-      countIf(event_type='CLICKS') as count_clicks, 
-      countIf(event_type='VIEWS') as count_views 
+      countIf(event_type='CLICKS') AS count_clicks,
+      countIf(event_type='VIEWS') AS count_views
     FROM articles.events
     WHERE 
           article_id IN (SELECT article_id FROM namex)
