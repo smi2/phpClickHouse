@@ -134,10 +134,8 @@
 
 Данные хранятся на 6 серверах SX131 от Hetzner с 3 шардами по 2 реплики.
 <details>
-  <summary>Real request</summary>
-
-    ![Real request](https://habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif)
-
+<summary>Real request</summary>
+![Real request](https://habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif)
 </details>
 
 
