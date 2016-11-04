@@ -112,12 +112,10 @@ habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif
 
 # Наши проекты для ClickHouse
 
-В процессе освоения и внедрения ClickHouse мы столкнулись с некоторыми неудобствами и отсутствием нужных нам «плюшек». Поэтому, не став ждать милостей от «~~Яндекса~~» природы, мы решили облегчить себе работу сами. Еще одним мотиватором было то, что нам хотелось внести свой вклад в развитие перспективного open-source проекта. Плюс — это был наш первый опыт участия в open-source разработке.
-
+В процессе освоения и внедрения ClickHouse мы столкнулись с некоторыми неудобствами и отсутствием нужных нам «плюшек». Поэтому, не став ждать милостей от «~~Яндекса~~» природы, мы решили облегчить себе работу сами. Еще одним мотиватором было то, что нам хотелось внести свой вклад в развитие перспективного open-source проекта. Плюс — это был наш первый опыт участия в open-source разработке. 
 Так родились два наших open-source проекта, которые позволили нам самим существенно ускорить и упростить процесс внедрения ClickHouse и работу с ним: 
 1. [Графический клиент](https://github.com/smi2/clickhouse-frontend) для работы с БД
 2. [Обертка на PHP](https://github.com/smi2/phpClickHouse) для удобной работы с БД, реализующая возможности ClickHouse
-
 Ниже описаны основные возможности каждого проекта.
 
 ## Наш графический клиент для ClickHouse: возможности и особенности
@@ -131,9 +129,7 @@ habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif
 * Удобная вставка словарей 
 * Темы оформления для редактора запросов, темы оформления для всего редактора (светлая и темная)
 * Горячие клавиши
-
 Клиент написан полностью на JavaScript, без использования server side.
-
 Вы можете спокойно использовать наш [последний опубликованный билд](http://guiclickhouse.smi2.ru/).
 
 **YOUTUBE Clickhouse GUI**
@@ -152,15 +148,11 @@ https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
 * Запись результата запроса напрямую в файл с поддержкой сжатия без создания временных файлов
 * Получение размера таблицы, базы и списка процессов на каждой ноде
 * Получение статистики выполнения запроса SELECT
-
 Драйвер протестирован на PHP 5.6 и 7, HHVM 3.9. Хотим сразу предупредить читателей, что драйвер не использует готовые решения в виде guzzle(PSR-7) и PSR-4 реализован через файл `include.php`. Надеемся, что этот факт не отпугнет вас от дальнейшего чтения.
 
 # Примеры работы с ClickHouse
-
 Рассмотрим на примере, как работать ClickHouse [из PHP](https://github.com/smi2/phpClickHouse)  и с помощью нашего [графического клиента](https://github.com/smi2/clickhouse-frontend). Считаем, что вы успешно установили ClickHouse из [deb-пакета последней версии](https://clickhouse.yandex/#download) и ознакомились с [Quick start guide](https://clickhouse.yandex/tutorial.html).
-
 Вот список наших сайтов:
-
 <table>
   <tr>
     <td>site_id</td>
@@ -179,10 +171,7 @@ https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
     <td>smi2.kz</td>
   </tr>
 </table>
-
-
 На каждом сайте совершаются события, связанные со статьями (новостями). Мы будем регистрировать данные о показах статей (views) и кликах по каждой статье (clicks). По каждому событию мы будем фиксировать несколько атрибутов:
-
 * IP-адрес пользователя
 * город пользователя
 * referer
@@ -192,7 +181,6 @@ https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
 ## Подключение к серверу ClickHouse, создание БД и таблицы
 
 Для записи данных о событиях создадим на сервере ClickHouse базу данных articles и внутри — нее таблицу events со следующей структурой:
-
 ```sql
     event_date  Date
     event_time  DateTime
@@ -206,12 +194,9 @@ https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
     utm    String
 ```
 Сначала рассмотрим создание базы данных и таблицы с помощью нашего **графического клиента**. Подключаемся через графический клиент к серверу ClickHouse и выполняем запрос на создание новой базы данных и новой таблицы:  
-
 ```sql
 CREATE DATABASE articles
-
 ;
-
 CREATE TABLE articles.events (
     event_date  Date,
     event_time  DateTime,
@@ -226,23 +211,18 @@ CREATE TABLE articles.events (
 ) engine=MergeTree(event_date, (site_id, event_type, article_id), 8192)
 ```
 
-
 ![Clickhouse GUI example](https://habrastorage.org/files/007/5cb/466/0075cb4664e3413b8532eedabdefaa30.png)
 
 Поясним некоторые параметры этого запроса:
-
 * MergeTree — это движок таблицы. Также существуют Log, CollapsingMergeTree, SummingMergeTree, ReplacingMergeTree и другие. 
 * Первый параметр event_date указывает на имя столбца типа Date, содержащего дату.
 * (site_id, event_type, article_id) — кортеж, определяющий первичный ключ таблицы (индекс).
-
 В большинстве запросов на чтение планируется указывать, по какому сайту нам нужны данные, поэтому первым в индексе используется site_id. Теперь попробуем создать подключение к серверу ClickHouse, базу данных и таблицу через наш **драйвер PHP**. Для этого сначала установим драйвер. 
-
 Установку стабильной сборки драйвера можно выполнить через composer:
-`composer require smi2/phpclickhouse`
+`   composer require smi2/phpclickhouse`
 либо клонировать драйвер из основной (master) ветки Git-репозитория:
-`git clone https://github.com/smi2/phpClickHouse.git`
+`   git clone https://github.com/smi2/phpClickHouse.git`
 Более подробная информация по установке драйвера доступна в [документации к драйверу](https://github.com/smi2/phpClickHouse#install), которая также содержит описание функций драйвера и ChangeLog.
-
 После того как драйвер был успешно установлен, выполняем запрос на подключение к серверу, создание БД и таблицы:
 ```php
 <?php
@@ -252,7 +232,6 @@ $config=['host'=>'192.168.1.20','port'=>'8123','username'=>'default','password'=
 $client=new \ClickHouseDB\Client($config);
 // Проверяем соединение с базой
 $client->ping();
-
 // Отправляем запрос на создание 
 $client->write('CREATE DATABASE IF NOT EXISTS articles');
 
@@ -278,36 +257,31 @@ $client->database('articles');
 // Получаем список таблиц
 print_r($client->showTables());
 ```
-
 Обращаем внимание, что запросы в драйвере разделены на следующие:
-
 * запись 
 * вставку данных 
 * чтение
-
 Операции вставки и чтения данных могут выполняться параллельно. Запросы на запись и вставку данных не содержат ответа, выполняется только проверка, что ответ сервера был положительным. Запросы на чтение ответ содержат (исключением является прямая запись ответа в файл).
-
 ## Вставка данных, в том числе из TSV-файла
-
 Вставим данные, которые будем использовать для тестирования:
 ```php
 $client->insert('events',
-    [
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow','xcvfdsazxc','http://yandex.ru',''],
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-        [date('Y-m-d'),time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
-    ],
-    ['event_date', 'event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer','utm']
+[
+    [date('Y-m-d'),time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
+    [date('Y-m-d'),time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow','xcvfdsazxc','http://yandex.ru',''],
+    [date('Y-m-d'),time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
+    [date('Y-m-d'),time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow','xcvfdsazxc','',''],
+],
+[
+    'event_date', 'event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer','utm'
+]
 );
 ```
 Такой метод вставки подходит только для маленьких таблиц или таблиц справочников, так как в этом случае будет выполняться преобразование массива в строку.  
-
 Получим результат вставки данных:
 ```php
 print_r(
         $client->select('SELECT * FROM events')->rows()
-
     );
 ```
 Подробнее про чтение данные написано ниже. Для вставки большего количества строк воспользуемся **прямой загрузкой**** TSV-файла**, который будет генерироваться при событии. Для этого будем записывать TSV-файл на сервере, где происходят события, и для упрощения отправлять его в ClickHouse.
@@ -327,7 +301,6 @@ $row = [
         ];
 ```
 Запись будем производить в файл, ротируемый ежеминутно следующим способом (допускаем все недостатки — ошибки записи, блокировки, и т. д . —  строка всегда записывается):    
-
 ```php
 // Имя файла 
 $filename='/tmp/articles.events_version1_'.date("YmdHi").'.TSV';
@@ -336,11 +309,9 @@ $text=\ClickHouseDB\FormatLine::TSV($row)."\n";
 
 // Также можно преобразовать массив в строку CSV  
 // $text=\ClickHouseDB\FormatLine::CSV($row)."\n";
- 
 
 file_put_contents($filename,$text,FILE_APPEND);
 ```
-
 На GitHub для тестов сделан [эмулятор класса ](https://github.com/smi2/phpClickHouse/blob/master/doc/article_01_userevent.php)[UserEvent](https://github.com/smi2/phpClickHouse/blob/master/doc/article_01_userevent.php) и [пример](https://github.com/smi2/phpClickHouse/blob/master/doc/article_01_bigtable.php) использования этого класса с записью в базу. 
 Допустим, что у нас накопилось 5—10 таких файлов, и мы готовы их отправить в базу:
 ```php
@@ -370,25 +341,16 @@ foreach ($file_data_names as $fileName) {
     echo $fileName . " : " . $result_insert[$fileName]->totalTimeRequest() . "\n";
 }
 ```
-
 Стоит отметить, что работа с **CSV-файлами** также поддерживаются. Для них нужно использовать функцию insertBatchFiles(), аналогичную функции insertBatchTSVFiles(). Однако при использовании TSV-файлов появляется дополнительная возможность вставлять в поле DateTime дату и время в формате unix timestamp. Подробнее о поддержке формата TabSeparated см. в [документации ClickHouse](https://clickhouse.yandex/reference_ru.html#TabSeparated).
-
 [ClickHouse использует формат CSV](https://clickhouse.yandex/reference_ru.html#CSV), соответствующий [RFC 4180](https://tools.ietf.org/html/rfc4180). При этом стандартные средства PHP, а именно функция `fputcsv()`, не полностью соответствует требованиям формата (см. [отчет об ошибке](https://bugs.php.net/bug.php?id=50686)).
-
 Для полноценной поддержки форматов TSV и CSV-файлов нами были реализованы преобразовали массива 
-в строки: FormatLine::CSV() и FormatLine::TSV(), которые используют возможность ClickHouse хранить в колонках данные в виде массивов.
-
-При больших объемах вставляемых из файлов данных включаем режим сжатия. 
-В этом случае используется потоковое сжатие без создания временных файлов, 
-что позволяет экономить на сетевых ресурсах сервера, немного увеличивая нагрузку на CPU. 
+в строки: `FormatLine::CSV()` и `FormatLine::TSV()`, которые используют возможность ClickHouse хранить в колонках данные в виде массивов.
+При больших объемах вставляемых из файлов данных включаем режим сжатия. В этом случае используется потоковое сжатие без создания временных файлов, что позволяет экономить на сетевых ресурсах сервера, немного увеличивая нагрузку на CPU. 
 Скорость передачи данных возрастает, и суммарное время, затраченное на обработку одного файла, уменьшается в несколько раз.
-
 В нашем примере для каждой строки мы передаем поле event_date, хотя эта же дата передается в поле event_time. 
 Можно сэкономить ресурсы и не передавать каждый раз поля, которые можно вычислить на сервере ClickHouse из другого поля. 
 Подробнее о **значениях по умолчанию** см. в [документации по ClickHouse](https://clickhouse.yandex/reference_ru.html#Значения%20по%20умолчанию).
-
 Поле `utm` будем заполнять из поля `referer`, если в нем указан utm_campaign, через функцию `extractURLParameter(referer,’utm_campaign’)`.
-
 Пересоздадим таблицу:
 
 ```sql
@@ -405,8 +367,6 @@ CREATE TABLE articles.events (
     utm    String DEFAULT extractURLParameter(referer,'utm_campaign')
 ) engine=MergeTree(event_date, (site_id, event_type,article_id), 8192)
 ```
-
-
 Изменим запись:
 ```php
 $client->insert('events',
@@ -419,12 +379,8 @@ $client->insert('events',
     ['event_time', 'event_type', 'site_id', 'article_id', 'ip', 'city','user_uuid','referer']
 );
 ```
-
-
 ## Чтение данных
-
 Меньше слов — больше кода!.. Приведем простой пример, как два запроса выполняются параллельно через драйвер:
-
 ```php
 $state1 = $db->selectAsync('SELECT 1 as ping');
 $state2 = $db->selectAsync('SELECT 2 as ping');
@@ -436,45 +392,30 @@ $db->executeAsync();
 print_r($state1->rows())
 print_r($state2->rows())
 ```
-
 Вариант без асинхронности:
 ```php
 $statement = $db->select(''SELECT 33 as ping'); 
 ```
-
 Результат запросов —  это объект `Statement`, которые умеет делать следующее:
-
 ```php
 // Посчитать количество строк в результирующем наборе 
 $statement->count();
-
 // Посчитать, не менее скольких строчек получилось бы, если бы не было LIMIT-а или rows_before_limit_at_least
 $statement->countAll();
-
 // Получить первую строку ответа как массив 
 $statement->fetchOne();
-
 // Получить тотальные значения, если в запросе SELECT используется WITH TOTALS
 print_r($statement->totals());
-
 // Получить все строки в виде массива 
 print_r($statement->rows());
-
 // Получить суммарное время, потраченное на соединение с базой и получение ответа, данные из curl
 print_r($statement->totalTimeRequest());
-
 // Получить полный ответ curl_info 
 print_r($statement->responseInfo());
-
 // Получить информацию о выполнении запроса предоставленные ClickHouse
 print_r($result->statistics());
 ```
-
-
-
-
-Попробуем прочитать наши данные. 
-
+Попробуем прочитать наши данные.
 Допустим, нам нужно посчитать, сколько уникальных пользователей просмотрело статьи по дням:
 ```sql
        SELECT
@@ -490,8 +431,6 @@ print_r($result->statistics());
             event_date
         LIMIT 4
 ```
-
-
 Сколько пользователей, которые просматривали статьи, совершили клики: 
 ```sql
        SELECT
@@ -515,8 +454,6 @@ print_r($result->statistics());
         GROUP BY user_uuid
         LIMIT 5
 ```
-
-
 Какие UTM-метки давали большее количество просмотров и кликов:
 ```sql
        SELECT
@@ -534,29 +471,18 @@ print_r($result->statistics());
             views DESC
         LIMIT 15
 ```
-
-
 ## Использование внешних данных для обработки запроса
-
-Допустим, что нам нужно посчитать, *сколько уникальных пользователей просмотрело за сутки статьи X*, 
-где в X перечислено несколько идентификаторов статей. Это можно сделать так: 
-
-WHERE article_id IN (1,2,3,4,5,6,7,8,9) 
-
-В данном примере все будет прекрасно работать. 
-Но что делать, если идентификаторов тысячи или десятки тысяч? В этом случае пригодится функционал ClickHouse, который позволяет использовать [внешние данные для обработки запроса](https://clickhouse.yandex/reference_ru.html#Внешние%20данные%20для%20обработки%20запроса).
-
- 
-
+Допустим, что нам нужно посчитать, *сколько уникальных пользователей просмотрело за сутки статьи X*, где в X перечислено несколько идентификаторов статей. Это можно сделать так: 
+```sql
+WHERE article_id IN (1,2,3,4,5,6,7,8,9)
+```
+В данном примере все будет прекрасно работать. Но что делать, если идентификаторов тысячи или десятки тысяч? В этом случае пригодится функционал ClickHouse, который позволяет использовать [внешние данные для обработки запроса](https://clickhouse.yandex/reference_ru.html#Внешние%20данные%20для%20обработки%20запроса).
 Рассмотрим эту возможность ClickHouse на примере. Создадим CSV-файл `'/tmp/articles_list.csv'`, в котором перечислим все нужные для запроса article_id, и попросим ClickHouse создать временную таблицу namex, содержащую одну колонку:
-
 ```php
 $whereIn = new \ClickHouseDB\WhereInFile();
 $whereIn->attachFile('/tmp/articles_list.csv', 'namex', ['article_id' => 'Int32'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
 ```
-
 Тогда содержимое CSV-файл можно использовать на сервере: 
-
 ```php
 $sql = "
     SELECT 
@@ -571,32 +497,18 @@ $sql = "
 ";
 $result = $db->select($sql, [], $whereIn);
 ```
-
-См. этот пример на [GitHub](https://github.com/smi2/phpClickHouse/blob/master/doc/article_01_wherein.php).
-
-Также функцией attachFile() поддерживаются файлы в форматах TabSeparated и TabSeparatedWithNames.
-
+См. этот пример на [GitHub](https://github.com/smi2/phpClickHouse/blob/master/doc/article_01_wherein.php). Также функцией attachFile() поддерживаются файлы в форматах TabSeparated и TabSeparatedWithNames.
 # Что дальше
-
-На этом мы, пожалуй, завершим первую часть нашего рассказа о ClickHouse.
-
-Много полезной информации о ClickHouse вы можете узнать из [группы в «Гугле»](https://groups.google.com/forum/#!forum/clickhouse). 
-
+На этом мы, пожалуй, завершим первую часть нашего рассказа о ClickHouse.Много полезной информации о ClickHouse вы можете узнать из [группы в «Гугле»](https://groups.google.com/forum/#!forum/clickhouse). 
 Если у вас есть замечания или вы нашли ошибки, опечатки — добро пожаловать в мир open-source, будем ждать ваших pull request по [этой статье](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md). Если вы любите анализ данных и вам интересно поработать с данными и ClickHouse — добро пожаловать к нам в команду ;)
-
 Мы планируем сделать **цикл материалов, посвященных нашему опыту работы с ClickHouse**. 
-
-
 В планах — следующие темы.
-
 Часть 2:
 * Подключение к кластеру ClickHouse из PHP 
 * Отправка запросов в кластер, реализация миграций на PHP
-
 Часть 3:
 * Использование словарей из MySQL в ClickHouse
 * Движки таблиц: CollapsingMergeTree, SummingMergeTree, MaterializedView
-
 Часть 4:
 * Примеры запросов в ClickHouse на открытых данных СМИ2
 * Семплирование данных в Clickhouse
