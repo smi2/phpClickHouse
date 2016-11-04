@@ -1,6 +1,6 @@
 Мы решили описать простой и проверенный путь для тех, кто хочет **внедрить аналитическую СУБД [ClickHouse](https://clickhouse.yandex/) своими силами** или просто испробовать ClickHouse на собственных данных. Именно этот путь прошли мы сами в новостном агрегаторе СМИ2 и добились впечатляющих результатов.
 
-![Alt](https://hsto.org/files/6fc/ce7/458/6fcce74582ef494fb398b1bb4aed1d0e.png)
+![Clickhouse-client](https://habrastorage.org/files/c6e/839/4a3/c6e8394a3f74489d813d8e869676a776.png)
 
 В предисловии статьи — небольшой рассказ о наших попытках внедрить Druid и InfluxDB. Почему после успешного запуска ClickHouse мы смогли отказаться от использования InfiniDB и Cassandra. 
 <habracut/>
@@ -90,8 +90,7 @@
 
 Данные хранятся на 6 серверах SX131 от Hetzner с 3 шардами по 2 реплики.
 
-**YOUTUBE**
-habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif
+<oembed>https://www.youtube.com/embed/Yp1qAoDS8FM</oembed>
 
 # Особенности ClickHouse
 
@@ -115,7 +114,6 @@ habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif
 Ниже описаны основные возможности каждого проекта.
 
 ## Наш графический клиент для ClickHouse: возможности и особенности
-
 * Просмотр списка баз данных и таблиц
 * Просмотр содержимого таблицы
 * Подсветка функций ClickHouse, названий таблиц и полей 
@@ -130,8 +128,7 @@ habrastorage.org/files/cf9/be0/377/cf9be0377e30476ba577d4416cc66970.gif
 
 Вы можете спокойно использовать наш [последний опубликованный билд](http://guiclickhouse.smi2.ru/).
 
-**YOUTUBE Clickhouse GUI**
-https://habrastorage.org/files/695/e03/84c/695e0384cd474a4789e3b8c83517c4e7.gif
+<oembed>https://www.youtube.com/embed/u5DOWnm47vg</oembed>
 
 ## Наш PHP-драйвер для ClickHouse: возможности и особенности
 
