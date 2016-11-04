@@ -408,19 +408,24 @@ $db->insert('arrays_test_string',
 
 ```
 
-Class for CSV array
+Class for FormatLine array
 ```php
 
 
 var_dump(
-    \ClickHouseDB\CSV::quoteRow(
+    \ClickHouseDB\FormatLine::CSV(
         ['HASH1', ["a", "dddd", "xxx"]]
     )
 );
 
+var_dump(
+    \ClickHouseDB\FormatLine::TSV(
+        ['HASH1', ["a", "dddd", "xxx"]]
+    )
+);
 // example write to file
 $row=['event_time'=>date('Y-m-d H:i:s'),'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]];
-file_put_contents($fileName,\ClickHouseDB\CSV::quoteRow($row)."\n",FILE_APPEND);
+file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
 
 
 ```
