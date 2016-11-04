@@ -14,7 +14,7 @@ include_once 'article_01_userevent.php';
 
 // Конфигурация
 $config = [
-    'host' => '10.211.5.3',
+    'host' => '192.168.1.20',
     'port' => '8123',
     'username' => 'default',
     'password' => ''
