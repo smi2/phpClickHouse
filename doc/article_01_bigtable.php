@@ -1,7 +1,7 @@
 <?php
-$fileName='/tmp/__articles.big.events_version1.csv';
+$fileName = '/tmp/__articles.big.events_version1.csv';
 
-$count_rows=500000;
+$count_rows = 500000;
 
 
 // Подключаем драйвер
@@ -14,8 +14,8 @@ include_once 'article_01_userevent.php';
 
 // Конфигурация
 $config = [
-    'host'     => '10.211.5.3',
-    'port'     => '8123',
+    'host' => '10.211.5.3',
+    'port' => '8123',
     'username' => 'default',
     'password' => ''
 ];
@@ -24,13 +24,10 @@ $config = [
 $client = new \ClickHouseDB\Client($config);
 
 
-$client->write('DROP TABLE IF EXISTS articles.events');
+//$client->write('DROP TABLE IF EXISTS articles.events');
 
 
-
-
-if (!$client->isExists('articles','events'))
-{
+if (!$client->isExists('articles', 'events')) {
 
     $client->write('DROP TABLE IF EXISTS articles.events');
 
@@ -51,32 +48,28 @@ if (!$client->isExists('articles','events'))
 ");
 
     // ---------------------------- создадим тестовый набор данных ---------------
-    $userEvent=new UserEvent();
+    $userEvent = new UserEvent();
 
     @unlink($fileName);
-    echo "Write data to : ".$fileName."\n\n";
+    echo "Write data to : " . $fileName . "\n\n";
 
-    for ($z=0;$z<$count_rows;$z++)
-    {
+    for ($z = 0; $z < $count_rows; $z++) {
 
         $row = [
             'event_date' => $userEvent->getDate(),
             'event_time' => $userEvent->getTime(),
             'event_type' => $userEvent->getType(),
-            'site_id'    => $userEvent->getSiteId(),
+            'site_id' => $userEvent->getSiteId(),
             'article_id' => $userEvent->getArticleId(),
-            'ip'         => $userEvent->getIp(),
-            'city'       => $userEvent->getCity(),
-            'user_uuid'  => $userEvent->getUserUuid(),
-            'referer'    => $userEvent->getReferer(),
-            'utm'    => $userEvent->getUtm(),
+            'ip' => $userEvent->getIp(),
+            'city' => $userEvent->getCity(),
+            'user_uuid' => $userEvent->getUserUuid(),
+            'referer' => $userEvent->getReferer(),
+            'utm' => $userEvent->getUtm(),
         ];
-        file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
-        if ($z%100==0) echo "$z\r";
+        file_put_contents($fileName, \ClickHouseDB\FormatLine::TSV($row) . "\n", FILE_APPEND);
+        if ($z % 100 == 0) echo "$z\r";
     }
-
-
-
 
 
 // Включаем сжатие
@@ -97,7 +90,6 @@ if (!$client->isExists('articles','events'))
         'utm'
     ]);
     echo "insert done\n";
-
 
 
     echo $fileName . " : " . $result_insert[$fileName]->totalTimeRequest() . "\n";
@@ -125,7 +117,6 @@ print_r(
 );
 
 
-
 // Сколько пользователей, которые просматривали и совершили клики
 print_r(
     $client->select("
@@ -150,8 +141,6 @@ print_r(
         GROUP BY user_uuid
     ")->rows()
 );
-
-
 
 
 // Посчитаем ботов, это очень грубо, но возможно оценить через кол-во запросов с одного IP и кол-во уникальных UUID
