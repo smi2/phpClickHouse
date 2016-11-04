@@ -277,13 +277,13 @@ CREATE TABLE articles.events (
 
 Можно установить несколькими вариантами:
 
-# через composer:
+* через composer:
 
 `composer require smi2/phpclickhouse`
 
-# через Git (мы в production используем ветку master):
+* через Git (мы в production используем ветку master):
 
-git clone [https://github.com/smi2/phpClickHouse.git](https://github.com/smi2/phpClickHouse.git)
+`git clone https://github.com/smi2/phpClickHouse.git`
 
 В случае установки через Git подключаем драйвер:
 
