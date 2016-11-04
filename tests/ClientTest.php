@@ -136,7 +136,8 @@ class ClientTest extends TestCase
     }
 
 
-    public function testRFCCSVWrite()
+
+    public function testRFCCSVAndTSVWrite()
     {
         $fileName=$this->tmp_path.'__testRFCCSVWrite';
 
@@ -167,7 +168,7 @@ class ClientTest extends TestCase
         //
         foreach ($data as $row)
         {
-            file_put_contents($fileName,\ClickHouseDB\CSV::quoteRow($row)."\n",FILE_APPEND);
+            file_put_contents($fileName,\ClickHouseDB\FormatLine::CSV($row)."\n",FILE_APPEND);
         }
 
         $this->db->insertBatchFiles('testRFCCSVWrite', [$fileName], [
@@ -196,9 +197,58 @@ class ClientTest extends TestCase
         $this->assertEquals(3.4, $row['flos']);
 
 
-        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
         unlink($fileName);
 
+
+        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        $this->db->write('CREATE TABLE testRFCCSVWrite ( 
+           event_date Date DEFAULT toDate(event_time),
+           event_time DateTime,
+           strs String,
+           flos Float32,
+           ints Int32,
+           arr1 Array(UInt8),  
+           arrs Array(String)  
+        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+
+
+
+        foreach ($data as $row)
+        {
+            file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
+        }
+
+        $this->db->insertBatchTSVFiles('testRFCCSVWrite', [$fileName], [
+            'event_time',
+            'strs',
+            'flos',
+            'ints',
+            'arr1',
+            'arrs',
+        ]);
+
+
+
+
+        $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
+
+        $st=$this->db->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
+
+
+        $this->assertEquals('17721988568158798984', $st->fetchOne('hash'));
+
+        $ID_ARRAY=$this->db->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
+
+        $this->assertEquals($array_value_test, $ID_ARRAY);
+
+
+
+        $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
+
+        $this->assertEquals(3, $row['ints']);
+        $this->assertEquals(3.4, $row['flos']);
+        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        unlink($fileName);
         return true;
     }
     public function testConnectTimeout()

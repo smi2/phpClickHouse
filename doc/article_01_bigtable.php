@@ -61,7 +61,7 @@ if (!$client->isExists('articles','events'))
             'user_uuid'  => $userEvent->getUserUuid(),
             'referer'    => $userEvent->getReferer(),
         ];
-        file_put_contents($fileName,\ClickHouseDB\CSV::quoteRow($row)."\r\n",FILE_APPEND);
+        file_put_contents($fileName,\ClickHouseDB\FormatLine::CSV($row)."\r\n",FILE_APPEND);
         if ($z%10000==0) echo "$z\r";
     }
 //    fclose($fp);

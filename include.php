@@ -1,7 +1,8 @@
 <?php
-// Functions
-include_once __DIR__ . '/src/InsertRow.php';
-include_once __DIR__ . '/src/CSV.php';
+// Functions Quote CSV , TSV , Insert
+include_once __DIR__ . '/src/Quote/StrictQuoteLine.php';
+include_once __DIR__ . '/src/Quote/FormatLine.php';
+include_once __DIR__ . '/src/Quote/CSV.php';
 // Exception
 include_once __DIR__ . '/src/Exception/Exception.php';
 include_once __DIR__ . '/src/Exception/QueryException.php';

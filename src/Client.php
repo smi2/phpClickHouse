@@ -380,17 +380,30 @@ class Client
         $sql .= ' VALUES ';
 
         foreach ($values as $row) {
-            $sql .= ' (' . InsertRow::quoteRow($row) . '), ';
+            $sql .= ' (' . FormatLine::Insert($row) . '), ';
         }
         $sql = trim($sql, ', ');
-
         return $this->transport()->write($sql);
     }
 
     /**
+     * Async insert TabSeparated files
+     *
+     *
      * @param $table_name
      * @param $file_names
      * @param $columns_array
+     * @return mixed
+     */
+    public function insertBatchTSVFiles($table_name, $file_names, $columns_array)
+    {
+        return $this->insertBatchFiles($table_name,$file_names,$columns_array,'TabSeparated');
+    }
+    /**
+     * @param $table_name
+     * @param $file_names
+     * @param $columns_array
+     * @param $format string ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return array
      */
     public function insertBatchFiles($table_name, $file_names, $columns_array,$format="CSV")

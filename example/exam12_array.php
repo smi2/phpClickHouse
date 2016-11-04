@@ -33,7 +33,6 @@ echo "Insert Done\n";
 
 print_r($db->select('SELECT s_key, s_arr FROM arrays_test ARRAY JOIN s_arr')->rows());
 
-
 $db->write("DROP TABLE IF EXISTS arrays_test_string");
 
 $res = $db->write('
@@ -55,3 +54,103 @@ echo "Insert Done\n";
 print_r($db->select('SELECT s_key, s_arr FROM arrays_test_string ARRAY JOIN s_arr')->rows());
 
 
+echo "\ntestRFCCSVWrite>>>>\n";
+$fileName='/tmp/testRFCCSVWrite.CSV';
+date_default_timezone_set('Europe/Moscow');
+$db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+$db->write('CREATE TABLE testRFCCSVWrite (
+           event_date Date DEFAULT toDate(event_time),
+           event_time DateTime,
+           strs String,
+           flos Float32,
+           ints Int32,
+           arr1 Array(UInt8),
+           arrs Array(String)
+        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+
+@unlink($fileName);
+
+$data=[
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>1.1,'ints'=>1,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'STRING','flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'"TRING','flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"SOMET\nRI\n\"N\"G\\XX_ABCDEFG",'flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"ID_ARRAY",'flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]]
+];
+
+//// 1.1 + 2.3 = 3.3999999761581
+//
+foreach ($data as $row)
+{
+    file_put_contents($fileName,\ClickHouseDB\FormatLine::CSV($row)."\n",FILE_APPEND);
+}
+//
+echo "FILE:\n\n";
+echo file_get_contents($fileName)."\n\n----\n";
+
+//
+$db->insertBatchFiles('testRFCCSVWrite', [$fileName], [
+    'event_time',
+    'strs',
+    'flos',
+    'ints',
+    'arr1',
+    'arrs',
+]);
+
+$st=$db->select('SELECT * FROM testRFCCSVWrite');
+print_r($st->rows());
+//
+
+
+echo "\n<<<<< TAB >>>>\n";
+$fileName='/tmp/testRFCCSVWrite.TAB';@unlink($fileName);
+
+
+$db->write("DROP TABLE IF EXISTS testTABWrite");
+$db->write('CREATE TABLE testTABWrite (
+           event_date Date DEFAULT toDate(event_time),
+           event_time DateTime,
+           strs String,
+           flos Float32,
+           ints Int32,
+           arr1 Array(UInt8),
+           arrs Array(String)
+        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+
+
+
+$data=[
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"STING\t\tSD!\"\nFCD\tSAD\t\nDSF",'flos'=>-2.3,'ints'=>123,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'STRING','flos'=>0,'ints'=>12123,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'"TR\tING','flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"SOMET\nRI\n\"N\"G\\XX_ABCDEFG",'flos'=>0,'ints'=>1,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\ns\tC"]],
+    ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"ID_ARRAY",'flos'=>-2.3,'ints'=>-12123,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC\n\t\n\tTABARRAYS"]]
+];
+
+
+foreach ($data as $row)
+{
+    file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
+}
+//
+echo "FILE:\n\n";
+echo file_get_contents($fileName)."\n\n----\n";
+
+//
+$db->insertBatchTSVFiles('testTABWrite', [$fileName], [
+    'event_time',
+    'strs',
+    'flos',
+    'ints',
+    'arr1',
+    'arrs',
+]);
+
+$st=$db->select('SELECT * FROM testTABWrite');
+print_r($st->rows());
+$st=$db->select('SELECT round(sum(flos),5),sum(ints) FROM testTABWrite');
+print_r($st->rows());
+
+//

@@ -403,16 +403,26 @@ $db->insert('arrays_test_string',
     ['s_key', 's_arr']
 );
 
-// see example/exam12_array.php
+// see example/exam12_array.php 
+
+
 ```
 
 Class for CSV array
 ```php
+
+
 var_dump(
     \ClickHouseDB\CSV::quoteRow(
         ['HASH1', ["a", "dddd", "xxx"]]
     )
 );
+
+// example write to file
+$row=['event_time'=>date('Y-m-d H:i:s'),'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]];
+file_put_contents($fileName,\ClickHouseDB\CSV::quoteRow($row)."\n",FILE_APPEND);
+
+
 ```
 
 ### Phpunit Test
@@ -437,12 +447,18 @@ MIT
 
 ChangeLog
 ---
+###  2016-11-04
+- add `$db->insertBatchTSVFiles()`,
+- add format param in `$db->insertBatchFiles(,,,format)`,
+- deprecated class CSV
+- Add static class `\ClickHouseDB\FormatLine:CSV(),\ClickHouseDB\FormatLine:TSV(),\ClickHouseDB\FormatLine:Insert()`
+- CSV RFC4180 - `\ClickHouseDB\FormatLine::CSV(Array))."\n"`
+- Update exam12_array.php + unit tests
+
 ###  2016-11-03
 - `$db->enableLogQueries(true)` - write to system.query_log
 - `$db->enableExtremes(true);` - default extremes now, disabled 
 - `$db->isExists($database,$table)` 
-- Rename CSV to InsertRow class, create new class CSV 
-- CSV RFC4180 - `\ClickHouseDB\CSV::quoteRow(Array))."\n"`
 
  
 ###  2016-10-27 
