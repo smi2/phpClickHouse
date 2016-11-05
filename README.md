@@ -17,10 +17,22 @@ php ClickHouse wrapper
 * Insert array as column
 
 
-## Install 
+## Install composer
 
 ```
 composer require smi2/phpclickhouse
+```
+
+## Install submodule
+
+```bash
+git submodule add https://github.com/smi2/phpClickHouse.git
+git submodule init
+
+# update 
+git submodule update --init --recursive
+git submodule update --remote
+
 ```
 
 
