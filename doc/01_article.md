@@ -264,7 +264,7 @@ print_r($client->showTables());
 ```php
 $client->insert('events',
 [
-    [date('Y-m-d'), time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ,''],
+    [date('Y-m-d'), time(), 'CLICKS', 1, 1234, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
     [date('Y-m-d'), time(), 'CLICKS', 1, 1235, '192.168.1.1', 'Moscow', 'xcvfdsazxc', 'http://yandex.ru', ''],
     [date('Y-m-d'), time(), 'CLICKS', 1, 1236, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
     [date('Y-m-d'), time(), 'CLICKS', 1, 1237, '192.168.1.1', 'Moscow', 'xcvfdsazxc', '', ''],
