@@ -328,7 +328,7 @@ $file_data_names=
 // Включаем сжатие
 $client->enableHttpCompression(true);
 // Отправляем TSV-файлы в ClickHouse
-$result_insert = $client->insertBatchTSVFiles('events', [$fileName], [
+$result_insert = $client->insertBatchTSVFiles('events', [$file_data_names], [
         'event_date',
         'event_time',
         'event_type',

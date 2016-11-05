@@ -16,22 +16,22 @@ class Client
     private $_transport = false;
 
     /**
-     * @var
+     * @var string
      */
     private $_connect_username = false;
 
     /**
-     * @var
+     * @var string
      */
     private $_connect_password = false;
 
     /**
-     * @var
+     * @var string
      */
     private $_connect_host = false;
 
     /**
-     * @var
+     * @var int
      */
     private $_connect_port = false;
 
@@ -94,6 +94,8 @@ class Client
     }
 
     /**
+     * Очистить пред обработку запроса [шаблонизация]
+     *
      * @return bool
      */
     public function cleanQueryDegeneration()
@@ -102,6 +104,8 @@ class Client
     }
 
     /**
+     * Добавить пред обработку запроса
+     *
      * @param Query\Degeneration $degeneration
      * @return bool
      */
@@ -111,6 +115,8 @@ class Client
     }
 
     /**
+     * Замена :var в запросе
+     *
      * @return bool
      */
     public function enableQueryConditions()
@@ -119,6 +125,7 @@ class Client
     }
     /**
      * Set connection host
+     *
      * @param $host
      */
     public function setHost($host)
@@ -134,6 +141,8 @@ class Client
     }
 
     /**
+     * Таймаут
+     *
      * @param $timeout
      * @return Settings
      */
@@ -143,6 +152,8 @@ class Client
     }
 
     /**
+     * Таймаут
+     *
      * @return mixed
      */
     public function getTimeout()
@@ -172,6 +183,8 @@ class Client
 
 
     /**
+     * transport
+     *
      * @return Http
      */
     public function transport()
@@ -183,7 +196,7 @@ class Client
     }
 
     /**
-     * @return bool
+     * @return string
      */
     public function getConnectHost()
     {
@@ -191,7 +204,7 @@ class Client
     }
 
     /**
-     * @return bool
+     * @return string
      */
     public function getConnectPassword()
     {
@@ -199,7 +212,7 @@ class Client
     }
 
     /**
-     * @return bool
+     * @return string
      */
     public function getConnectPort()
     {
@@ -207,7 +220,7 @@ class Client
     }
 
     /**
-     * @return bool
+     * @return string
      */
     public function getConnectUsername()
     {
@@ -215,6 +228,8 @@ class Client
     }
 
     /**
+     * transport
+     *
      * @return Http
      */
     public function getTransport()
@@ -224,6 +239,8 @@ class Client
 
 
     /**
+     * Режим отладки CURL
+     *
      * @return mixed
      */
     public function verbose()
@@ -240,6 +257,8 @@ class Client
     }
 
     /**
+     * Запрос на запись CREATE/DROP
+     *
      * @param $sql
      * @param array $bindings
      * @param bool $exception
@@ -295,6 +314,8 @@ class Client
     }
 
     /**
+     * SELECT
+     *
      * @param $sql
      * @param array $bindings
      * @param WhereInFile $whereInFile
@@ -307,6 +328,8 @@ class Client
     }
 
     /**
+     * Исполнить запросы из очереди
+     *
      * @return bool
      */
     public function executeAsync()
@@ -315,6 +338,8 @@ class Client
     }
 
     /**
+     * Подготовить запрос SELECT
+     *
      * @param $sql
      * @param array $bindings
      * @param WhereInFile $whereInFile
@@ -327,6 +352,8 @@ class Client
     }
 
     /**
+     * SHOW PROCESSLIST
+     *
      * @return array
      */
     public function showProcesslist()
@@ -335,6 +362,8 @@ class Client
     }
 
     /**
+     * show databases
+     *
      * @return array
      */
     public function showDatabases()
@@ -342,12 +371,20 @@ class Client
         return $this->select('show databases')->rows();
     }
 
+    /**
+     * statement = SHOW CREATE TABLE
+     *
+     * @param $table
+     * @return mixed
+     */
     public function showCreateTable($table)
     {
         return ($this->select('SHOW CREATE TABLE '.$table)->fetchOne('statement'));
     }
 
     /**
+     * SHOW TABLES
+     *
      * @return array
      */
     public function showTables()
@@ -356,6 +393,8 @@ class Client
     }
 
     /**
+     * Получить кол-во одновременных запросов
+     *
      * @return int
      */
     public function getCountPendingQueue()
@@ -364,6 +403,8 @@ class Client
     }
 
     /**
+     * Вставить массив
+     *
      * @param $table
      * @param $values
      * @param array $columns
@@ -387,8 +428,7 @@ class Client
     }
 
     /**
-     * Async insert TabSeparated files
-     *
+     * insert TabSeparated files
      *
      * @param $table_name
      * @param $file_names
@@ -400,6 +440,8 @@ class Client
         return $this->insertBatchFiles($table_name,$file_names,$columns_array,'TabSeparated');
     }
     /**
+     *
+     *
      * @param $table_name
      * @param $file_names
      * @param $columns_array
