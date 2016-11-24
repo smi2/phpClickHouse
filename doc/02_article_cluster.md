@@ -1,3 +1,66 @@
+# Подключение к кластеру ClickHouse из PHP
+
+* Что такое кластер ?
+* Что такое реплики ?
+*
+
+
+(http://uk0.us/2011/01/simple-raw-sql-migrations-for-kohana-3/)
+
+### Вступление. Немного о масштабировании Clickhouse
+
+
+Сдесь будет очень коротко что такое кластер и репликация+шардирование.
+Нет смысла переписывать документацию. 
+
+
+имеется база данных, в которую осуществляется запись и чтение данных. 
+В динамично растущих системах, объемы данных, как правило, быстро 
+увеличиваются и рано или поздно можно столкнуться с проблемой, 
+когда текущих ресурсов машины будет не хватать для нормальной работы.
+
+Для решения этой проблемы применяют масштабирование. 
+Масштабирование бывает 2-х видов — горизонтальное и вертикальное. 
+
+Вертикальное масштабирование — наращивание мощностей одной машины — добавление CPU, RAM, HDD. 
+Горизонтальное масштабирование — добавление новых машин к существующим и распределение данных между ними.
+
+
+Второй случай более сложен в конфигурации, но имеет ряд преимуществ: 
+Теоретически бесконечное масштабирование (машин можно поставить сколько угодно)
+Бо́льшая безопасность данных (только при использовании репликации) — машины могут располагаться в разных дата центрах (при падении одной из них, останутся другие)
+
+
+
+
+
+
+Для подключения к кластеру используем отдельный класс
+
+
+# Отправка запросов в кластер, реализация миграций на PHP
+
+
+
+
+
+
+
+### Примеры миграций
+
+Мы используем (mybatis):[http://www.mybatis.org/migrations/]
+
+
+
+https://habrahabr.ru/post/315254/
+
+
+Почему миграции это круто ?
+Допустим у вас таблица из 50 колонок , а елси их 200 или 500 ?
+Вы ведете отдельную документацию по каждой колонке?
+Вы помните когда каждую колонку добавил ?
+
+
 
 
 #### Результат запроса, напрямую в файл
@@ -49,10 +112,32 @@ $curl_opt[CURLOPT_FILE]=$this->resultFileHandle;
   stream_filter_append($this->resultFileHandle, 'zlib.deflate', STREAM_FILTER_WRITE, $params);
 ```
 
-###  Кластер
+###  Некоторые примеры развертки Clickhouse
+
+https://clickhouse.yandex/reference_ru.html#Distributed
+Движок Distributed -  не хранит данные самостоятельно, а позволяет обрабатывать запросы распределённо, на нескольких серверах.
+Чтение автоматически распараллеливается. 
+
+
+https://clickhouse.yandex/reference_ru.html#Репликация данных
+
+Репликация данных - Движок Replicated* 
+Репликация никак не связана с шардированием. На каждом шарде репликация работает независимо.
+Репликация является опциональной возможностью. Для использования репликации, укажите в конфигурационном файле адреса ZooKeeper кластера.
+
+
 
 Допустим есть серверный конфиг в ansible  который создает кластеры:
- ```
+Не стоит использовать в продакшене кластер: sharovara - это для теста и пример сделан в этом кластере нет репликации, т/е если вылетает одна из нод
+вытеряете 1/4 данных.
+
+pulse - это две копии на две шарды
+sharovara - это 4е шары
+repikator - 4е реплики - максимальная надежность для параноии.
+
+
+
+```xml
  ansible.cluster1.yml
     - name: "pulse"
       shards:
@@ -67,18 +152,85 @@ $curl_opt[CURLOPT_FILE]=$this->resultFileHandle;
     - name: "repikator"
       shards:
         - { name: "01", replicas: ["clickhouse63.smi2", "clickhouse64.smi2","clickhouse65.smi2", "clickhouse66.smi2"]}
-    - name: "sharovara3x"
-      shards:
-        - { name: "01", replicas: ["clickhouse64.smi2"]}
-        - { name: "02", replicas: ["clickhouse65.smi2"]}
-        - { name: "03", replicas: ["clickhouse66.smi2"]}
-    - name: "repikator3x"
-      shards:
-        - { name: "01", replicas: ["clickhouse64.smi2","clickhouse65.smi2", "clickhouse66.smi2"]}
+
+```
+
+
+(Засунуть в споллер)
+Или конфигрурация в XML :
+
+```xml
+
+	<remote_servers>
+<repikator>
+
+		<shard>
+			<replica>
+				<host>clickhouse63.smi2</host>
+			</replica>
+			<replica>
+				<host>clickhouse64.smi2</host>
+			</replica>
+			<replica>
+				<host>clickhouse65.smi2</host>
+			</replica>
+			<replica>
+				<host>clickhouse66.smi2</host>
+			</replica>
+		</shard>
+		</repikator>
+<pulse>
+		<!-- 01 -->
+		<shard>
+                <replica>
+                    <host>clickhouse63.smi2</host>
+                </replica>
+                <replica>
+                    <host>clickhouse64.smi2</host>
+                </replica>
+		</shard>
+		<!-- 02 -->
+		<shard>
+                <replica>
+                    <host>clickhouse65.smi2</host>
+                </replica>
+                <replica>
+                    <host>clickhouse66.smi2</host>
+                </replica>
+		</shard>
+</pulse>
+<sharovara>
+		<!-- 01 -->
+		<shard>
+                <replica>
+                    <host>clickhouse63.smi2</host>
+                </replica>
+		</shard>
+		<!-- 02 -->
+		<shard>
+                <replica>
+                    <host>clickhouse64.smi2</host>
+                </replica>
+		</shard>
+		<!-- 03 -->
+		<shard>
+			<replica>
+				<host>clickhouse65.smi2</host>
+			</replica>
+		</shard>
+		<!-- 04 -->
+		<shard>
+			<replica>
+				<host>clickhouse66.smi2</host>
+			</replica>
+		</shard>
+		</sharovara>
+		
 ```
 
 Создаем класс для работы с кластером:
-```
+
+```php
 $cl = new ClickHouseDB\Cluster(
   ['host'=>'allclickhouse.smi2','port'=>'8123','username'=>'x','password'=>'x']
 );
@@ -89,18 +241,25 @@ $cl = new ClickHouseDB\Cluster(
 
 
 Установим время за которое можно подключиться ко всем нодам:
-```
+```php
 $cl->setScanTimeOut(2.5); // 2500 ms
 ```
 Проверяем что состояние рабочее, в данный момент происходит асинхронное подключение ко всем серверам
-```
+```php
 if (!$cl->isReplicasIsOk())
 {
     throw new Exception('Replica state is bad , error='.$cl->getError());
 }
 ```
 
+Если не запрашивать последние 4 столбца (log_max_index, log_pointer, total_replicas, active_replicas), то таблица работает быстро.
+
+
+
+
+
 Как работает проверка:
+(https://clickhouse.yandex/reference_ru.html#system.replicas)
 * Установленно соединение со всеми сервера перечисленным в DNS записи
 * Проверка таблицы system.replicas что всё хорошо
   * not is_readonly
@@ -114,8 +273,23 @@ if (!$cl->isReplicasIsOk())
   * active_replicas < total_replicas
 
 
+future_parts:       количество кусков с данными, которые появятся в результате INSERT-ов или слияний, которых ещё предстоит сделать
+parts_to_check:     количество кусков с данными в очереди на проверку Кусок помещается в очередь на проверку, если есть подозрение, что он может быть битым.
+log_max_index:      максимальный номер записи в общем логе действий
+log_pointer:        максимальный номер записи из общего лога действий, которую реплика скопировала в свою очередь для выполнения, плюс единица
+Если log_pointer сильно меньше log_max_index, значит что-то не так.
+total_replicas:     общее число известных реплик этой таблицы
+active_replicas:    число реплик этой таблицы, имеющих сессию в ZK; то есть, число работающих реплик
+Если запрашивать все столбцы, то таблица может работать слегка медленно, так как на каждую строчку делается несколько чтений из ZK.
+Если не запрашивать последние 4 столбца (log_max_index, log_pointer, total_replicas, active_replicas), то таблица работает быстро.
+
+
+
+
+
+
 Получаем список всех cluster
-```
+```php
 print_r($cl->getClusterList());
 // result
 //    [0] => pulse
@@ -128,7 +302,7 @@ print_r($cl->getClusterList());
 
 Узнаем список node(ip) и кол-во shard,replica
 
-```
+```php
 foreach (['pulse','repikator','sharovara','repikator3x','sharovara3x'] as $name)
 {
     print_r($cl->getClusterNodes($name));
@@ -228,4 +402,9 @@ print_r($statement->rowsAsTree('event_date.site_key'));
 */
 
 ```
+
+
+
+# Выгружайте сырые данные из Метрики через Logs API
+
 

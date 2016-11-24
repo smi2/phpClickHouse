@@ -58,6 +58,13 @@ class Cluster
      */
     private $isScaned = false;
 
+
+    /**
+     *
+     * @var bool
+     */
+    private $softCheck = false;
+
     /**
      * @var bool
      */
@@ -82,6 +89,14 @@ class Cluster
     private function defaultClient()
     {
         return $this->defaultClient;
+    }
+
+    /**
+     * @param $softCheck
+     */
+    public function setSoftCheck($softCheck)
+    {
+        $this->softCheck = $softCheck;
     }
 
     /**
@@ -207,6 +222,11 @@ class Cluster
 
         foreach ($this->nodes as $node) {
             $this->defaultClient()->setHost($node);
+
+            // @todo: Если запрашивать все столбцы, то таблица может работать слегка медленно, так как на каждую строчку делается несколько чтений из ZK.
+            // @todo: Если не запрашивать последние 4 столбца (log_max_index, log_pointer, total_replicas, active_replicas), то таблица работает быстро.
+
+
             $statementsReplicas[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.replicas');
             $statementsClusters[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.clusters');
             // пересетапим timeout
