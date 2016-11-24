@@ -472,7 +472,7 @@ ChangeLog
 - `cluster->getSizeTable('dbName.tableName')`
 - `cluster->getTables()`
 - `cluster->truncateTable('dbName.tableName')`
-
+- See example cluster_06_truncate_table.php
 
 ###  2016-11-24
 - add `cluster->setSoftCheck()`
