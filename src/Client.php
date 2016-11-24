@@ -450,6 +450,10 @@ class Client
      */
     public function insertBatchFiles($table_name, $file_names, $columns_array,$format="CSV")
     {
+        if (is_string($file_names))
+        {
+            $file_names=[$file_names];
+        }
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
@@ -463,10 +467,19 @@ class Client
 
         foreach ($file_names as $fileName) {
             if (!is_file($fileName) || !is_readable($fileName)) {
-                throw  new QueryException('Cant read file: ' . $fileName);
+                throw  new QueryException('Cant read file: ' . $fileName.' '.(is_file($fileName)?'':' is not file'));
             }
 
-            $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
+            if (!$columns_array)
+            {
+                $sql = 'INSERT INTO ' . $table_name . ' FORMAT '.$format;
+
+            }
+            else
+            {
+                $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
+
+            }
             $result[$fileName] = $this->transport()->writeAsyncCSV($sql, $fileName);
         }
 
@@ -482,6 +495,39 @@ class Client
 
         return $result;
     }
+
+    /**
+     * @param $table_name
+     * @param $stream
+     * @param $columns_array
+     * @param string $format
+     * @return \Curler\Request
+     */
+    public function insertBatchStream($table_name, $columns_array,$format="CSV")
+    {
+        if ($this->getCountPendingQueue() > 0) {
+            throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
+        }
+
+        if (!in_array($format,$this->_support_format))
+        {
+            throw new QueryException('Format not support in insertBatchFiles');
+        }
+
+        if (!$columns_array)
+        {
+            $sql = 'INSERT INTO ' . $table_name . ' FORMAT '.$format;
+
+        }
+        else
+        {
+            $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
+
+        }
+
+        return $this->transport()->writeStreamData($sql);
+    }
+
 
     /**
      * Размер базы

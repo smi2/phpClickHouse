@@ -339,6 +339,7 @@ class CurlerRolling
 
         // see if there is anything to read
         curl_multi_select($this->handlerMulti(), 0.01);
+        return $this->countActive();
     }
 
     /**

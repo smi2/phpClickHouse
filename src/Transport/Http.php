@@ -207,6 +207,31 @@ class Http
 
     /**
      * @param $sql
+     * @param $stream
+     * @return Request
+     */
+    public function writeStreamData($sql)
+    {
+        $query = new Query($sql);
+
+        $url = $this->getUrl([
+            'readonly' => 0,
+            'query' => $query->toSql()
+        ]);
+
+        $extendinfo = [
+            'sql' => $sql,
+            'query' => $query
+        ];
+
+        $request = $this->newRequest($extendinfo);
+        $request->url($url);
+        return $request;
+    }
+
+
+    /**
+     * @param $sql
      * @param $file_name
      * @return Statement
      */

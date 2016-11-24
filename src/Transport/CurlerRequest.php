@@ -198,7 +198,7 @@ class Request
     }
 
     /**
-     * @return bool
+     * @return resource
      */
     public function getInfileHandle()
     {
@@ -237,6 +237,10 @@ class Request
     {
         $this->callback_function = $callback;
     }
+    public function setReadFunction($callback)
+    {
+        $this->options[CURLOPT_READFUNCTION]=$callback;
+    }
 
     /**
      * @param $classCallBack
@@ -274,6 +278,7 @@ class Request
         $message .= 'URL:' . $this->url . "\n\n";
         $message .= 'METHOD:' . $this->method . "\n\n";
         $message .= 'PARAMS:' . print_r($this->parameters, true) . "\n";
+        $message .= 'PARAMS:' . print_r($this->headers, true) . "\n";
         $message .= "-----------------------------------\n";
 
         if ($result) {
@@ -353,6 +358,13 @@ class Request
         return $this;
     }
 
+    public function getHeaders()
+    {
+        $head=[];
+        foreach ($this->headers as $key=>$value)
+            $head[]= sprintf("%s: %s", $key, $value);
+        return $head;
+    }
 
     /**
      * @param $url
@@ -390,6 +402,11 @@ class Request
         if ($flag) {
             $this->_httpCompression = $flag;
             $this->options[CURLOPT_ENCODING] = 'gzip';
+        }
+        else
+        {
+            $this->_httpCompression = false;
+            unset($this->options[CURLOPT_ENCODING]);
         }
     }
 
