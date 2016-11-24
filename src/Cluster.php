@@ -73,6 +73,12 @@ class Cluster
     private $replicasIsOk;
 
     /**
+     * Кэш
+     * @var array
+     */
+    private $_table_size_cache=[];
+
+    /**
      * Cluster constructor.
      * @param $connect_params
      * @param array $settings
@@ -255,13 +261,15 @@ class Cluster
             $statementsClusters[$node]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
         }
         $this->defaultClient()->executeAsync();
-
+        $tables=[];
 
         foreach ($this->nodes as $node) {
+
+
             try {
                 $r = $statementsReplicas[$node]->rows();
                 foreach ($r as $row) {
-                    $tables[$row['database']][$row['table']][$node] = $row['replica_path'];
+                    $tables[$row['database']][$row['table']][$node] =$row;
                 }
                 $result['replicas'][$node] = $r;
             } catch (\Exception $E) {
@@ -271,7 +279,7 @@ class Cluster
             }
             // ---------------------------------------------------------------------------------------------------
             $hosts=[];
-            $tables=[];
+
             try {
                 $c = $statementsClusters[$node]->rows();
                 $result['clusters'][$node] = $c;
@@ -302,6 +310,7 @@ class Cluster
             if (!$rIsOk) $replicasIsOk = false;
             // ---------------------------------------------------------------------------------------------------
         }
+
         // badNodes = array(6) {  '222.222.222.44' =>  string(13) "HttpCode:0 ; " , '222.222.222.11' =>  string(13) "HttpCode:0 ; "
         $this->badNodes = $badNodes;
 
@@ -438,6 +447,116 @@ class Cluster
     }
 
     /**
+     * Список всех таблиц и бд. во всех кластерах
+     *
+     * @return array
+     */
+    public function getTables($resultDetail=false)
+    {
+        $this->connect();
+        $list=[];
+        foreach ($this->tables as $db_name=>$tables)
+        {
+            foreach ($tables as $table_name=>$nodes)
+            {
+
+                if ($resultDetail)
+                {
+                    $list[$db_name.'.'.$table_name]=$nodes;
+                }
+                else
+                {
+                    $list[$db_name.'.'.$table_name]=array_keys($nodes);
+                }
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * Размер таблицы в кластере
+     *
+     * @param $database_table
+     * @return array
+     *
+     */
+    public function getSizeTable($database_table)
+    {
+       $list=[];
+       $nodes=$this->getNodesByTable($database_table);
+        // scan need node`s
+        foreach ($nodes as $node)
+        {
+            if (empty($this->_table_size_cache[$node]))
+            {
+                $this->_table_size_cache[$node]=$this->client($node)->tablesSize(true);
+            }
+        }
+
+        $sizes=[];
+        foreach ($this->_table_size_cache as $node=>$rows)
+        {
+            foreach ($rows as $row)
+            {
+                $sizes[$row['database'].'.'.$row['table']][$node]=$row;
+                @$sizes[$row['database'].'.'.$row['table']]['total']['sizebytes']+=$row['sizebytes'];
+
+
+
+            }
+        }
+
+        if (empty($sizes[$database_table]))
+        {
+            return null;
+        }
+        return $sizes[$database_table]['total']['sizebytes'];
+    }
+
+
+    /**
+     * truncate
+     *
+     * @param $database_table
+     * @return array
+     */
+    public function truncateTable($database_table,$timeOut=2000)
+    {
+        $out=[];
+        list($db,$table)=explode('.',$database_table);
+        $nodes=$this->getMasterNodeForTable($database_table);
+        // scan need node`s
+        foreach ($nodes as $node)
+        {
+            $def=$this->client($node)->getTimeout();
+            $this->client($node)->database($db)->setTimeout($timeOut);
+            $out[$node]=$this->client($node)->truncateTable($table);
+            $this->client($node)->setTimeout($def);
+        }
+        return $out;
+    }
+
+    /**
+     * is_leader ноды
+     *
+     * @param $database_table
+     * @return array
+     */
+    public function getMasterNodeForTable($database_table)
+    {
+        $list=$this->getTables(true);
+
+        if (empty($list[$database_table])) return [];
+
+
+        $result=[];
+        foreach ($list[$database_table] as $node=>$row)
+        {
+            if ($row['is_leader']) $result[]=$node;
+        }
+        return $result;
+    }
+    /**
      * Find nodes by : db_name.table_name
      *
      * @param $database_table
@@ -445,13 +564,11 @@ class Cluster
      */
     public function getNodesByTable($database_table)
     {
-        $this->connect();
-        list($db, $table) = explode('.', $database_table);
-
-        if (empty($this->tables[$db][$table])) {
+        $list=$this->getTables();
+        if (empty($list[$database_table])) {
             throw new QueryException('Not find :' . $database_table);
         }
-        return array_keys($this->tables[$db][$table]);
+        return $list[$database_table];
     }
 
     /**

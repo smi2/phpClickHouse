@@ -271,10 +271,12 @@ class Client
 
     /**
      * @param $db
+     * @return $this
      */
     public function database($db)
     {
         $this->settings()->database($db);
+        return $this;
     }
 
     /**
@@ -577,18 +579,26 @@ class Client
      *
      * @return array
      */
-    public function tablesSize()
+    public function tablesSize($flatList=false)
     {
-        return $this->select('
-            SELECT table,
+        $z=$this->select('
+            SELECT table,database,
             formatReadableSize(sum(bytes)) as size,
             sum(bytes) as sizebytes,
             min(min_date) as min_date,
             max(max_date) as max_date
             FROM system.parts
             WHERE active
-            GROUP BY table
-        ')->rowsAsTree('table');
+            GROUP BY table,database
+        ');
+
+        if ($flatList) {
+            return $z->rows();
+        }
+
+        return $z->rowsAsTree('table');
+
+
     }
 
     public function isExists($database,$table)
@@ -620,10 +630,25 @@ class Client
      */
     public function dropPartition($tableName, $partition_id)
     {
+
         $state = $this->write('ALTER TABLE {tableName} DROP PARTITION :partion_id', [
             'tableName'  => $tableName,
             'partion_id' => $partition_id
         ]);
+        return true;
+    }
+
+
+    public function truncateTable($tableName)
+    {
+        $partions=$this->partitions($tableName);
+        $out=[];
+        foreach ($partions as $part_key=>$part)
+        {
+            $part_id=$part['partition'];
+            $out[$part_id]=$this->dropPartition($tableName,$part_id);
+        }
+        return $out;
     }
 
     /**

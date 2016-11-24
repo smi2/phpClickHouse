@@ -13,9 +13,11 @@ php ClickHouse wrapper
 * SQL conditions & template
 * tablesSize & databaseSize
 * listPartitions
-* pre production :  dropPartition & dropOldPartitions 
+* dropPartition & dropOldPartitions 
+* truncateTable in cluster 
 * Insert array as column
-
+* Get master node replica in cluster 
+* Get tableSize in all nodes 
 
 ## Install composer
 
@@ -464,6 +466,14 @@ MIT
 
 ChangeLog
 ---
+###  2016-11-25
+- client->truncateTable('tableName')
+- cluster->getMasterNodeForTable('dbName.tableName') // node have is_leader=1
+- cluster->getSizeTable('dbName.tableName')
+- cluster->getTables()
+- cluster->truncateTable('dbName.tableName')
+
+
 ###  2016-11-24
 - add `cluster->setSoftCheck()`
 - insertBatchFiles() support `$file_names` - string or array , `$columns_array` - array or null

@@ -468,6 +468,7 @@ class Http
     {
         $request = $this->prepareWrite($sql, $bindings);
         $code = $this->_curler->execOne($request);
+
         $response = new Statement($request);
         if ($exception) {
             if ($response->isError()) {
