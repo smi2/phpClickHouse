@@ -464,6 +464,16 @@ MIT
 
 ChangeLog
 ---
+###  2016-11-24
+- add `cluster->setSoftCheck()`
+- insertBatchFiles() support `$file_names` - string or array , `$columns_array` - array or null
+- add insertBatchStream() return `\Curler\Request` no exec
+- writeStreamData() return `\Curler\Request` 
+- fix httpCompression(false)
+- getHeaders() as array from `\Curler\Request`
+- `setReadFunction( function() )` in `Request` 
+    
+
 ###  2016-11-04
 - add `$db->insertBatchTSVFiles()`,
 - add format param in `$db->insertBatchFiles(,,,format)`,
