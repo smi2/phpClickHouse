@@ -472,7 +472,7 @@ ChangeLog
 - fix httpCompression(false)
 - getHeaders() as array from `\Curler\Request`
 - `setReadFunction( function() )` in `Request` 
-    
+- Add class StreamInsert, direct read from stream_resource to clickhouse:stream     
 
 ###  2016-11-04
 - add `$db->insertBatchTSVFiles()`,
