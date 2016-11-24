@@ -467,11 +467,11 @@ MIT
 ChangeLog
 ---
 ###  2016-11-25
-- client->truncateTable('tableName')
-- cluster->getMasterNodeForTable('dbName.tableName') // node have is_leader=1
-- cluster->getSizeTable('dbName.tableName')
-- cluster->getTables()
-- cluster->truncateTable('dbName.tableName')
+- `client->truncateTable('tableName')`
+- `cluster->getMasterNodeForTable('dbName.tableName') // node have is_leader=1`
+- `cluster->getSizeTable('dbName.tableName')`
+- `cluster->getTables()`
+- `cluster->truncateTable('dbName.tableName')`
 
 
 ###  2016-11-24
