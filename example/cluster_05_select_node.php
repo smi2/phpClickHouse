@@ -9,6 +9,7 @@ $config = include_once __DIR__ . '/../../_clickhouse_config_product.php';
 $cl = new ClickHouseDB\Cluster($config);
 
 $cl->setScanTimeOut(2.5); // 2500 ms
+$cl->setSoftCheck(true);
 if (!$cl->isReplicasIsOk())
 {
     throw new Exception('Replica state is bad , error='.$cl->getError());

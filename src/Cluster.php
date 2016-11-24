@@ -60,6 +60,8 @@ class Cluster
 
 
     /**
+     * Признак напрягать CH при проверке кластера запросом в Zookiper
+     * false - отправлять запрос в ZK, точнне делать SELECT * FROM system.replicas
      *
      * @var bool
      */
@@ -181,7 +183,11 @@ class Cluster
 
             // @todo : rewrite total_replicas=1 если кластер без реплики , нужно проверять какой класте и сколько в нем реплик
 //            if ($replica['total_replicas']<2) {$ok=false;$this->error[]='total_replicas : '.json_encode($replica);}
-
+            if ($this->softCheck )
+            {
+                if (!$ok) break;
+                continue;
+            }
 
             if ($replica['active_replicas'] < $replica['total_replicas']) {
                 $ok = false;
@@ -200,6 +206,22 @@ class Cluster
         return $ok;
     }
 
+    private function getSelectSystemReplicas()
+    {
+        //  Если запрашивать все столбцы, то таблица может работать слегка медленно, так как на каждую строчку делается несколько чтений из ZK.
+        //  Если не запрашивать последние 4 столбца (log_max_index, log_pointer, total_replicas, active_replicas), то таблица работает быстро.
+        if ($this->softCheck)
+        {
+
+            return 'SELECT 
+            database,table,engine,is_leader,is_readonly,
+            is_session_expired,future_parts,parts_to_check,zookeeper_path,replica_name,replica_path,columns_version,
+            queue_size,inserts_in_queue,merges_in_queue,queue_oldest_time,inserts_oldest_time,merges_oldest_time			
+            FROM system.replicas
+        ';
+        }
+        return 'SELECT * FROM system.replicas';
+    }
     /**
      * @return $this
      */
@@ -223,11 +245,10 @@ class Cluster
         foreach ($this->nodes as $node) {
             $this->defaultClient()->setHost($node);
 
-            // @todo: Если запрашивать все столбцы, то таблица может работать слегка медленно, так как на каждую строчку делается несколько чтений из ZK.
-            // @todo: Если не запрашивать последние 4 столбца (log_max_index, log_pointer, total_replicas, active_replicas), то таблица работает быстро.
 
 
-            $statementsReplicas[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.replicas');
+
+            $statementsReplicas[$node] = $this->defaultClient()->selectAsync($this->getSelectSystemReplicas());
             $statementsClusters[$node] = $this->defaultClient()->selectAsync('SELECT * FROM system.clusters');
             // пересетапим timeout
             $statementsReplicas[$node]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
