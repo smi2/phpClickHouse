@@ -140,7 +140,10 @@ class Request
      */
     public function close()
     {
-        curl_close($this->handle);
+        if ($this->handle)
+        {
+            curl_close($this->handle);
+        }
         $this->handle = null;
     }
 
