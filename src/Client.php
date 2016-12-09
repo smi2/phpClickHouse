@@ -36,6 +36,10 @@ class Client
     private $_connect_port = false;
 
     /**
+     * @var bool
+     */
+    private $_connect_user_readonly=false;
+    /**
      * @var array
      */
     private $_support_format=['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames'];
@@ -91,8 +95,27 @@ class Client
             $this->settings()->apply($settings);
         }
 
+
+        if (isset($connect_params['readonly']))
+        {
+            $this->setReadOnlyUser($connect_params['readonly']);
+        }
+
+
+
+
     }
 
+    /**
+     * если у пользовалетя установленно только чтение в конфиге
+     *
+     * @param $flag
+     */
+    public function setReadOnlyUser($flag)
+    {
+        $this->_connect_user_readonly=$flag;
+        $this->settings()->setReadOnlyUser($this->_connect_user_readonly);
+    }
     /**
      * Очистить пред обработку запроса [шаблонизация]
      *

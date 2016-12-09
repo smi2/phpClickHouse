@@ -20,6 +20,8 @@ class Settings
      */
     private $settings = [];
 
+    private $_ReadOnlyUser=false;
+
 
     /**
      * Settings constructor.
@@ -141,6 +143,23 @@ class Settings
         }
 
         return $this;
+    }
+
+    /**
+     * @param $flag
+     */
+    public function setReadOnlyUser($flag)
+    {
+        $this->_ReadOnlyUser=$flag;
+    }
+
+    /**
+     *
+     *
+     */
+    public function isReadOnlyUser()
+    {
+        return $this->_ReadOnlyUser;
     }
 
     /**

@@ -466,6 +466,10 @@ MIT
 
 ChangeLog
 ---
+### 2016-12-09
+- for ReadOnly users need set : `client->setReadOnlyUser(true);` or `$confi['readonly']` , see exam19_readonly_user.php
+
+
 ###  2016-11-25
 - `client->truncateTable('tableName')`
 - `cluster->getMasterNodeForTable('dbName.tableName') // node have is_leader=1`

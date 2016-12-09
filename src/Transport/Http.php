@@ -146,6 +146,17 @@ class Http
             $settings = array_merge($settings, $params);
         }
 
+
+        if ($this->settings()->isReadOnlyUser())
+        {
+            unset($settings['extremes']);
+            unset($settings['readonly']);
+            unset($settings['enable_http_compression']);
+            unset($settings['max_execution_time']);
+
+        }
+
+
         return $this->getUri() . '?' . http_build_query($settings);
     }
 
@@ -194,6 +205,9 @@ class Http
 
         $new = $this->newRequest($extendinfo);
         $new->url($url);
+
+
+
 
         if (!$query_as_string) {
             $new->parameters_json($sql);
@@ -311,7 +325,7 @@ class Http
         // if result to file
         if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat()) {
             $query->setFormat($writeToFile->fetchFormat());
-            $urlParams['extremes'] = false;
+            unset($urlParams['extremes']);
         }
         // ---------------------------------------------------------------------------------
         // makeRequest read

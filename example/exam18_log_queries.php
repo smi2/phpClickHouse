@@ -14,5 +14,3 @@ $db = new ClickHouseDB\Client($config);
 $db->enableLogQueries()->enableHttpCompression();
 //----------------------------------------
 print_r($db->select('SELECT * FROM system.query_log')->rows());
-
-//----------------------------------------
