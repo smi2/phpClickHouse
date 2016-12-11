@@ -98,6 +98,10 @@
 Т/е если у вас движек таблицы `MergeTree` то получается `ReplicatedMergeTree` с указанием `repikator`
 
 
+
+![Только реплики ](https://api.monosnap.com/rpc/file/download?id=BahALelyOJWu7ordZAFq6wvCaz6m3J)
+
+
 ```sql
 
 CREATE TABLE тут пример 
@@ -112,6 +116,7 @@ CREATE TABLE тут пример
 
 Создадим конфигурацию `sharovara` состоящую только из шардов - без реплик - ну вдруг вы такой рисковый читатель и доверяете своим HDD 
 
+![Конфигруция только из шардов ](https://api.monosnap.com/rpc/file/download?id=X7lbGzFQ9HriQQ9QrlaLZRMPbQ4Sx1)
 
 ```xml
 <sharovara>
@@ -157,6 +162,8 @@ CREATE TABLE table_shara тут пример
 
 И так давайте "без фанатизма" ->  создаем нормальную конфгируцию назовем ее `pulse`, дано 4е сервера сделаем одну компию данных и по ?один? шард
 
+
+![Схема ](https://api.monosnap.com/rpc/file/download?id=HZblGQjLnOU6WlprWxb8W5FyixNlfY)
 
 ```xml
 
