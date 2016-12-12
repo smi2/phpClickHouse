@@ -95,22 +95,49 @@
 
 Послышались вопросы из зала: 
 * Простоите что это, зачем этот XML  ?
+
 * И как с этим работать , Писать в файл при каждом добавлении сервера ?
+
+
 Это конфиг XML для создания в CH таблицы которую можно будет реплицировать и которую можно размазать / шардировать
+
+
 Из документации:
 *Движок Distributed* -  не хранит данные самостоятельно, а позволяет обрабатывать запросы распределенно, на нескольких серверах. Чтение автоматически распараллеливается.
+
 *Репликация данных - Движок Replicated*  Репликация никак не связана с шардированием. На каждом шарде репликация работает независимо.
+
+
 Получается чтобы создать копию одной и той-же таблицы на всех наших 4х серверах нам нужно создать таблицу с префиксом `Replicated*`
+
+
 Т/е если у вас движок таблицы `MergeTree` то получается `ReplicatedMergeTree` с указанием `repikator`
 
 
 ![Только реплики ](https://api.monosnap.com/rpc/file/download?id=BahALelyOJWu7ordZAFq6wvCaz6m3J)
 ```sql
-CREATE TABLE тут пример
 
+CREATE DATABASE IF NOT EXISTS dbrepikator
+;
+CREATE TABLE IF NOT EXISTS dbrepikator.anysumming_repl_sharded (
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime DEFAULT now(),
+    body_id Int32,
+    views Int32
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{repikator_replica}/dbrepikator/anysumming_repl_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+;
+CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_sharded
+      ENGINE = Distributed( repikator, dbrepikator, anysumming_repl_sharded , rand() )
 ```
 
+
+
+
+
 Ок в этом примере мы достигли максимальной безопасности но данные занимают очень много места
+
+
+Вставка данных идет в таблицу `anysumming_repl`
 
 
 #### Конфигурация только из шардов
@@ -145,10 +172,21 @@ CREATE TABLE тут пример
 
 ```sql
 
-CREATE TABLE table_shara тут пример
+CREATE DATABASE IF NOT EXISTS testshara 
+;
+CREATE TABLE IF NOT EXISTS testshara.anysumming_sharded (
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime DEFAULT now(),
+    body_id Int32,
+    views Int32
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{sharovara_replica}/sharovara/anysumming_sharded_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+;
+CREATE TABLE IF NOT EXISTS  testshara.anysumming AS testshara.anysumming_sharded
+      ENGINE = Distributed( sharovara, testshara, anysumming_sharded , rand() )
+
 ```
 
-Получается если мы пишем в таблицу `table_shara` то данные пишутся сразу на все сервера и размазываются равномерно ( веса серверов выходят за рамки статьи)
+Получается если мы пишем в таблицу `anysumming` то данные пишутся сразу на все сервера и размазываются равномерно ( веса серверов выходят за рамки статьи)
 
 
 
@@ -190,6 +228,24 @@ ch65 -> имеет копию данных на ch66
 
 
 
+```sql
+
+
+CREATE DATABASE IF NOT EXISTS dbpulse 
+;
+
+CREATE TABLE IF NOT EXISTS dbpulse.normal_summing_sharded (
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime DEFAULT now(),
+    body_id Int32,
+    views Int32
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{pulse_replica}/pulse/normal_summing_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+;
+
+CREATE TABLE IF NOT EXISTS  dbpulse.normal_summing AS dbpulse.normal_summing_sharded
+      ENGINE = Distributed( pulse, dbpulse, normal_summing_sharded , rand() )
+
+```
 
 
 
