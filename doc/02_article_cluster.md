@@ -439,8 +439,26 @@ $cl->truncateTable('dbName.tableName')`
 * Вы согласовываете alter table запросы внутри команды ?
 
 
+
+
+## Миграция в ClickHouse 
+
+
+Из написанного выше, получается что запросы на изменение CH нужно отправлять на каждый сервер - а это очень не удобно если у вас уже больше 4х серверов. 
+
+
 Я ( мы ) начали реализовывать проект позволяющий осуществлять миграции в CH, [phpMigrationsClickhouse](https://github.com/smi2/phpMigrationsClickhouse)
-проект находится в состоянии альфа релиза и после последнего митапа - когда CH возьмет на себя раскатывания изменений по всем нодам -> проект остановился.
+проект находится в состоянии альфа релиза и после последнего общения с разработчиками CH - когда база возьмет на себя раскатывания изменений по всем нодам -> проект остановился.
+
+
+Но проблема на текущий момент существует - как менять стуктуру БД, в развивающемся или переходящем на CH проекте. 
+
+
+Мы опишем один из алгоритмов который реализован phpMigrationsClickhouse, 
+чтобы можно было переосознать и партировать на любой любимый читателем язык программирования - будь то Bash или Java,C,Python ....
+ 
+
+
 
 Данная статья содержит опрос - пожалуйста проголосуйте: 
 
@@ -449,38 +467,180 @@ $cl->truncateTable('dbName.tableName')`
 * Мне интересно решение - т/к мы делаем сами костыльные решения для этого.
 
 
-
-## phpMigrationsClickhouse tool
-
+## Реализация отправки миграции в phpMigrationsClickhouse
 
 
 
-Данный инструмент, позволяет оправлять запросы на сервера выбранного кластера в виде миграции, если происходит ошибка на одном из серверов - выполняем откат запросов. 
+Из чего состоит одна миграция: 
+* Из запросов SQL которые нужно - накатить  
+* Из запросов SQL которые нужно - откатить, в случаи ошибки. 
+* Имя кластера в котором нужно выполнить запросы, из этого имени получается список серверов на котором нужно выволнять запросы.
+ 
+ 
+Создадим файл, содержащий обьект: 
 
-Перед выполнение каждой миграции, каждый узел кластера еще раз проверяется на доступность через `ping()`.
+```php
+$cluster_name = 'pulse'; 
+$mclq = new \ClickHouseDB\Cluster\Migration($cluster_name);
+$mclq->setTimeout(100);
+```
 
+Установим запросы , которые нужно выполнить : 
 
 ```php
 
+$mclq->addSqlUpdate(" CREATE DATABASE IF NOT EXISTS dbpulse  "); 
+$mclq->addSqlUpdate(" 
+ 
+ CREATE TABLE IF NOT EXISTS dbpulse.normal_summing_sharded (
+     event_date Date DEFAULT toDate(event_time),
+     event_time DateTime DEFAULT now(),
+     body_id Int32,
+     views Int32
+ ) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{pulse_replica}/pulse/normal_summing_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+ "); 
+``` 
+ 
+Запросы котороые нужно откатить: 
+ 
+```php
 
-$mclq=new ClickHouseDB\Cluster\Migration($cluster_name);
+$mclq->addSqlDowngrade(' DROP TABLE IF EXISTS dbpulse.normal_summing_sharded '); 
 
-$mclq->addSqlUpdate('CREATE DATABASE IF NOT EXISTS cluster_tests');
+$mclq->addSqlDowngrade(' DROP DATABASE IF EXISTS dbpulse  '); 
+   
+``` 
 
-$mclq->addSqlDowngrade('DROP DATABASE IF EXISTS cluster_tests');
+Это примерный формат в PHP обьекте, можно придумать формат хранения миграции в псевдо SQL без использования PHP кода: 
 
 
-if (!$cl->sendMigration($mclq))
-{
-   throw new Exception('sendMigration error='.$cl->getError());
-}
+```SQL
+
+/* ConfigJSON:{"ClusterName":"dbpulse","setTimeout":100} */
+
+CREATE DATABASE IF NOT EXISTS dbpulse
+;
+CREATE TABLE IF NOT EXISTS dbpulse.normal_summing_sharded (
+     event_date Date DEFAULT toDate(event_time),
+     event_time DateTime DEFAULT now(),
+     body_id Int32,
+     views Int32
+ ) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{pulse_replica}/pulse/normal_summing_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+
+
+/* DOWN */
+
+DROP TABLE IF EXISTS dbpulse.normal_summing_sharded
+;
+DROP DATABASE IF EXISTS dbpulse
 
 
 ```
 
+Оба эти формата можно переобразовать в обьект:
 
-""" ДОПИСАТЬ С ПРИМЕРОМ из readme.md """
+```php
+
+$migration->getClusterName(); // получить имя кластера
+
+// Массивы запросов 
+$migration->getSqlUpdate(); 
+$migration->getSqlDowngrade();
+
+```
 
 
+Может быть несколько разновидностей действий/алгоритмов отправки миграции в кластер: 
+ 
+* Отравлять каждый запрос на один сервер, и переходить к следующему запросу
+* Отравлять все запросы на один сервер, и переходить к следующему сереверу
+
+
+В случаи возникновения проблем / ошибки, есть варианты : 
+
+* нужно отправить запрос Downgrade на все узлы на котороых уже была произведен - Update,
+* нужно продолжать отправлять Update на все другие сервера,
+* произвести Downgrade по всем серверам, если на одном была ощибка  
+
+
+Отдельно стоят ошибки, когда не известно состояение кластера 
+
+* Ошибка timeout соединения
+* Ошибка связи с сервером 
+
+
+Опишем в коде PHP, один из алгоритмов
+
+```php
+
+// получаем список IP адрессов принадлежащие кластеру
+$node_hosts=$this->getClusterNodes($migration->getClusterName());
+// получаем запросы 
+$sql_down=$migration->getSqlDowngrade();
+$sql_up=$migration->getSqlUpdate();
+
+
+// Выполняем запрос на каждый client(IP) , если хоть одни не отработал то делаем на каждом Down
+
+
+$need_undo=false;
+$undo_ip=[];
+// проходим по каждому запросу из getSqlUpdate(), получается мы отправляем по одному запросу на каждый сервер
+
+foreach ($sql_up as $s_u) {
+    // цикл по серверам 
+    foreach ($node_hosts as $node) {
+        
+        // отправка запроса  
+        $state=$this->client($node)->write($s_u);
+        if ($state->isError()) {
+        
+            $need_undo = true;
+        }
+        else {
+            // OK
+        }
+        
+        
+        if ($need_undo) {
+            //если была ошибка выходим из цикла и запоминаем на каком IP  
+            $undo_ip[$node]=1;
+            break;
+        }
+        
+    }
+}
+
+// проверяем что все хорошо
+if (!$need_undo)
+{
+    // все успеншо отработало
+    return true;
+}
+```
+
+Если все плохо и произошла ошибка отправим на все сервера запросы Downgrade : 
+
+
+```php
+
+foreach ($node_hosts as $node) {
+    
+    // тут можно проверить, что только на этом сервере была ошибка $undo_ip[$node]
+    
+    
+    foreach ($sql_down as $s_u) {
+        
+        try{
+            $st=$this->client($node)->write($s_u);
+        }
+        catch (Exception $E) {
+            // что делаем если происходит ошибка в момент undo ?
+        }
+    
+    }
+}
+
+```
 
 
