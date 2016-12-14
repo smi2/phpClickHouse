@@ -1,4 +1,4 @@
-# Масштабирование ClickHouse и управление миграциями
+# Масштабирование ClickHouse и управление миграциями и отправка запросов из PHP в кластер
 
 В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы поделились своим опытом внедрения и использования СУБД ClickHouse в компании [СМИ2](https://smi2.net/). В текущей статье мы затронем вопросы масштабирования, которые возникают с увеличением объема анализируемых данных и ростом нагрузки, когда данные уже не могут храниться и обрабатываться в рамках одного физического сервера. Также мы поделимся инструментом миграции [DDL](https://en.wikipedia.org/wiki/Data_definition_language)-запросов.
 
@@ -38,33 +38,22 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 ![Один шард и четыре реплики](https://api.monosnap.com/rpc/file/download?id=BahALelyOJWu7ordZAFq6wvCaz6m3J)
 
 ```xml
-<remote_servers>
-    <!-- One shard, four replicas -->
-    <one_shard_four_replicas>
-        <!-- shard 01 --> 
-        <shard>
-            <!-- replica 01_01 -->
-            <replica>
-                <host>ch63.smi2</host>
-            </replica>
-            
-            <!-- replica 01_02 -->
-            <replica>
-                <host>ch64.smi2</host>
-            </replica>
-            
-            <!-- replica 01_03 -->
-            <replica>
-                <host>ch65.smi2</host>
-            </replica>
-            
-            <!-- replica 01_04 -->
-            <replica>
-                <host>ch66.smi2</host>
-            </replica>
-        </shard>
-    </one_shard_four_replicas>
-</remote_servers>
+<repikator>
+   <shard>
+       <replica>
+           <host>ch63.smi2</host>
+       </replica>
+       <replica>
+           <host>ch64.smi2</host>
+       </replica>
+       <replica>
+           <host>ch65.smi2</host>
+       </replica>
+       <replica>
+           <host>ch66.smi2</host>
+       </replica>
+   </shard>
+</repikator>     
 ```
 
 Преимущество данной конфигурации:
@@ -75,47 +64,57 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 * Поскольку в данной конфигурации только 1 шард, SELECT-запрос не может выполняться параллельно на разных узлах.
 * Требуются дополнительные ресурсы на многократное реплицирование данных между всеми узлами.
 
+
+Создадим таблицу :
+
+
+```sql
+
+CREATE DATABASE IF NOT EXISTS dbrepikator
+;
+
+CREATE TABLE IF NOT EXISTS dbrepikator.anysumming_repl_sharded (
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime DEFAULT now(),
+    body_id Int32,
+    views Int32
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{repikator_replica}/dbrepikator/anysumming_repl_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+;
+
+CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_sharded
+      ENGINE = Distributed( repikator, dbrepikator, anysumming_repl_sharded , rand() )
+
+```
+
+
+
 ### Четыре шарда по одной реплике
 
 ![Четыре шарда по одной реплике](https://api.monosnap.com/rpc/file/download?id=X7lbGzFQ9HriQQ9QrlaLZRMPbQ4Sx1)
 
 ```xml
-<remote_servers>
-    <!-- Four shards, one replica -->
-    <four_shards_one_replica>
-        <!-- shard 01 --> 
-        <shard>
-            <!-- replica 01_01 -->
-            <replica>
-                <host>ch63.smi2</host>
-            </replica>
-        </shard>
-        
-        <!-- shard 02 --> 
-        <shard>
-            <!-- replica 02_01 -->
-            <replica>
-                <host>ch64.smi2</host>
-            </replica>
-        </shard>
-        
-        <!-- shard 03 --> 
-        <shard>
-            <!-- replica 03_01 -->
-            <replica>
-                <host>ch65.smi2</host>
-            </replica>
-        </shard>
-        
-        <!-- shard 04 --> 
-        <shard>
-            <!-- replica 04_01 -->
-            <replica>
-                <host>ch66.smi2</host>
-            </replica>
-        </shard>
-    </four_shards_one_replica>
-</remote_servers>
+<sharovara>
+   <shard>
+       <replica>
+           <host>ch63.smi2</host>
+       </replica>
+   </shard>
+   <shard>
+       <replica>
+           <host>ch64.smi2</host>
+       </replica>
+   </shard>
+   <shard>
+       <replica>
+           <host>ch65.smi2</host>
+       </replica>
+   </shard>
+   <shard>
+       <replica>
+           <host>ch66.smi2</host>
+       </replica>
+   </shard>
+</sharovara>
 ```
 
 Преимущество данной конфигурации:
@@ -124,46 +123,83 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 Недостаток:
 * Наименее надежный способ хранения данных (потеря узла приводит к потере порции данных).
 
-### Два шарда по две реплики
+
+Создаем таблицу :
+
+```sql
+
+CREATE DATABASE IF NOT EXISTS testshara 
+;
+CREATE TABLE IF NOT EXISTS testshara.anysumming_sharded (
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime DEFAULT now(),
+    body_id Int32,
+    views Int32
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{sharovara_replica}/sharovara/anysumming_sharded_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+;
+CREATE TABLE IF NOT EXISTS  testshara.anysumming AS testshara.anysumming_sharded
+      ENGINE = Distributed( sharovara, testshara, anysumming_sharded , rand() )
+
+```
+
+*Получается если мы пишем в таблицу `anysumming` то данные пишутся сразу на все сервера и размазываются равномерно ( веса серверов выходят за рамки статьи)*
+
+
+### Нормальная конфигурация, два шарда по две реплики
 
 ![Два шарда по две реплики](https://api.monosnap.com/rpc/file/download?id=HZblGQjLnOU6WlprWxb8W5FyixNlfY)
 
 ```xml
-<remote_servers>
-    <!-- Two shards, two replica -->
-    <two_shards_two_replicas>
-        <!-- shard 01 --> 
-        <shard>
-            <!-- replica 01_01 -->
-            <replica>
-                <host>ch63.smi2</host>
-            </replica>
-            
-            <!-- replica 01_02 -->
-            <replica>
-                <host>ch64.smi2</host>
-            </replica>
-        </shard>
-        
-        <!-- shard 02 --> 
-        <shard>
-            <!-- replica 02_01 -->
-            <replica>
-                <host>ch65.smi2</host>
-            </replica>
-            
-            <!-- replica 02_02 -->
-            <replica>
-                <host>ch66.smi2</host>
-            </replica>
-        </shard>
-    </two_shards_two_replicas>
-</remote_servers>
+
+
+<pulse>
+   <shard>
+       <replica>
+           <host>ch63.smi2</host>
+       </replica>
+       <replica>
+           <host>ch64.smi2</host>
+       </replica>
+   </shard>
+   <shard>
+       <replica>
+           <host>ch65.smi2</host>
+       </replica>
+       <replica>
+           <host>ch66.smi2</host>
+       </replica>
+   </shard>
+</pulse>
+
+
 ```
 
 Данная конфигурация воплощает лучшие качества из первого и второго примеров:
 * Поскольку в данной конфигурации 2 шарда, SELECT-запрос может выполняться параллельно на каждом из шардов в кластере.
 * Относительно надежный способ хранения данных (потеря одного узла кластера не приводит к потере порции данных).
+
+
+
+
+```sql
+
+CREATE DATABASE IF NOT EXISTS dbpulse 
+;
+
+CREATE TABLE IF NOT EXISTS dbpulse.normal_summing_sharded (
+    event_date Date DEFAULT toDate(event_time),
+    event_time DateTime DEFAULT now(),
+    body_id Int32,
+    views Int32
+) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{pulse_replica}/pulse/normal_summing_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+;
+
+CREATE TABLE IF NOT EXISTS  dbpulse.normal_summing AS dbpulse.normal_summing_sharded
+      ENGINE = Distributed( pulse, dbpulse, normal_summing_sharded , rand() )
+
+```
+
+
 
 ## Пример конфигурации кластеров в ansible
 
@@ -187,7 +223,10 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 
 ## PHP-драйвер для работы с ClickHouse-кластером
 
-В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы уже рассказывали о нашем open-source [PHP-драйвере](https://github.com/smi2/phpClickHouse) для ClickHouse. Здесь мы кратко опишем его возможности по работе с кластером.
+В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы уже рассказывали о нашем open-source [PHP-драйвере](https://github.com/smi2/phpClickHouse) для ClickHouse.
+*Когда количество узлов кластера становится большим, то управление кластером становится неудобным. В результате мы создали простой и достаточно функциональный инструмент для миграции DDL-запросов в ClickHouse-кластер. И работу с кластером продемонстрируем на примере.*
+ 
+Здесь мы кратко опишем его возможности по работе с кластером.
 
 Для подключения к кластеру используется класс `ClickHouseDB\Cluster`:
 
@@ -200,7 +239,7 @@ $cl = new ClickHouseDB\Cluster(
 
 В DNS-записи `allclickhouse.smi2` перечислены IP-адреса всех узлов: `ch63.smi2, ch64.smi2, ch65.smi2, ch66.smi2`, что позволяет использовать механизм [Round-robin DNS](https://en.wikipedia.org/wiki/Round-robin_DNS).
 
-Драйвер выполняет подключение к каждому узлу и параллельно отправляет ping-запрос на каждый узел кластера.
+Драйвер выполняет подключение *к каждому узлу и параллельно отправляет ping-запрос на каждый узел кластера, перечисленные в DNS записи*.
 
 Установка максимального времени подключения ко всем узлам кластера настраивается следующим образом:
 
@@ -234,35 +273,44 @@ $cl->setSoftCheck(true);
 
 ```
 
+
+*По умолчанию `setSoftCheck` не устновлен,и драйвер запрашивает все столбцы из таблицы `system.replicas`.*
+
 Получение списка всех доступных кластеров:
 
 ```php
 print_r($cl->getClusterList());
+// result
+//    [0] => pulse
+//    [1] => repikator
+//    [2] => sharovara
 ```
 
 Например, получить конфигурацию кластеров, которые были описаны выше, можно следующим образом:
 
 ```php
 
-foreach (['one_shard_four_replicas','four_shards_one_replica','two_shards_two_replicas'] as $name)
+foreach (['pulse','repikator','sharovara'] as $name)
 {
    print_r($cl->getClusterNodes($name));
    echo "> $name , count shard   = ".$cl->getClusterCountShard($name)." ; count replica = ".$cl->getClusterCountReplica($name)."\n";
 }
 
-// Результат:
-//>  one_shard_four_replicas , count shard = 1 ; count replica = 4
-//>  four_shards_one_replica , count shard = 4 ; count replica = 1
-//>  two_shards_two_replicas , count shard = 2 ; count replica = 2
+//Результат:
+//>  pulse , count shard = 2 ; count replica = 2
+//>  repikator , count shard = 1 ; count replica = 4
+//>  sharovara , count shard = 4 ; count replica = 1
 
 ```
 
 Получение списка узлов по названию кластера или из шардированных таблиц:
 
 ```php
-$nodes=$cl->getNodesByTable('one_shard_four_replicas.test_sharded');
 
-$nodes=$cl->getClusterNodes('two_shards_two_replicas');
+$nodes=$cl->getNodesByTable('sharovara.body_views_sharded');
+
+$nodes=$cl->getClusterNodes('sharovara');
+
 ```
 
 Пример получения размера таблицы или размеров всех таблиц через отправку запроса на каждый узел кластера:
@@ -317,7 +365,11 @@ $cl->truncateTable('dbName.tableName')`
 
 > Реплицируются INSERT, ALTER (см. подробности в описании запроса ALTER). Реплицируются сжатые данные, а не тексты запросов. Запросы CREATE, DROP, ATTACH, DETACH, RENAME не реплицируются - то есть, относятся к одному серверу. Запрос CREATE TABLE создаёт новую реплицируемую таблицу на том сервере, где выполняется запрос; а если на других серверах такая таблица уже есть - добавляет новую реплику. Запрос DROP TABLE удаляет реплику, расположенную на том сервере, где выполняется запрос. Запрос RENAME переименовывает таблицу на одной из реплик - то есть, реплицируемые таблицы на разных репликах могут называться по разному.
 
-Команда разработчиков ClickHouse уже анонсировала работу в этом направлении, но в настоящее время приходится решать эту задачу внешним инструментарием. Мы создали простой и достаточно функциональный инструмент [phpMigrationsClickhouse](https://github.com/smi2/phpMigrationsClickhouse) для миграции DDL-запросов в ClickHouse-кластер. И в наших планах - абстрагировать *phpMigrationsClickhouse* от языка PHP.
+Команда разработчиков ClickHouse уже анонсировала работу в этом направлении, но в настоящее время приходится решать эту задачу внешним инструментарием. Мы создали простой прототип инструмента [phpMigrationsClickhouse](https://github.com/smi2/phpMigrationsClickhouse) для миграции DDL-запросов в ClickHouse-кластер. И в наших планах - абстрагировать *phpMigrationsClickhouse* от языка PHP.
+
+*Опишем один из алгоритмов который реализован phpMigrationsClickhouse, чтобы можно было пере/осознать и партировать на любой другой язык программирования - будь то Bash или Java,C,Python и т.д.*
+
+
 
 На текущий момент миграция в *phpMigrationsClickhouse* состоит из:  
 * SQL-запросов, которые нужно накатить и откатить в случае ошибки;  
@@ -363,7 +415,13 @@ $mclq->addSqlDowngrade(' DROP DATABASE IF EXISTS dbpulse  ');
 * ожидание перед отправкой upgrade-запросов на другие сервера;
 * выполнение downgrade-запроса на всех серверах в случае возникновения ошибки.
 
-Принцип работы PHP-кода:
+Отдельно стоят ошибки, когда не известно состояение кластера
+* Ошибка timeout соединения
+* Ошибка связи с сервером
+
+
+
+Принцип работы PHP-кода при выполнении миграции:
 
 ```php
 
@@ -414,7 +472,28 @@ foreach ($node_hosts as $node) {
             $st=$this->client($node)->write($s_u);
         } catch (Exception $E) {
             // Оповещение пользователя об ошибке при выполнении downgrade-запроса
+
         }
     }
 }
 ```
+
+
+
+(
+Данная статья содержит опрос,  - пожалуйста проголосуйте:
+)
+
+Укажите тему опроса : Нужно тратить ресурсы и дорабатывать свой инструмент миграций
+
+
+* Убери с глаз ваш велосипед на php
+* Я сделаю/делаю лучше решение / дополню уже готовый продукт
+* Стоит подождать реализации в самом clickhouse и продолжить реализацию
+* Мне интересно решение - т/к мы делаем сами схожее решения для этого.
+
+
+
+Мы продолжим цикл материалов, посвященных нашему опыту работы с ClickHouse. И планируем сделать эпизодический дайджест о нововведениях в CH.
+
+
