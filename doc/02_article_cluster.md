@@ -38,22 +38,32 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 ![Один шард и четыре реплики](https://api.monosnap.com/rpc/file/download?id=BahALelyOJWu7ordZAFq6wvCaz6m3J)
 
 ```xml
-<repikator>
-   <shard>
-       <replica>
-           <host>ch63.smi2</host>
-       </replica>
-       <replica>
-           <host>ch64.smi2</host>
-       </replica>
-       <replica>
-           <host>ch65.smi2</host>
-       </replica>
-       <replica>
-           <host>ch66.smi2</host>
-       </replica>
-   </shard>
-</repikator>     
+<remote_servers>
+<!-- One shard, four replicas -->
+    <repikator>
+       <shard>
+           <!-- replica 01_01 -->
+           <replica>
+               <host>ch63.smi2</host>
+           </replica>
+
+           <!-- replica 01_02 -->
+           <replica>
+               <host>ch64.smi2</host>
+           </replica>
+
+           <!-- replica 01_03 -->
+           <replica>
+               <host>ch65.smi2</host>
+           </replica>
+
+           <!-- replica 01_04 -->
+           <replica>
+               <host>ch66.smi2</host>
+           </replica>
+       </shard>
+    </repikator>
+</remote_servers>
 ```
 
 Преимущество данной конфигурации:
@@ -93,28 +103,42 @@ CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_
 ![Четыре шарда по одной реплике](https://api.monosnap.com/rpc/file/download?id=X7lbGzFQ9HriQQ9QrlaLZRMPbQ4Sx1)
 
 ```xml
-<sharovara>
-   <shard>
-       <replica>
-           <host>ch63.smi2</host>
-       </replica>
-   </shard>
-   <shard>
-       <replica>
-           <host>ch64.smi2</host>
-       </replica>
-   </shard>
-   <shard>
-       <replica>
-           <host>ch65.smi2</host>
-       </replica>
-   </shard>
-   <shard>
-       <replica>
-           <host>ch66.smi2</host>
-       </replica>
-   </shard>
-</sharovara>
+<remote_servers>
+    <!-- Four shards, one replica -->
+    <sharovara>
+       <!-- shard 01 -->
+       <shard>
+           <!-- replica 01_01 -->
+           <replica>
+               <host>ch63.smi2</host>
+           </replica>
+       </shard>
+
+       <!-- shard 02 -->
+       <shard>
+           <!-- replica 02_01 -->
+           <replica>
+               <host>ch64.smi2</host>
+           </replica>
+       </shard>
+
+       <!-- shard 03 -->
+       <shard>
+           <!-- replica 03_01 -->
+           <replica>
+               <host>ch65.smi2</host>
+           </replica>
+       </shard>
+
+       <!-- shard 04 -->
+       <shard>
+           <!-- replica 04_01 -->
+           <replica>
+               <host>ch66.smi2</host>
+           </replica>
+       </shard>
+    </sharovara>
+</remote_servers>
 ```
 
 Преимущество данной конфигурации:
@@ -150,28 +174,36 @@ CREATE TABLE IF NOT EXISTS  testshara.anysumming AS testshara.anysumming_sharded
 ![Два шарда по две реплики](https://api.monosnap.com/rpc/file/download?id=HZblGQjLnOU6WlprWxb8W5FyixNlfY)
 
 ```xml
+<remote_servers>
+    <!-- Two shards, two replica -->
+    <pulse>
+        <!-- shard 01 -->
+       <shard>
+           <!-- replica 01_01 -->
+           <replica>
+               <host>ch63.smi2</host>
+           </replica>
 
+           <!-- replica 01_02 -->
+           <replica>
+               <host>ch64.smi2</host>
+           </replica>
+       </shard>
 
-<pulse>
-   <shard>
-       <replica>
-           <host>ch63.smi2</host>
-       </replica>
-       <replica>
-           <host>ch64.smi2</host>
-       </replica>
-   </shard>
-   <shard>
-       <replica>
-           <host>ch65.smi2</host>
-       </replica>
-       <replica>
-           <host>ch66.smi2</host>
-       </replica>
-   </shard>
-</pulse>
+       <!-- shard 02 -->
+       <shard>
+           <!-- replica 02_01 -->
+           <replica>
+               <host>ch65.smi2</host>
+           </replica>
 
-
+           <!-- replica 02_02 -->
+           <replica>
+               <host>ch66.smi2</host>
+           </replica>
+       </shard>
+    </pulse>
+</remote_servers>
 ```
 
 Данная конфигурация воплощает лучшие качества из первого и второго примеров:
@@ -205,20 +237,20 @@ CREATE TABLE IF NOT EXISTS  dbpulse.normal_summing AS dbpulse.normal_summing_sha
 
 Конфигурация кластеров в [ansible](http://docs.ansible.com/ansible/index.html) может выглядеть следующим образом:
 
-```xml
-   - name: "one_shard_four_replicas"
-     shards:
-       - { name: "01", replicas: ["ch63.smi2", "ch64.smi2","ch65.smi2", "ch66.smi2"]}
-   - name: "four_shards_one_replica"
-     shards:
-       - { name: "01", replicas: ["ch63.smi2"]}
-       - { name: "02", replicas: ["ch64.smi2"]}
-       - { name: "03", replicas: ["ch65.smi2"]}
-       - { name: "04", replicas: ["ch66.smi2"]}
-   - name: "two_shards_two_replicas"
-     shards:
-       - { name: "01", replicas: ["ch63.smi2", "ch64.smi2"]}
-       - { name: "02", replicas: ["ch65.smi2", "ch66.smi2"]}
+```yml
+- name: "pulse"
+   shards:
+     - { name: "01", replicas: ["ch63.smi2", "ch64.smi2"]}
+     - { name: "02", replicas: ["ch65.smi2", "ch66.smi2"]}
+ - name: "sharovara"
+   shards:
+     - { name: "01", replicas: ["ch63.smi2"]}
+     - { name: "02", replicas: ["ch64.smi2"]}
+     - { name: "03", replicas: ["ch65.smi2"]}
+     - { name: "04", replicas: ["ch66.smi2"]}
+ - name: "repikator"
+   shards:
+     - { name: "01", replicas: ["ch63.smi2", "ch64.smi2","ch65.smi2", "ch66.smi2"]}
 ```
 
 ## PHP-драйвер для работы с ClickHouse-кластером
