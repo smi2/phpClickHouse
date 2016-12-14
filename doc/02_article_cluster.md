@@ -31,7 +31,7 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 
 ### Примеры конфигурации ClickHouse-кластера
 
-В качестве примеров будем рассматривать различные конфигурации для четырех узлов: ch63.smi2, ch64.smi2, ch65.smi2 и ch66.smi2.
+В качестве примеров будем рассматривать различные конфигурации для четырех узлов: `ch63.smi2, ch64.smi2, ch65.smi2, ch66.smi2`.
 
 Настройки выполняются в конфигурационном файле */etc/clickhouse-server/config.xml*.
 
@@ -208,4 +208,61 @@ $cl = new ClickHouseDB\Cluster(
 
 ```
 
-В DNS записи `allclickhouse.smi2` перечислены IP-адреса всех узлов: `ch63.smi2, ch64.smi2, ch65.smi2, ch66.smi2`.
+В DNS записи `allclickhouse.smi2` перечислены IP-адреса всех узлов: `ch63.smi2, ch64.smi2, ch65.smi2, ch66.smi2`, что позволяет использовать механизм [Round-robin DNS](https://en.wikipedia.org/wiki/Round-robin_DNS).
+
+Драйвер выполняет подключение к каждому узлу и параллельно отправляет ping-запрос на каждый узел кластера.
+
+Установка максимального времени подключения ко всем узлам кластера настраивается следующим образом:
+
+```php
+
+$cl->setScanTimeOut(2.5); // 2500 ms
+
+```
+
+Выполнение проверки нормального состояния реплик кластера:
+
+```php
+if (!$cl->isReplicasIsOk())
+{
+   throw new Exception('Replica state is bad , error='.$cl->getError());
+}
+
+```
+
+Нормальное состояние ClickHouse-кластера определяется следующим образом:
+* Соединения со всеми узлами кластера, перечисленными в DNS-записи, успешно выполнены.
+* На каждый узел отправляется [SQL-запрос](https://clickhouse.yandex/reference_ru.html#system.replicas), который позволяет определить состояние всех реплик ClickHouse-кластера.
+ 
+Скорость выполнения запроса может быть увеличена, если не вычитывать столбцы `log_max_index, log_pointer, total_replicas, active_replicas`, при получении данных из которых выполняются запросы на ZK-кластер. 
+
+Для более слабой проверки в драйвере устанавливается соответствующий флаг: 
+
+```php
+
+$cl->setSoftCheck(true);
+
+```
+
+Получение списка всех доступных кластеров:
+
+```php
+print_r($cl->getClusterList());
+```
+
+Например, получить конфигурацию кластеров, которые были описаны выше, можно следующим образом:
+
+```php
+
+foreach (['one_shard_four_replicas','four_shards_one_replica','two_shards_two_replicas'] as $name)
+{
+   print_r($cl->getClusterNodes($name));
+   echo "> $name , count shard   = ".$cl->getClusterCountShard($name)." ; count replica = ".$cl->getClusterCountReplica($name)."\n";
+}
+
+// Результат:
+//>  one_shard_four_replicas , count shard = 1 ; count replica = 4
+//>  four_shards_one_replica , count shard = 4 ; count replica = 1
+//>  two_shards_two_replicas , count shard = 2 ; count replica = 2
+
+```
