@@ -185,15 +185,7 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
        - { name: "02", replicas: ["ch65.smi2", "ch66.smi2"]}
 ```
 
-### Инструмент миграции DDL-запросов
-
-На момент написания статьи ClickHouse имеет ряд особенностей (ограничений), связанных с DDL-запросами. [Цитата](https://clickhouse.yandex/reference_ru.html#Репликация%20данных):
-
-> Реплицируются INSERT, ALTER (см. подробности в описании запроса ALTER). Реплицируются сжатые данные, а не тексты запросов. Запросы CREATE, DROP, ATTACH, DETACH, RENAME не реплицируются - то есть, относятся к одному серверу. Запрос CREATE TABLE создаёт новую реплицируемую таблицу на том сервере, где выполняется запрос; а если на других серверах такая таблица уже есть - добавляет новую реплику. Запрос DROP TABLE удаляет реплику, расположенную на том сервере, где выполняется запрос. Запрос RENAME переименовывает таблицу на одной из реплик - то есть, реплицируемые таблицы на разных репликах могут называться по разному.
-
-Когда количество узлов кластера становится большим, то управление кластером становится неудобным. Поэтому мы разработали простой и достаточно функциональный инструмент для миграции DDL-запросов в ClickHouse-кластер. 
-
-# PHP-драйвер для работы с ClickHouse-кластером
+### PHP-драйвер для работы с ClickHouse-кластером
 
 В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы уже рассказывали о нашем open-source [PHP-драйвере](https://github.com/smi2/phpClickHouse) для ClickHouse. Здесь мы кратко опишем его возможности по работе с кластером.
 
@@ -218,7 +210,7 @@ $cl->setScanTimeOut(2.5); // 2500 ms
 
 ```
 
-Проверка состояния реплик кластера выполняется так:
+Выполнение проверки нормального состояния реплик кластера:
 
 ```php
 if (!$cl->isReplicasIsOk())
@@ -232,7 +224,7 @@ if (!$cl->isReplicasIsOk())
 * Проверяются соединения со всеми узлами кластера, перечисленными в DNS-записи.
 * На каждый узел отправляется [SQL-запрос](https://clickhouse.yandex/reference_ru.html#system.replicas), который позволяет определить состояние всех реплик ClickHouse-кластера.
  
-Скорость выполнения запроса может быть увеличена, если не высчитывать столбцы `log_max_index, log_pointer, total_replicas, active_replicas`, при получении данных из которых выполняются запросы на ZK-кластер. 
+Скорость выполнения запроса может быть увеличена, если не вычитывать столбцы `log_max_index, log_pointer, total_replicas, active_replicas`, при получении данных из которых выполняются запросы на ZK-кластер. 
 
 Для облегченной проверки в драйвере устанавливается специальный флаг: 
 
@@ -264,3 +256,167 @@ foreach (['one_shard_four_replicas','four_shards_one_replica','two_shards_two_re
 //>  two_shards_two_replicas , count shard = 2 ; count replica = 2
 
 ```
+
+Получение списка узлов по названию кластера или из шардированных таблиц:
+
+```php
+$nodes=$cl->getNodesByTable('one_shard_four_replicas.test_sharded');
+
+$nodes=$cl->getClusterNodes('two_shards_two_replicas');
+```
+
+Пример получнеия размера таблицы или размеров всех таблиц через отправку запроса на каждый узел кластера:
+
+```php
+foreach ($nodes as $node)
+{
+   echo "$node > \n";
+   print_r($cl->client($node)->tableSize('test_sharded'));
+   print_r($cl->client($node)->tablesSize());
+}
+
+// Упрощенный вариант использования
+$cl->getSizeTable('dbName.tableName');
+
+```
+
+Получение списка таблиц кластера:
+
+```php
+$cl->getTables()
+```
+
+Определение лидера в кластере:
+
+```php
+
+$cl->getMasterNodeForTable('dbName.tableName') // Лидер имеет установленный флаг is_leader=1
+
+```
+
+Запросы, связанные, например, с удалением или изменением структуры, отправляются на узел с установленным флагом `is_leader`. 
+
+Очистка данных в таблице в кластере:
+
+```php
+$cl->truncateTable('dbName.tableName')`
+```
+
+### Инструмент миграции DDL-запросов
+
+Для миграции DDL-запросов для реляционных СУБД в нашей компании используется [MyBatis Migrations](http://www.mybatis.org/migrations/).
+
+Об инструментах миграции на Хабре уже писали, например, в перечисленных статьях:
+* [Версионная миграция структуры базы данных: основные подходы](https://habrahabr.ru/post/121265/)
+* [Простые миграции с PHPixie Migrate](https://habrahabr.ru/post/315254/)
+* [Управление скриптами миграции или MyBatis Scheme Migration Extended](https://habrahabr.ru/post/129290/)
+
+И для работы с ClickHouse-кластером нам требовался подобный инструмент.
+
+На момент написания статьи ClickHouse имеет ряд особенностей (ограничений) связанных с DDL-запросами. [Цитата](https://clickhouse.yandex/reference_ru.html#Репликация%20данных):
+
+> Реплицируются INSERT, ALTER (см. подробности в описании запроса ALTER). Реплицируются сжатые данные, а не тексты запросов. Запросы CREATE, DROP, ATTACH, DETACH, RENAME не реплицируются - то есть, относятся к одному серверу. Запрос CREATE TABLE создаёт новую реплицируемую таблицу на том сервере, где выполняется запрос; а если на других серверах такая таблица уже есть - добавляет новую реплику. Запрос DROP TABLE удаляет реплику, расположенную на том сервере, где выполняется запрос. Запрос RENAME переименовывает таблицу на одной из реплик - то есть, реплицируемые таблицы на разных репликах могут называться по разному.
+
+Команда разработчиков ClickHouse уже анонсировала работу в этом направлении, но в настоящее время приходится решать эту задачу внешним инструментарием. В результате мы создали простой и достаточно функциональный инструмент [phpMigrationsClickhouse](https://github.com/smi2/phpMigrationsClickhouse) для миграции DDL-запросов в ClickHouse-кластер. И в наших планах абстрагировать *phpMigrationsClickhouse* от языка PHP.
+
+На текущий момент миграция в *phpMigrationsClickhouse* состоит из:  
+* SQL-запросов, которые нужно накатить и откатить в случае ошибки;  
+* имени кластера, в котором нужно выполнить SQL-запросы.
+ 
+Создадим PHP-файл, содержащий следущий код: 
+
+```php
+$cluster_name = 'pulse'; 
+$mclq = new \ClickHouseDB\Cluster\Migration($cluster_name);
+$mclq->setTimeout(100);
+```
+
+Добавим SQL-запросы, которые нужно накатить: 
+
+```php
+$mclq->addSqlUpdate(" CREATE DATABASE IF NOT EXISTS dbpulse  "); 
+$mclq->addSqlUpdate(" 
+ 
+ CREATE TABLE IF NOT EXISTS dbpulse.normal_summing_sharded (
+     event_date Date DEFAULT toDate(event_time),
+     event_time DateTime DEFAULT now(),
+     body_id Int32,
+     views Int32
+ ) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{pulse_replica}/pulse/normal_summing_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
+ "); 
+``` 
+ 
+Добавим SQL-запросы для выполнения отката в случае ошибки: 
+ 
+```php
+$mclq->addSqlDowngrade(' DROP TABLE IF EXISTS dbpulse.normal_summing_sharded '); 
+
+$mclq->addSqlDowngrade(' DROP DATABASE IF EXISTS dbpulse  '); 
+``` 
+
+Существует 2 стратегии накатывания миграций:
+* отправление каждого отдельного SQL-запроса на один сервер с переходом к следующему SQL-запросу;
+* отправление всех SQL-запросов на один сервер с переходом к следующему сереверу.
+
+При возникновении ошибки возможны следующие варианты:
+* выполнение downgrade-запроса на все узлы, на которых уже были произведены upgrade-запросы;
+* ожидание перед отправкой upgrade-запросов на другие сервера;
+* выполнение downgrade-запроса на всех серверах в случае возникновения ошибки.
+
+Принцип работы PHP-кода:
+
+```php
+
+// Получение списка IP-адресов узлов кластера
+$node_hosts=$this->getClusterNodes($migration->getClusterName());
+// Получение upgrade-запроса
+$sql_down=$migration->getSqlDowngrade();
+// Получение downgrade-запроса
+$sql_up=$migration->getSqlUpdate();
+
+// Выполнение upgrade-запроса на каждый узел, и в случае ошибки выполние downgrade-запроса
+
+$need_undo=false;
+$undo_ip=[];
+
+foreach ($sql_up as $s_u) {
+    foreach ($node_hosts as $node) {
+        // Выполнение upgrade-запроса
+        $state=$this->client($node)->write($s_u);
+        
+        if ($state->isError()) {
+            $need_undo = true;
+        } else {
+            // OK
+        }
+        
+        if ($need_undo) {
+            // Фиксация узлов кластера, где произошла ошибка  
+            $undo_ip[$node]=1;
+            break;
+        }
+    }
+}
+
+// Проверка успешности выполнения upgrade-запросов на всех узлах кластера
+if (!$need_undo)
+{
+    return true; // OK
+}
+```
+
+В случае ошибки выполняется отправка на всех узлы кластера downgrade-запроса:
+
+```php
+foreach ($node_hosts as $node) {
+    foreach ($sql_down as $s_u) {
+        try{
+            $st=$this->client($node)->write($s_u);
+        } catch (Exception $E) {
+            // Оповещение пользователя об ошибке при выполнении downgrade-запроса
+        }
+    }
+}
+```
+
+### Заключение
