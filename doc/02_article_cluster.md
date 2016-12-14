@@ -18,7 +18,7 @@
 
 ### Репликация
 
-ClickHouse поддерживает [репликацию](https://clickhouse.yandex/reference_ru.html#Репликация данных) данных, обеспечивая целостность данных на репликах. Для репликации данных используются специальные движки MergeTree-семейства:
+ClickHouse поддерживает [репликацию](https://clickhouse.yandex/reference_ru.html#Репликация%20данных) данных, обеспечивая целостность данных на репликах. Для репликации данных используются специальные движки MergeTree-семейства:
 
 * ReplicatedMergeTree
 * ReplicatedCollapsingMergeTree
@@ -29,12 +29,183 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
   
 Запись данных может выполняться в любую из таблиц-реплик, ClickHouse выполняет автоматическую синхронизацию данных между всеми репликами.
 
+### Примеры конфигурации ClickHouse-кластера
+
+В качестве примеров будем рассматривать различные конфигурации для четырех узлов: ch63.smi2, ch64.smi2, ch65.smi2 и ch66.smi2.
+
+Настройки выполняются в конфигурационном файле */etc/clickhouse-server/config.xml*.
+
+#### Один шард и четыре реплики
+
+![Один шард и четыре реплики](https://api.monosnap.com/rpc/file/download?id=BahALelyOJWu7ordZAFq6wvCaz6m3J)
+
+```xml
+<remote_servers>
+    <!-- One shard, four replicas -->
+    <one_shard_four_replicas>
+        <!-- shard 01 --> 
+        <shard>
+            <!-- replica 01_01 -->
+            <replica>
+                <host>ch63.smi2</host>
+            </replica>
+            
+            <!-- replica 01_02 -->
+            <replica>
+                <host>ch64.smi2</host>
+            </replica>
+            
+            <!-- replica 01_03 -->
+            <replica>
+                <host>ch65.smi2</host>
+            </replica>
+            
+            <!-- replica 01_04 -->
+            <replica>
+                <host>ch66.smi2</host>
+            </replica>
+        </shard>
+    </one_shard_four_replicas>
+</remote_servers>
+```
+
+Плюсы данной конфигурации:
+* Наиболее надежный способ хранения данных.
+
+Минусы:
+* Для большинства задач будет хранениться избыточное количество копий данных.
+* Поскольку в данной конфигурации только 1 шард, SELECT-запрос не может выполняться параллельно на разных узлах.
+* Требуются дополнительные ресурсы на многократное реплицирование данных между всеми узлами.
+
+#### Четыре шарда по одной реплике
+
+![Четыре шарда по одной реплике](https://api.monosnap.com/rpc/file/download?id=X7lbGzFQ9HriQQ9QrlaLZRMPbQ4Sx1)
+
+```xml
+<remote_servers>
+    <!-- Four shards, one replica -->
+    <four_shards_one_replica>
+        <!-- shard 01 --> 
+        <shard>
+            <!-- replica 01_01 -->
+            <replica>
+                <host>ch63.smi2</host>
+            </replica>
+        </shard>
+        
+        <!-- shard 02 --> 
+        <shard>
+            <!-- replica 02_01 -->
+            <replica>
+                <host>ch64.smi2</host>
+            </replica>
+        </shard>
+        
+        <!-- shard 03 --> 
+        <shard>
+            <!-- replica 03_01 -->
+            <replica>
+                <host>ch65.smi2</host>
+            </replica>
+        </shard>
+        
+        <!-- shard 04 --> 
+        <shard>
+            <!-- replica 04_01 -->
+            <replica>
+                <host>ch66.smi2</host>
+            </replica>
+        </shard>
+    </four_shards_one_replica>
+</remote_servers>
+```
+
+Плюсы данной конфигурации:
+* Поскольку в данной конфигурации 4 шарда, SELECT-запрос может выполняться параллельно сразу на всех узлах кластера.
+
+Минусы:
+* Наименее надежный способ хранения данных (потеря узла - потеря порции данных).
+
+#### Два шарда по две реплики
+
+![Два шарда по две реплики](https://api.monosnap.com/rpc/file/download?id=HZblGQjLnOU6WlprWxb8W5FyixNlfY)
+
+```xml
+<remote_servers>
+    <!-- Two shards, two replica -->
+    <two_shards_two_replicas>
+        <!-- shard 01 --> 
+        <shard>
+            <!-- replica 01_01 -->
+            <replica>
+                <host>ch63.smi2</host>
+            </replica>
+            
+            <!-- replica 01_02 -->
+            <replica>
+                <host>ch64.smi2</host>
+            </replica>
+        </shard>
+        
+        <!-- shard 02 --> 
+        <shard>
+            <!-- replica 02_01 -->
+            <replica>
+                <host>ch65.smi2</host>
+            </replica>
+            
+            <!-- replica 02_02 -->
+            <replica>
+                <host>ch66.smi2</host>
+            </replica>
+        </shard>
+    </two_shards_two_replicas>
+</remote_servers>
+```
+
+Данная конфигурация воплощает лучшие качества из первого и второго примеров:
+* Поскольку в данной конфигурации 2 шарда, SELECT-запрос может выполняться параллельно на каждом из шардов в кластере.
+* Относительно надежный способ хранения данных (потеря одного узла кластера не приводит к потере порции данных).
+
+### Пример конфигурации кластеров в ansible
+
+Конфигурация кластеров в [ansible](http://docs.ansible.com/ansible/index.html) может выглядеть следующим образом:
+
+```xml
+   - name: "one_shard_four_replicas"
+     shards:
+       - { name: "01", replicas: ["ch63.smi2", "ch64.smi2","ch65.smi2", "ch66.smi2"]}
+   - name: "four_shards_one_replica"
+     shards:
+       - { name: "01", replicas: ["ch63.smi2"]}
+       - { name: "02", replicas: ["ch64.smi2"]}
+       - { name: "03", replicas: ["ch65.smi2"]}
+       - { name: "04", replicas: ["ch66.smi2"]}
+   - name: "two_shards_two_replicas"
+     shards:
+       - { name: "01", replicas: ["ch63.smi2", "ch64.smi2"]}
+       - { name: "02", replicas: ["ch65.smi2", "ch66.smi2"]}
+```
+
 ### Инструмент миграции DDL-запросов
 
-На момент написания статьи ClickHouse имеет ряд особенностей (ограничений) связанных с DDL-запросами. [Цитата](https://clickhouse.yandex/reference_ru.html#Репликация данных):
+На момент написания статьи ClickHouse имеет ряд особенностей (ограничений) связанных с DDL-запросами. [Цитата](https://clickhouse.yandex/reference_ru.html#Репликация%20данных):
 
 > Реплицируются INSERT, ALTER (см. подробности в описании запроса ALTER). Реплицируются сжатые данные, а не тексты запросов. Запросы CREATE, DROP, ATTACH, DETACH, RENAME не реплицируются - то есть, относятся к одному серверу. Запрос CREATE TABLE создаёт новую реплицируемую таблицу на том сервере, где выполняется запрос; а если на других серверах такая таблица уже есть - добавляет новую реплику. Запрос DROP TABLE удаляет реплику, расположенную на том сервере, где выполняется запрос. Запрос RENAME переименовывает таблицу на одной из реплик - то есть, реплицируемые таблицы на разных репликах могут называться по разному.
 
-Когда количество узлов кластера становится большим, то управление кластером становится неудобным. В результате мы создали простой и достаточно функциональный инструмент для миграции DDL-запросов в ClickHouse-кластер. И работу с кластером продемонстрируем на примере.  
+Когда количество узлов кластера становится большим, то управление кластером становится неудобным. В результате мы создали простой и достаточно функциональный инструмент для миграции DDL-запросов в ClickHouse-кластер. 
 
-*бла-бла-бла про тулл Игоря...*
+# PHP-драйвер для работы с ClickHouse-кластером
+
+В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы уже рассказывали о нашем open-source [PHP-драйвере](https://github.com/smi2/phpClickHouse) для ClickHouse, а здесь кратко опишем его возможности по работе с кластером.
+
+Для подключения к кластеру используется класс `ClickHouseDB\Cluster`:
+
+```php
+$cl = new ClickHouseDB\Cluster(
+ ['host'=>'allclickhouse.smi2','port'=>'8123','username'=>'x','password'=>'x']
+);
+
+```
+
+В DNS записи `allclickhouse.smi2` перечислены IP-адреса всех узлов: `ch63.smi2, ch64.smi2, ch65.smi2, ch66.smi2`.
