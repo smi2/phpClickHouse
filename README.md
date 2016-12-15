@@ -76,7 +76,7 @@ $db->write('
         v_55 Int32
     ) 
     ENGINE = SummingMergeTree(event_date, (site_id, site_key, event_time, event_date), 8192)
-';
+');
 ```
 Show create table:
 ```php
