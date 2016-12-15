@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS  testshara.anysumming AS testshara.anysumming_sharded
 Недостаток:
 * Наименее надежный способ хранения данных (потеря узла приводит к потере порции данных).
 
-### Нормальная конфигурация, два шарда по две реплики
+### Два шарда по две реплики
 
 ![Два шарда по две реплики](https://api.monosnap.com/rpc/file/download?id=HZblGQjLnOU6WlprWxb8W5FyixNlfY)
 
