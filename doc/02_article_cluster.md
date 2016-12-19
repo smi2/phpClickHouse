@@ -2,7 +2,12 @@
 
 В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы поделились своим опытом внедрения и использования СУБД ClickHouse в компании [СМИ2](https://smi2.net/). В текущей статье мы затронем вопросы масштабирования, которые возникают с увеличением объема анализируемых данных и ростом нагрузки, когда данные уже не могут храниться и обрабатываться в рамках одного физического сервера. Также мы расскажем о разработанном нами инструменте для миграции [DDL](https://en.wikipedia.org/wiki/Data_definition_language)-запросов в ClickHouse-кластер.
 
+![Два шарда по две реплики](https://habrastorage.org/files/d0d/766/d01/d0d766d019724159bc0896bcafad3da5.png)
+<habracut/>
+
 [ClickHouse](https://clickhouse.yandex/) специально проектировался для работы в кластерах, расположенных в разных дата-центрах. Масштабируется СУБД линейно до сотен узлов. Так, например, [Яндекс.Метрика](https://metrika.yandex.ru/) на момент написания статьи - это кластер из более чем 400 узлов.
+
+
 
 ClickHouse предоставляет шардирование и репликацию "из коробки", они могут гибко настраиваться отдельно для каждой таблицы. Для обеспечения реплицирования требуется [Apache ZooKeeper](https://zookeeper.apache.org/) (рекомендуется использовать версию 3.4.5+). Для более высокой надежности мы используем ZK-кластер (ансамбль) из 5 узлов. Следует выбирать нечетное число ZK-узлов (например, 3 или 5), чтобы обеспечить кворум. Также отметим, что ZK не используется в операциях SELECT, а применяется, например, в ALTER-запросах для изменений столбцов, сохраняя инструкции для каждой из реплик.   
 
@@ -35,7 +40,7 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 
 ### Один шард и четыре реплики
 
-![Один шард и четыре реплики](https://api.monosnap.com/rpc/file/download?id=BahALelyOJWu7ordZAFq6wvCaz6m3J)
+![Один шард и четыре реплики](https://habrastorage.org/files/24c/291/fcd/24c291fcda9943d2b6f416fec8b6eefc.png)
 
 ```xml
 <remote_servers>
@@ -94,7 +99,7 @@ CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_
 
 ### Четыре шарда по одной реплике
 
-![Четыре шарда по одной реплике](https://api.monosnap.com/rpc/file/download?id=X7lbGzFQ9HriQQ9QrlaLZRMPbQ4Sx1)
+![Четыре шарда по одной реплике](https://habrastorage.org/files/38f/b5c/3c5/38fb5c3c51f64b7896c55b9c5d872478.png)
 
 ```xml
 <remote_servers>
@@ -159,7 +164,7 @@ CREATE TABLE IF NOT EXISTS  testshara.anysumming AS testshara.anysumming_sharded
 
 ### Два шарда по две реплики
 
-![Два шарда по две реплики](https://api.monosnap.com/rpc/file/download?id=HZblGQjLnOU6WlprWxb8W5FyixNlfY)
+![Два шарда по две реплики](https://habrastorage.org/files/d0d/766/d01/d0d766d019724159bc0896bcafad3da5.png)
 
 ```xml
 <remote_servers>
