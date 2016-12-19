@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS  dbpulse.normal_summing AS dbpulse.normal_summing_sha
      - { name: "01", replicas: ["ch63.smi2", "ch64.smi2","ch65.smi2", "ch66.smi2"]}
 ```
 
-## PHP-драйвер для работы с ClickHouse-кластером
+# PHP-драйвер для работы с ClickHouse-кластером
 
 В предыдущей [статье](https://habrahabr.ru/company/smi2/blog/314558/) мы уже рассказывали о нашем open-source [PHP-драйвере](https://github.com/smi2/phpClickHouse) для ClickHouse.
 
@@ -381,7 +381,7 @@ $cl->truncateTable('dbName.tableName')`
 
 > Реплицируются INSERT, ALTER (см. подробности в описании запроса ALTER). Реплицируются сжатые данные, а не тексты запросов. Запросы CREATE, DROP, ATTACH, DETACH, RENAME не реплицируются - то есть, относятся к одному серверу. Запрос CREATE TABLE создаёт новую реплицируемую таблицу на том сервере, где выполняется запрос; а если на других серверах такая таблица уже есть - добавляет новую реплику. Запрос DROP TABLE удаляет реплику, расположенную на том сервере, где выполняется запрос. Запрос RENAME переименовывает таблицу на одной из реплик - то есть, реплицируемые таблицы на разных репликах могут называться по разному.
 
-Команда разработчиков ClickHouse уже анонсировала работу в этом направлении, но в настоящее время приходится решать эту задачу внешним инструментарием. Мы создали простой прототип инструмента [phpMigrationsClickhouse](https://github.com/smi2/phpMigrationsClickhouse) для миграции DDL-запросов в ClickHouse-кластер. И в наших планах - абстрагировать *phpMigrationsClickhouse* от языка PHP.
+Команда разработчиков ClickHouse уже анонсировала работу в этом направлении, но в настоящее время приходится решать эту задачу внешним инструментарием. Мы создали простой **прототип** инструмента [phpMigrationsClickhouse](https://github.com/smi2/phpMigrationsClickhouse) для миграции DDL-запросов в ClickHouse-кластер. И в наших планах - абстрагировать *phpMigrationsClickhouse* от языка PHP.
 
 Опишем алгоритм, использующийся в настоящий момент в *phpMigrationsClickhouse*, который может быть реализован на любом другом языке программирования.
 
