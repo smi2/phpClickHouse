@@ -434,9 +434,9 @@ $mclq->addSqlDowngrade(' DROP DATABASE IF EXISTS dbpulse  ');
 
 // Получение списка IP-адресов узлов кластера
 $node_hosts=$this->getClusterNodes($migration->getClusterName());
-// Получение upgrade-запроса
-$sql_down=$migration->getSqlDowngrade();
 // Получение downgrade-запроса
+$sql_down=$migration->getSqlDowngrade();
+// Получение upgrade-запроса
 $sql_up=$migration->getSqlUpdate();
 
 // Выполнение upgrade-запроса на каждый узел и, в случае ошибки, выполнение downgrade-запроса
