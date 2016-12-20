@@ -71,6 +71,10 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 </remote_servers>
 ```
 
+Пример схема создания таблицы:
+
+![Схема](https://habrastorage.org/files/352/b8d/314/352b8d314e574ba9aa54350715f47697.png)
+
 Пример SQL-запроса создания таблицы для указанной конфигурации:
 
 ```sql
@@ -142,7 +146,7 @@ CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_
 
 Пример SQL-запроса создания таблицы для указанной конфигурации:
 
-![Схема](https://habrastorage.org/files/cd5/e82/219/cd5e8221949f48aba7cde67df8e9c835.png)
+
 
 
 ```sql
