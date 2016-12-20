@@ -71,7 +71,7 @@ ClickHouse поддерживает [репликацию](https://clickhouse.ya
 </remote_servers>
 ```
 
-Пример схема создания таблицы:
+Пример схемы создания таблицы:
 
 ![Схема](https://habrastorage.org/files/352/b8d/314/352b8d314e574ba9aa54350715f47697.png)
 
