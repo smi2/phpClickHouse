@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS dbrepikator.anysumming_repl_sharded (
 ) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{repikator_replica}/dbrepikator/anysumming_repl_sharded', '{replica}', event_date, (event_date, event_time, body_id), 8192)
 ;
 
-CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_sharded
+CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS dbrepikator.anysumming_repl_sharded
       ENGINE = Distributed( repikator, dbrepikator, anysumming_repl_sharded , rand() )
 ```
 
