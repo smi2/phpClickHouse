@@ -142,6 +142,9 @@ CREATE TABLE IF NOT EXISTS  dbrepikator.anysumming_repl AS test.anysumming_repl_
 
 Пример SQL-запроса создания таблицы для указанной конфигурации:
 
+![Схема](https://habrastorage.org/files/cd5/e82/219/cd5e8221949f48aba7cde67df8e9c835.png)
+
+
 ```sql
 CREATE DATABASE IF NOT EXISTS testshara 
 ;
