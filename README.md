@@ -1,9 +1,6 @@
 php ClickHouse wrapper
 ===================
-
-
 ##Features
-
 * No dependency, only curl 
 * Select parallel queries (asynchronous)
 * Parallelizing bulk inserts from CSV file
@@ -19,13 +16,15 @@ php ClickHouse wrapper
 * Get master node replica in cluster 
 * Get tableSize in all nodes 
 
+[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
+
 ## Install composer
 
 ```
 composer require smi2/phpclickhouse
 ```
 
-## Install submodule
+### OR install submodule
 
 ```bash
 git submodule add https://github.com/smi2/phpClickHouse.git
@@ -38,7 +37,7 @@ git submodule update --remote
 ```
 
 
-packagist : https://packagist.org/packages/smi2/phpclickhouse
+[Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
 ## Start
 
