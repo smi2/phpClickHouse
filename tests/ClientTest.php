@@ -149,7 +149,7 @@ class ClientTest extends TestCase
             ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
         );
 
-
+//        $this->db->verbose();
         $st=$this->db->select('SELECT  url_hash FROM summing_url_views WHERE like(url_hash,\'%Русский%\') ');
         $this->assertEquals('Русский язык', $st->fetchOne('url_hash'));
 

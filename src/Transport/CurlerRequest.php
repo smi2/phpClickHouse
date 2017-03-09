@@ -688,6 +688,10 @@ class Request
             $curl_opt[CURLOPT_FILE] = $this->resultFileHandle;
             $curl_opt[CURLOPT_HEADER] = false;
         }
+
+        if ($this->options[CURLOPT_VERBOSE]) {
+            echo "\n-----------BODY REQUEST----------\n".$curl_opt[CURLOPT_POSTFIELDS]."\n------END--------\n";
+        }
         curl_setopt_array($this->handle, $curl_opt);
         return true;
     }
