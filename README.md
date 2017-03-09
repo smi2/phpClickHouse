@@ -443,6 +443,15 @@ file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND
 
 ```
 
+### Debug & Verbose
+
+```php
+
+$cl->verbose();
+
+```
+
+
 ### Phpunit Test
 
 
