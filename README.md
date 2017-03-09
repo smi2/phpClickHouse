@@ -465,6 +465,12 @@ MIT
 
 ChangeLog
 ---
+
+
+### 2017-02-20
+- Build composer 0.17.02
+- 
+
 ### 2016-12-09
 - for ReadOnly users need set : `client->setReadOnlyUser(true);` or `$confi['readonly']` , see exam19_readonly_user.php
 
