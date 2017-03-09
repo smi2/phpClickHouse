@@ -135,7 +135,25 @@ class ClientTest extends TestCase
         ');
     }
 
+    public function testSearchWithCyrillic()
+    {
+        $this->create_table_summing_url_views();
+        $this->db->insert(
+            'summing_url_views',
+            [
+                [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
+                [strtotime('2010-10-11 01:00:00'), 'Хущ', 2345, 12, 9, 3],
+                [strtotime('2010-10-12 02:00:00'), 'Хищ', 5345, 33, 33, 0],
+                [strtotime('2010-10-13 03:00:00'), 'Русский язык', 5345, 55, 12, 55],
+            ],
+            ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
+        );
 
+
+        $st=$this->db->select('SELECT  url_hash FROM summing_url_views WHERE like(url_hash,\'%Русский%\') ');
+        $this->assertEquals('Русский язык', $st->fetchOne('url_hash'));
+
+    }
 
     public function testRFCCSVAndTSVWrite()
     {
