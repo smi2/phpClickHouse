@@ -66,6 +66,8 @@ class StrictQuoteLine
 
             $enclosure_esc = preg_quote($enclosure, '/');
 
+            $encode_esc = preg_quote($encode, '/');
+
             $type = gettype($value);
 
             if ($type == 'integer' || $type == 'double') {
@@ -78,12 +80,9 @@ class StrictQuoteLine
                     return str_replace(["\t","\n"],['\\t','\\n'],$value);
                 }
 
-
-                if (preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $value)) {
-                    return $enclosure . str_replace($enclosure, $encode . $enclosure, $value) . $enclosure;
-                }
-
-                return $enclosure . strval($value) . $enclosure;
+                $value = strval($value);
+                $value = preg_replace('/('.$enclosure_esc.'|'.$encode_esc.')/',$encode_esc.'\1', $value);
+                return $enclosure . $value . $enclosure;
             }
 
             if (is_array($value)) {
