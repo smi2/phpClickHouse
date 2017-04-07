@@ -113,7 +113,10 @@ class Http
      */
     public function getUri()
     {
-        return 'http://' . $this->_host . ':' . $this->_port;
+        $proto='http';
+        if ($this->settings()->isHttps()) $proto='https';
+
+        return $proto.'://' . $this->_host . ':' . $this->_port;
     }
 
     /**
@@ -155,6 +158,8 @@ class Http
             unset($settings['max_execution_time']);
 
         }
+
+        unset($settings['https']);
 
 
         return $this->getUri() . '?' . http_build_query($settings);

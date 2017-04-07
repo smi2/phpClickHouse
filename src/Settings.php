@@ -22,6 +22,10 @@ class Settings
 
     private $_ReadOnlyUser=false;
 
+    /**
+     * @var bool
+     */
+    private $_isHttps=false;
 
     /**
      * Settings constructor.
@@ -33,7 +37,8 @@ class Settings
             'extremes'                => false,
             'readonly'                => true,
             'max_execution_time'      => 20,
-            'enable_http_compression' => 0
+            'enable_http_compression' => 0,
+            'https'                   => false
         ];
 
         $this->settings = $default;
@@ -103,6 +108,19 @@ class Settings
         $this->set('enable_http_compression', intval($flag));
         return $this;
     }
+
+
+    public function https($flag=true)
+    {
+        $this->set('https', $flag);
+        return $this;
+    }
+
+    public function isHttps()
+    {
+        return $this->get('https');
+    }
+
 
     /**
      * @param $flag

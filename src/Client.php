@@ -101,6 +101,11 @@ class Client
             $this->setReadOnlyUser($connect_params['readonly']);
         }
 
+        if (isset($connect_params['https']))
+        {
+            $this->https($connect_params['https']);
+        }
+
 
 
 
@@ -323,6 +328,13 @@ class Client
     public function enableHttpCompression($flag = true)
     {
         $this->settings()->enableHttpCompression($flag);
+        return $this;
+    }
+
+
+    public function https($flag=true)
+    {
+        $this->settings()->https($flag);
         return $this;
     }
 
