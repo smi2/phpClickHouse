@@ -39,6 +39,8 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function process($sql)
     {
+        asort($this->bindings);
+
         foreach ($this->bindings as $key => $value) {
             $valueSet = null;
             $valueSetText = null;
