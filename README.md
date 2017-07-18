@@ -349,6 +349,12 @@ $state1 = $db->selectAsync(
 
 Example custom query Degeneration in `exam16_custom_degeneration.php`
 
+```
+SELECT {ifint VAR} result_if_intval_NON_ZERO{/if}
+
+```
+
+
 ### Settings
 
 3 way set any settings

@@ -40,6 +40,16 @@ class Conditions implements \ClickHouseDB\Query\Degeneration
                 : $content_false;
         }, $sql);
 
+
+        $sql = preg_replace_callback('#\{ifint\s(.+?)}(.+?)\{/if}#sui', function ($matches) use ($markers) {
+            list($condition, $variable, $content) = $matches;
+
+            if (isset($markers[$variable]) && intval($markers[$variable])<>0 ) {
+                return $content;
+            }
+        }, $sql);
+
+
         // 3. process if conditions
         $sql = preg_replace_callback('#\{if\s(.+?)}(.+?)\{/if}#sui', function ($matches) use ($markers) {
             list($condition, $variable, $content) = $matches;
