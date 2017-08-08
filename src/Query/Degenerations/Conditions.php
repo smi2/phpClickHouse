@@ -41,6 +41,16 @@ class Conditions implements \ClickHouseDB\Query\Degeneration
         }, $sql);
 
 
+        // 2. process if/else conditions
+        $sql = preg_replace_callback('#\{ifint\s(.+?)}(.+?)\{else}(.+?)\{/if}#sui', function ($matches) use ($markers) {
+            list($condition, $variable, $content_true, $content_false) = $matches;
+
+            return (isset($markers[$variable]) && intval($markers[$variable])<>0 )
+                ? $content_true
+                : $content_false;
+        }, $sql);
+
+
         $sql = preg_replace_callback('#\{ifint\s(.+?)}(.+?)\{/if}#sui', function ($matches) use ($markers) {
             list($condition, $variable, $content) = $matches;
 
@@ -58,6 +68,10 @@ class Conditions implements \ClickHouseDB\Query\Degeneration
                 return $content;
             }
         }, $sql);
+
+
+
+
 
         return $sql;
     }

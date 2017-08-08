@@ -351,6 +351,7 @@ Example custom query Degeneration in `exam16_custom_degeneration.php`
 
 ```
 SELECT {ifint VAR} result_if_intval_NON_ZERO{/if}
+SELECT {ifint VAR} result_if_intval_NON_ZERO {else} BLA BLA{/if}
 
 ```
 
