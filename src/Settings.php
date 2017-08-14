@@ -133,6 +133,33 @@ class Settings
     }
 
     /**
+     * @param $session_id
+     * @return $this
+     */
+    public function session_id($session_id)
+    {
+        $this->set('session_id', $session_id);
+        return $this;
+    }
+    /**
+     * @return string
+     */
+    public function getSessionId()
+    {
+        if (empty($this->settings['session_id'])) return false;
+        return $this->get('session_id');
+    }
+
+    /**
+     * @return string
+     */
+    public function makeSessionId()
+    {
+        $this->session_id(sha1(uniqid('', true)));
+        return $this->getSessionId();
+    }
+
+    /**
      * @param $time
      * @return $this
      */

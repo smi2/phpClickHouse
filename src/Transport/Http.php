@@ -179,6 +179,10 @@ class Http
         if ($this->settings()->isEnableHttpCompression()) {
             $new->httpCompression(true);
         }
+        if ($this->settings()->getSessionId())
+        {
+            $new->persistent();
+        }
 
         $new->timeOut($this->settings()->getTimeOut());
         $new->connectTimeOut($this->_connectTimeOut)->keepAlive();// one sec

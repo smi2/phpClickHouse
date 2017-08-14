@@ -285,6 +285,33 @@ class Client
     }
 
     /**
+     * @return $this
+     */
+    public function useSession($useSessionId=false)
+    {
+        if (!$this->settings()->getSessionId())
+        {
+            if (!$useSessionId)
+            {
+                $this->settings()->makeSessionId();
+            }
+            else
+            {
+                $this->settings()->session_id($useSessionId);
+            }
+
+        }
+        return $this;
+    }
+    /**
+     * @return string
+     */
+    public function getSession()
+    {
+        return $this->settings()->getSessionId();
+    }
+
+    /**
      * Запрос на запись CREATE/DROP
      *
      * @param $sql

@@ -403,6 +403,32 @@ if ($db->settings()->getSetting('max_execution_time') !== 100) {
 
 // see example/exam10_settings.php
 ```
+### Use session_id with ClickHouse 
+
+
+`useSession()` - make new session_id or use exists `useSession(value)`
+
+
+```php
+
+// enable session_id 
+$db->useSession();
+$sesion_AA=$db->getSession(); // return session_id 
+
+$db->write(' CREATE TEMPORARY TABLE IF NOT EXISTS temp_session_test (number UInt64)');
+$db->write(' INSERT INTO temp_session_test SELECT number*1234 FROM system.numbers LIMIT 30');
+
+
+
+// reconnect to continue with other session 
+$db->useSession($sesion_AA);
+
+
+
+```
+
+
+
 ### Array as column
 
 ```php
@@ -481,6 +507,8 @@ MIT
 
 ChangeLog
 ---
+### 2017-08-14
+- Add session_id support
 
 
 ### 2017-02-20
