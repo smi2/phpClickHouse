@@ -740,12 +740,11 @@ class Client
             }
         }
 
+        $result=[];
         foreach ($drop as $partition_id) {
-            $this->dropPartition($table_name, $partition_id);
+            $result[$partition_id]=$this->dropPartition($table_name, $partition_id);
         }
 
-        return $drop;
+        return $result;
     }
-
-
 }
