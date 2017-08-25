@@ -695,7 +695,7 @@ class Client
     {
 
         $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id', [
-            'tableName'  => $dataBaseTableName,
+            'dataBaseTableName'  => $dataBaseTableName,
             'partion_id' => $partition_id
         ]);
         return $state;
