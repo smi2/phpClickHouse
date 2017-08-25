@@ -649,8 +649,8 @@ class Client
             sum(bytes) as sizebytes,
             min(min_date) as min_date,
             max(max_date) as max_date
-            FROM system.parts
-            WHERE active
+            FROM system.parts 
+            WHERE active AND database=\''.$this->settings()->getDatabase().'\'
             GROUP BY table,database
         ');
 
@@ -681,23 +681,24 @@ class Client
         return $this->select('
             SELECT *
             FROM system.parts 
-            WHERE like(table,\'%' . $table . '%\')  
+            WHERE like(table,\'%' . $table . '%\') AND database=\''.$this->settings()->getDatabase().'\' 
             ORDER BY max_date ' . ($limit > 0 ? ' LIMIT ' . intval($limit) : '')
         )->rowsAsTree('name');
     }
 
     /**
-     * @param $tableName
+     * @param $dataBaseTableName database_name.table_name
      * @param $partition_id
+     * @return Statement
      */
-    public function dropPartition($tableName, $partition_id)
+    public function dropPartition($dataBaseTableName, $partition_id)
     {
 
-        $state = $this->write('ALTER TABLE {tableName} DROP PARTITION :partion_id', [
-            'tableName'  => $tableName,
+        $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id', [
+            'tableName'  => $dataBaseTableName,
             'partion_id' => $partition_id
         ]);
-        return true;
+        return $state;
     }
 
 

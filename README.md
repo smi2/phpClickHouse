@@ -507,6 +507,11 @@ MIT
 
 ChangeLog
 ---
+### 2017-08-25 
+- Fix tablesSize(), use database filter
+- Fix partitions(), use database filter
+
+
 ### 2017-08-14
 - Add session_id support
 
