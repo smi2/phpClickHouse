@@ -27,9 +27,9 @@ class Cluster
     private $badNodes = [];
 
     /**
-     * @var string
+     * @var array
      */
-    private $error = "";
+    private $error = [];
     /**
      * @var array
      */
@@ -233,7 +233,7 @@ class Cluster
      */
     public function rescan()
     {
-        $this->error = ["R"];
+        $this->error = [];
         /*
          * 1) Получаем список IP
          * 2) К каждому подключаемся по IP, через activeClient подменяя host на ip
@@ -327,7 +327,7 @@ class Cluster
             $this->error[] = 'Have bad node : ' . json_encode($this->badNodes);
             $this->replicasIsOk = false;
         }
-        $this->error = false;
+        if (!sizeof($this->error)) $this->error = false;
         $this->resultScan = $result;
         // @todo Мы подключаемся ко всем в списке DNS, нужно пререить что запросы вернули все хосты к которым мы подключались
         return $this;
@@ -579,7 +579,7 @@ class Cluster
     public function getError()
     {
         if (is_array($this->error)) {
-            return implode(" ; " . $this->error);
+            return json_encode($this->error);
         }
         return $this->error;
     }
