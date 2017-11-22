@@ -512,6 +512,57 @@ class my
 
 ```
 
+### HTTPS
+
+```php
+$db = new ClickHouseDB\Client($config);
+$db->settings()->https();
+```
+
+
+### ReadOnly ClickHouse user
+
+```php
+$config = [
+    'host' => '192.168.1.20',
+    'port' => '8123',
+    'username' => 'ro',
+    'password' => 'ro',
+    'readonly' => true
+];
+```
+
+
+### Direct write to file
+
+Send result from clickhouse, without parse json.
+
+```php
+$WriteToFile=new ClickHouseDB\WriteToFile('/tmp/_1_select.csv');
+$db->select('select * from summing_url_views',[],null,$WriteToFile);
+// or
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_3_select.tab',true,'TabSeparatedWithNames'));
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
+$statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,new ClickHouseDB\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\WriteToFile::FORMAT_CSV));
+```
+
+### insert Assoc Bulk
+
+```php
+ $oneRow = [
+            'one' => 1,
+            'two' => 2,
+            'thr' => 3,
+            ];
+            $failRow = [
+                'two' => 2,
+                'one' => 1,
+                'thr' => 3,
+            ];
+
+$db->insertAssocBulk([$oneRow, $oneRow, $failRow])
+```
+
 ### Debug & Verbose
 
 ```php
@@ -538,6 +589,10 @@ MIT
 
 ChangeLog
 ---------
+
+### 2017-11-22
+
+- Add insertAssocBulk
 
 ### 2017-08-25
 
