@@ -44,6 +44,7 @@ class ClientTest extends TestCase
         ];
 
         $this->db = new ClickHouseDB\Client($config);
+        $this->db->enableHttpCompression(true);
         $this->db->ping();
     }
 
@@ -270,7 +271,7 @@ class ClientTest extends TestCase
            ints Int32,
            arr1 Array(UInt8),  
            arrs Array(String)  
-        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+        ) ENGINE = TinyLog()');
 
         @unlink($fileName);
 
@@ -327,7 +328,7 @@ class ClientTest extends TestCase
            ints Int32,
            arr1 Array(UInt8),  
            arrs Array(String)  
-        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+        ) ENGINE = Log');
 
 
 
@@ -627,7 +628,7 @@ class ClientTest extends TestCase
         $this->assertEquals(6408, $st->count());
 
         $st = $this->db->select('SELECT * FROM summing_url_views LIMIT 4');
-        $this->assertEquals(2136, $st->countAll());
+        $this->assertEquals(4, $st->countAll());
 
 
         $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
