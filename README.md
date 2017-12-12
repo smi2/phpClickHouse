@@ -590,6 +590,10 @@ MIT
 ChangeLog
 ---------
 
+### 2017-12-12
+
+* Not set `FORMAT JSON` if set FORMAT in sql
+
 ### 2017-11-22
 
 - Add insertAssocBulk

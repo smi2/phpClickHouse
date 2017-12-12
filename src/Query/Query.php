@@ -52,7 +52,9 @@ class Query
     public function toSql()
     {
         if (null !== $this->format) {
-            $this->sql = $this->sql . ' FORMAT ' . $this->format;
+            if (stripos($this->sql, 'FORMAT') < 1) {
+                $this->sql = $this->sql . ' FORMAT ' . $this->format;
+            }
         }
 
         if (sizeof($this->degenerations))
