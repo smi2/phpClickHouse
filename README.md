@@ -277,7 +277,7 @@ $result = $db->select($sql, [], $whereIn);
 
 ### Simple sql conditions & template
 
-conditions is depricated, if need use:
+conditions is deprecated, if need use:
 `$db->enableQueryConditions();`
 
 Example with QueryConditions:
