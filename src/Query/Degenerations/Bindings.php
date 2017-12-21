@@ -61,7 +61,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 
             if (is_string($value)) {
                 $valueSet = $value;
-                $valueSetText = "'" . $value . "'";
+                $valueSetText = "'" . addslashes($value) . "'";
             }
 
             if ($valueSetText !== null) {
