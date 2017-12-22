@@ -64,6 +64,11 @@ class Http
     private $_connectTimeOut = 5;
 
     /**
+     * @var bool
+     */
+    private $xClickHouseProgress=false;
+
+    /**
      * Http constructor.
      * @param $host
      * @param $port
@@ -313,6 +318,41 @@ class Http
         return $this->_connectTimeOut;
     }
 
+
+    public function __findXClickHouseProgress($handle)
+    {
+        $code=curl_getinfo($handle,CURLINFO_HTTP_CODE);
+
+        // Search X-ClickHouse-Progress
+        if ($code==200) {
+            $response = curl_multi_getcontent($handle);
+            $header_size = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
+            if (!$header_size) return false;
+
+            $header = substr($response, 0, $header_size);
+            if (!$header_size) return false;
+            $pos=strrpos($header,'X-ClickHouse-Progress');
+
+            if (!$pos) return false;
+
+            $last=substr($header,$pos);
+            $data=@json_decode(str_ireplace('X-ClickHouse-Progress:','',$last),true);
+
+            if ($data && is_callable($this->xClickHouseProgress)) {
+
+                if (is_array($this->xClickHouseProgress)){
+                    call_user_func_array($this->xClickHouseProgress,[$data]);
+                } else {
+                    call_user_func($this->xClickHouseProgress,$data);
+                }
+
+
+            }
+
+        }
+
+    }
+
     /**
      * @param Query $query
      * @param null $whereInFile
@@ -353,12 +393,13 @@ class Http
 
             if ($isGz) {
                 // write gzip header
-//                "\x1f\x8b\x08\x00\x00\x00\x00\x00"
-//                fwrite($fout, "\x1F\x8B\x08\x08".pack("V", time())."\0\xFF", 10);
-                fwrite($fout, "\x1f\x8b\x08\x00\x00\x00\x00\x00");
+                // "\x1f\x8b\x08\x00\x00\x00\x00\x00"
+                // fwrite($fout, "\x1F\x8B\x08\x08".pack("V", time())."\0\xFF", 10);
                 // write the original file name
-//                $oname = str_replace("\0", "", basename($writeToFile->fetchFile()));
-//                fwrite($fout, $oname."\0", 1+strlen($oname));
+                // $oname = str_replace("\0", "", basename($writeToFile->fetchFile()));
+                // fwrite($fout, $oname."\0", 1+strlen($oname));
+
+                fwrite($fout, "\x1f\x8b\x08\x00\x00\x00\x00\x00");
 
             }
 
@@ -366,6 +407,10 @@ class Http
             $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (Request $request) {
                 fclose($request->getResultFileHandle());
             });
+        }
+        if ($this->xClickHouseProgress)
+        {
+            $request->setFunctionProgress([$this,'__findXClickHouseProgress']);
         }
         // ---------------------------------------------------------------------------------
         return $request;
@@ -480,7 +525,13 @@ class Http
         return new Statement($request);
     }
 
-
+    /**
+     * @param $callback
+     */
+    public function setProgressFunction(callable $callback)
+    {
+        $this->xClickHouseProgress=$callback;
+    }
     /**
      * @param $sql
      * @param array $bindings

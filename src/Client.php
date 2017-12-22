@@ -401,6 +401,24 @@ class Client
         return $this->transport()->executeAsync();
     }
 
+    public function progressFunction($callback)
+    {
+        if (!is_callable($callback)) throw new \InvalidArgumentException('Not is_callable progressFunction');
+
+        if (!$this->settings()->is('send_progress_in_http_headers'))
+        {
+            $this->settings()->set('send_progress_in_http_headers', 1);
+        }
+        if (!$this->settings()->is('http_headers_progress_interval_ms'))
+        {
+            $this->settings()->set('http_headers_progress_interval_ms', 100);
+
+        }
+
+
+        $this->transport()->setProgressFunction($callback);
+    }
+
     /**
      * Подготовить запрос SELECT
      *
@@ -467,7 +485,7 @@ class Client
     }
 
     /**
-     * Вставить массив
+     * Insert Array
      *
      * @param $table
      * @param $values

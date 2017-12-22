@@ -633,6 +633,20 @@ class Request
     }
 
     /**
+     * @param callable $callback
+     * @throws \Exception
+     */
+    public function setFunctionProgress(callable $callback)
+    {
+        if (!is_callable($callback)) {
+            throw new \Exception('setFunctionProgress not is_callable');
+        }
+        $this->option(CURLOPT_NOPROGRESS,false);
+        $this->option(CURLOPT_PROGRESSFUNCTION,$callback);
+    }
+
+
+    /**
      * @return bool
      */
     private function prepareRequest()
@@ -681,6 +695,7 @@ class Request
         }
 
         if (!empty($curl_opt[CURLOPT_INFILE])) {
+
             $curl_opt[CURLOPT_PUT] = true;
         }
 

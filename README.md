@@ -16,6 +16,8 @@ PHP ClickHouse wrapper
 - Insert array as column
 - Get master node replica in cluster
 - Get tableSize in all nodes
+- Async get clickhouse progress
+
 
 [Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
 
@@ -562,6 +564,25 @@ $statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,n
 
 $db->insertAssocBulk([$oneRow, $oneRow, $failRow])
 ```
+### progressFunction
+
+```php
+// Apply function
+
+$db->progressFunction(function ($data) {
+    echo "CALL FUNCTION:".json_encode($data)."\n";
+});
+$st=$db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
+
+
+// Print
+// ...
+// CALL FUNCTION:{"read_rows":"2","read_bytes":"16","total_rows":"0"}
+// CALL FUNCTION:{"read_rows":"3","read_bytes":"24","total_rows":"0"}
+// ...
+
+```
+
 
 ### Debug & Verbose
 
@@ -589,6 +610,10 @@ MIT
 
 ChangeLog
 ---------
+### 2017-12-22
+
+* progressFunction()
+* Escape values
 
 ### 2017-12-12
 
