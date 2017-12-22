@@ -76,11 +76,16 @@ class ProgressAndEscapeTest extends TestCase
             $bind['k'.$z]=chr($z);
             $select[]=":k{$z} as k{$z}";
         }
-        arsort($bind);
-
 
         $rows=$this->db->select("SELECT ".implode(",\n",$select),$bind)->rows();
-        print_r($rows);
+        $row=$rows[0];
+
+        for($z=10;$z<100;$z++) {
+            $this->assertArrayHasKey('k'.$z,$row);
+            $this->assertEquals(chr($z),$row['k'.$z]);
+
+        }
+
 
     }
 
@@ -88,15 +93,14 @@ class ProgressAndEscapeTest extends TestCase
     {
         global $resultTest;
 
-
-        $this->db->settings()->set('max_block_size', 1);
         $this->setUp();
+        $this->db->settings()->set('max_block_size', 1);
 
         $this->db->progressFunction(function ($data) {
             global $resultTest;
             $resultTest=$data;
         });
-        $st=$this->db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
+        $st=$this->db->select('SELECT number,sleep(0.1) FROM system.numbers limit 4');
 
         // read_rows + read_bytes + total_rows
         $this->assertArrayHasKey('read_rows',$resultTest);

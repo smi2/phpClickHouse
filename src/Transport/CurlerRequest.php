@@ -641,8 +641,9 @@ class Request
         if (!is_callable($callback)) {
             throw new \Exception('setFunctionProgress not is_callable');
         }
+
         $this->option(CURLOPT_NOPROGRESS,false);
-        $this->option(CURLOPT_PROGRESSFUNCTION,$callback);
+        $this->option(CURLOPT_PROGRESSFUNCTION,$callback); // version 5.5.0
     }
 
 
