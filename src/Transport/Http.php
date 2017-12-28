@@ -214,7 +214,8 @@ class Http
 
         $extendinfo = [
             'sql' => $sql,
-            'query' => $query
+            'query' => $query,
+            'format'=> $query->getFormat()
         ];
 
         $new = $this->newRequest($extendinfo);
@@ -249,7 +250,8 @@ class Http
 
         $extendinfo = [
             'sql' => $sql,
-            'query' => $query
+            'query' => $query,
+            'format'=> $query->getFormat()
         ];
 
         $request = $this->newRequest($extendinfo);
@@ -274,7 +276,8 @@ class Http
 
         $extendinfo = [
             'sql' => $sql,
-            'query' => $query
+            'query' => $query,
+            'format'=> $query->getFormat()
         ];
 
         $request = $this->newRequest($extendinfo);

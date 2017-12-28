@@ -610,6 +610,11 @@ MIT
 
 ChangeLog
 ---------
+### 2017-12-28
+
+* Fix `FORMAT JSON` if set FORMAT in sql
+* GetRaw() - result raw response if not json ``SELECT number as format_id FROM system.numbers LIMIT 3 FORMAT CSVWithNames``
+
 ### 2017-12-22
 
 * progressFunction()
