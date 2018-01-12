@@ -754,6 +754,8 @@ class Client
     public function dropPartition($dataBaseTableName, $partition_id)
     {
 
+        $partition_id=trim($partition_id,'\'');
+        $this->settings()->set('replication_alter_partitions_sync',2);
         $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id', [
             'dataBaseTableName'  => $dataBaseTableName,
             'partion_id' => $partition_id
