@@ -941,4 +941,69 @@ class ClientTest extends TestCase
         // drop
         $this->db->write("DROP TABLE IF EXISTS summing_url_views");
     }
+
+    /**
+     *
+     */
+    public function testStreamInsert()
+    {
+        $this->create_table_summing_url_views();
+
+        $file_name = $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data';
+        $this->create_fake_csv_file($file_name, 1);
+
+        $source = fopen($file_name, 'rb');
+        $request = $this->db->insertBatchStream('summing_url_views', [
+            'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
+        ]);
+
+        $curlerRolling = new \Curler\CurlerRolling();
+        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, $request, $curlerRolling);
+
+        $callable = function ($ch, $fd, $length) use ($source) {
+            return ($line = fread($source, $length)) ? $line : '';
+        };
+        $streamInsert->insert($callable);
+
+        // check the resource was close after insert method
+        $this->assertEquals(false, is_resource($source));
+
+        $statement = $this->db->select('SELECT * FROM summing_url_views');
+        $this->assertEquals(count(file($file_name)), $statement->count());
+    }
+
+    /**
+     *
+     */
+    public function testStreamInsertExeption()
+    {
+        $file_name = $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data';
+        $this->create_fake_csv_file($file_name, 1);
+
+        $source = fopen($file_name, 'rb');
+        $curlerRolling = new \Curler\CurlerRolling();
+        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, new \Curler\Request(), $curlerRolling);
+
+        $this->expectException(InvalidArgumentException::class);
+        $streamInsert->insert([]);
+    }
+
+    /**
+     *
+     */
+    public function testStreamInsertExceptionResourceIsClose()
+    {
+        $file_name = $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data';
+        $this->create_fake_csv_file($file_name, 1);
+
+        $source = fopen($file_name, 'rb');
+        $curlerRolling = new \Curler\CurlerRolling();
+        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, new \Curler\Request(), $curlerRolling);
+        try {
+            $streamInsert->insert([]);
+        } catch (\Exception $e) {}
+
+        // check the resource was close after insert method
+        $this->assertEquals(false, is_resource($source));
+    }
 }
