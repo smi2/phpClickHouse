@@ -57,21 +57,12 @@ class StreamInsert
 
             $this->request->header('Transfer-Encoding', 'chunked');
             $this->request->setReadFunction($callback);
-            $this->request->setCallbackFunction(function (Request $request) {
-                fclose($this->source);
-            });
-
-            $this->curlerRolling->addQueLoop($this->request);
-            $this->curlerRolling->execLoopWait();
-
+            $this->curlerRolling->execOne($this->request, true);
             $statement = new Statement($this->request);
             $statement->error();
-        } catch (\Exception $e) {
-            if (is_resource($this->source)) {
-                fclose($this->source);
-            }
-            throw $e;
+            return $statement;
+        } finally {
+            fclose($this->source);
         }
-        return $statement;
     }
 }
