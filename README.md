@@ -584,6 +584,83 @@ $st=$db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
 ```
 
 
+
+### Cluster
+
+```php
+
+$config = [
+    'host' => 'cluster.clickhouse.dns.com', // any node name in cluster
+    'port' => '8123',
+    'username' => 'default', // all node have one login+password 
+    'password' => ''
+];
+
+
+// client connect first node, by DNS, read list IP, then connect to ALL nodes for check is !OK!   
+
+
+$cl = new ClickHouseDB\Cluster($config);
+$cl->setScanTimeOut(2.5); // 2500 ms, max time connect per one node
+
+// Check replica state is OK
+if (!$cl->isReplicasIsOk())
+{
+    throw new Exception('Replica state is bad , error='.$cl->getError());
+}
+
+// get array nodes, and clusers
+print_r($cl->getNodes());
+print_r($cl->getClusterList());
+
+
+// get node by cluster
+$name='some_cluster_name';
+print_r($cl->getClusterNodes($name));
+
+// get counts
+echo "> Count Shard   = ".$cl->getClusterCountShard($name)."\n";
+echo "> Count Replica = ".$cl->getClusterCountReplica($name)."\n";
+
+// get nodes by table & print size per node
+$nodes=$cl->getNodesByTable('shara.adpreview_body_views_sharded');
+foreach ($nodes as $node)
+{
+    echo "$node > \n";
+    // select one node
+    print_r($cl->client($node)->tableSize('adpreview_body_views_sharded'));
+    print_r($cl->client($node)->showCreateTable('shara.adpreview_body_views'));
+}
+
+// work with one node
+
+// select by IP like "*.248*" = `123.123.123.248`, dilitmer `;`  , if not fount -- select first node
+$cli=$cl->clientLike($name,'.298;.964'); // first find .298 then .964 , result is ClickHouseDB\Client
+
+$cli->ping();
+
+
+
+// truncate table on cluster
+$result=$cl->truncateTable('dbNane.TableName_sharded');
+
+// get one active node ( random )
+$cl->activeClient()->setTimeout(0.01);
+$cl->activeClient()->write("DROP TABLE IF EXISTS default.asdasdasd ON CLUSTER cluster2");
+
+
+// find `is_leader` node
+$cl->getMasterNodeForTable('dbNane.TableName_sharded');
+
+
+// errors
+var_dump($cl->getError());
+
+
+//
+
+```
+
 ### Debug & Verbose
 
 ```php
