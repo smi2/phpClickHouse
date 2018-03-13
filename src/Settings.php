@@ -49,10 +49,20 @@ class Settings
      * @param $key
      * @return mixed
      */
-    private function get($key)
+    public function get($key)
     {
         return $this->settings[$key];
     }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public function is($key)
+    {
+        return isset($this->settings[$key]);
+    }
+
 
     /**
      * @param $key

@@ -4,14 +4,14 @@ include_once __DIR__ . '/../include.php';
 include_once __DIR__ . '/lib_example.php';
 
 $config = [
-    'host' => '192.168.1.20',
+    'host' => '127.0.0.1',
     'port' => '8123',
     'username' => 'default',
     'password' => ''
 ];
 
 $db = new ClickHouseDB\Client($config);
-
+$db->enableHttpCompression(true);
 
 $db->write("DROP TABLE IF EXISTS summing_url_views");
 $db->write('

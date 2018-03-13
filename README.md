@@ -1,20 +1,23 @@
-php ClickHouse wrapper
+PHP ClickHouse wrapper
 ===================
-##Features
-* No dependency, only curl 
-* Select parallel queries (asynchronous)
-* Parallelizing bulk inserts from CSV file
-* enable_http_compression, for bulk inserts 
-* Find active host and check cluster
-* Select WHERE IN ( _local csv file_ )
-* SQL conditions & template
-* tablesSize & databaseSize
-* listPartitions
-* dropPartition & dropOldPartitions 
-* truncateTable in cluster 
-* Insert array as column
-* Get master node replica in cluster 
-* Get tableSize in all nodes 
+## Features
+
+- No dependency, only curl
+- Select parallel queries (asynchronous)
+- Parallelizing bulk inserts from CSV file
+- enable_http_compression, for bulk inserts
+- Find active host and check cluster
+- Select WHERE IN ( _local csv file_ )
+- SQL conditions & template
+- tablesSize & databaseSize
+- listPartitions
+- dropPartition & dropOldPartitions
+- truncateTable in cluster
+- Insert array as column
+- Get master node replica in cluster
+- Get tableSize in all nodes
+- Async get clickhouse progress
+
 
 [Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
 
@@ -30,12 +33,11 @@ composer require smi2/phpclickhouse
 git submodule add https://github.com/smi2/phpClickHouse.git
 git submodule init
 
-# update 
+# update
 git submodule update --init --recursive
 git submodule update --remote
 
 ```
-
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
@@ -44,9 +46,9 @@ git submodule update --remote
 Connect and select database:
 ```php
 $config = [
-    'host' => '192.168.1.1', 
-    'port' => '8123', 
-    'username' => 'default', 
+    'host' => '192.168.1.1',
+    'port' => '8123',
+    'username' => 'default',
     'password' => ''
 ];
 $db = new ClickHouseDB\Client($config);
@@ -73,7 +75,7 @@ $db->write('
         views Int32,
         v_00 Int32,
         v_55 Int32
-    ) 
+    )
     ENGINE = SummingMergeTree(event_date, (site_id, site_key, event_time, event_date), 8192)
 ');
 ```
@@ -83,7 +85,7 @@ echo $db->showCreateTable('summing_url_views');
 ```
 Insert data:
 ```php
-$stat = $db->insert('summing_url_views', 
+$stat = $db->insert('summing_url_views',
     [
         [time(), 'HASH1', 2345, 22, 20, 2],
         [time(), 'HASH2', 2345, 12, 9,  3],
@@ -125,7 +127,7 @@ print_r($statement->totalTimeRequest());
 // raw answer JsonDecode array, for economy memory
 print_r($statement->rawData());
 
-// raw curl_info answer 
+// raw curl_info answer
 print_r($statement->responseInfo());
 
 // human size info
@@ -139,10 +141,10 @@ print_r($statement->statistics());
 Select result as tree:
 ```php
 $statement = $db->select('
-    SELECT event_date, site_key, sum(views), avg(views) 
-    FROM summing_url_views 
-    WHERE site_id < 3333 
-    GROUP BY event_date, url_hash 
+    SELECT event_date, site_key, sum(views), avg(views)
+    FROM summing_url_views
+    WHERE site_id < 3333
+    GROUP BY event_date, url_hash
     WITH TOTALS
 ');
 
@@ -170,14 +172,15 @@ print_r($statement->rowsAsTree('event_date.site_key'));
 )
 */
 ```
+
 Drop table:
+
 ```php
 $db->write('DROP TABLE IF EXISTS summing_url_views');
 ```
 
-
 Features
-----
+--------
 ### Select parallel queries (asynchronous)
 ```php
 $state1 = $db->selectAsync('SELECT 1 as ping');
@@ -222,7 +225,6 @@ see example/exam5_error_async.php
 ### Gzip & enable_http_compression
 
 On fly read CSV file and compress zlib.deflate.
-  
 
 ```php
 $db->settings()->max_execution_time(200);
@@ -237,9 +239,6 @@ foreach ($result_insert as $fileName => $state) {
 ```
 see example/exam8_http_gzip_batch_insert.php
 
-
-
-
 ### tablesSize & databaseSize
 
 Result in _human size_
@@ -249,7 +248,6 @@ print_r($db->databaseSize());
 print_r($db->tablesSize());
 print_r($db->tableSize('summing_partions_views'));
 ```
-
 
 ### Partitions
 
@@ -264,13 +262,12 @@ Drop partitions ( pre production )
 $count_old_days = 10;
 print_r($db->dropOldPartitions('summing_partions_views', $count_old_days));
 
-// by `partition_id` 
+// by `partition_id`
 print_r($db->dropPartition('summing_partions_views', '201512'));
 ```
 
-
-
 ### Select WHERE IN ( _local csv file_ )
+
 ```php
 $file_name_data1 = '/tmp/temp_csv.txt'; // two column file [int,string]
 $whereIn = new \ClickHouseDB\WhereInFile();
@@ -280,13 +277,10 @@ $result = $db->select($sql, [], $whereIn);
 // see example/exam7_where_in.php
 ```
 
-
-
 ### Simple sql conditions & template
 
-conditions is depricated, if need use: 
+conditions is deprecated, if need use:
 `$db->enableQueryConditions();`
-
 
 Example with QueryConditions:
 
@@ -324,7 +318,6 @@ LIMIT 5
 FORMAT JSON
 */
 
-
 $input_params['select_date'] = false;
 $statement = $db->selectAsync($select, $input_params);
 echo $statement->sql();
@@ -337,24 +330,20 @@ LIMIT 5
 FORMAT JSON
 */
 
-
 $state1 = $db->selectAsync(
-    'SELECT 1 as {key} WHERE {key} = :value', 
+    'SELECT 1 as {key} WHERE {key} = :value',
     ['key' => 'ping', 'value' => 1]
 );
 
 // SELECT 1 as ping WHERE ping = "1"
 ```
 
-
 Example custom query Degeneration in `exam16_custom_degeneration.php`
 
 ```
 SELECT {ifint VAR} result_if_intval_NON_ZERO{/if}
 SELECT {ifint VAR} result_if_intval_NON_ZERO {else} BLA BLA{/if}
-
 ```
-
 
 ### Settings
 
@@ -362,26 +351,26 @@ SELECT {ifint VAR} result_if_intval_NON_ZERO {else} BLA BLA{/if}
 ```php
 // in array config
 $config = [
-    'host' => 'x', 
-    'port' => '8123', 
-    'username' => 'x', 
-    'password' => 'x', 
+    'host' => 'x',
+    'port' => '8123',
+    'username' => 'x',
+    'password' => 'x',
     'settings' => ['max_execution_time' => 100]
 ];
 $db = new ClickHouseDB\Client($config);
 
-// settings via constructor 
+// settings via constructor
 $config = [
-    'host' => 'x', 
-    'port' => '8123', 
-    'username' => 'x', 
+    'host' => 'x',
+    'port' => '8123',
+    'username' => 'x',
     'password' => 'x'
 ];
 $db = new ClickHouseDB\Client($config, ['max_execution_time' => 100]);
 
 // set method
 $config = [
-    'host' => 'x', 
+    'host' => 'x',
     'port' => '8123',
     'username' => 'x',
     'password' => 'x'
@@ -389,12 +378,11 @@ $config = [
 $db = new ClickHouseDB\Client($config);
 $db->settings()->set('max_execution_time', 100);
 
-// apply array method 
+// apply array method
 $db->settings()->apply([
     'max_execution_time' => 100,
     'max_block_size' => 12345
 ]);
-
 
 // check
 if ($db->settings()->getSetting('max_execution_time') !== 100) {
@@ -403,7 +391,7 @@ if ($db->settings()->getSetting('max_execution_time') !== 100) {
 
 // see example/exam10_settings.php
 ```
-### Use session_id with ClickHouse 
+### Use session_id with ClickHouse
 
 
 `useSession()` - make new session_id or use exists `useSession(value)`
@@ -411,33 +399,25 @@ if ($db->settings()->getSetting('max_execution_time') !== 100) {
 
 ```php
 
-// enable session_id 
+// enable session_id
 $db->useSession();
-$sesion_AA=$db->getSession(); // return session_id 
+$sesion_AA=$db->getSession(); // return session_id
 
 $db->write(' CREATE TEMPORARY TABLE IF NOT EXISTS temp_session_test (number UInt64)');
 $db->write(' INSERT INTO temp_session_test SELECT number*1234 FROM system.numbers LIMIT 30');
 
-
-
-// reconnect to continue with other session 
+// reconnect to continue with other session
 $db->useSession($sesion_AA);
-
-
-
 ```
-
-
 
 ### Array as column
 
 ```php
-
 $db->write('
     CREATE TABLE IF NOT EXISTS arrays_test_string (
         s_key String,
         s_arr Array(String)
-    ) 
+    )
     ENGINE = Memory
 ');
 
@@ -449,15 +429,12 @@ $db->insert('arrays_test_string',
     ['s_key', 's_arr']
 );
 
-// see example/exam12_array.php 
-
-
+// see example/exam12_array.php
 ```
 
 Class for FormatLine array
+
 ```php
-
-
 var_dump(
     \ClickHouseDB\FormatLine::CSV(
         ['HASH1', ["a", "dddd", "xxx"]]
@@ -469,17 +446,16 @@ var_dump(
         ['HASH1', ["a", "dddd", "xxx"]]
     )
 );
+
 // example write to file
 $row=['event_time'=>date('Y-m-d H:i:s'),'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]];
 file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
-
-
 ```
 
 ### Cluster drop old Partitions
 
 Example code :
- 
+
 ```php
 class my
 {
@@ -490,13 +466,15 @@ class my
     {
             return $this->_cluster;
     }
+
     public function msg($text)
     {
             echo $text."\n";
     }
+
     private function cleanTable($dbt)
-        {
-    
+    {
+
         $sizes=$this->getClickHouseCluster()->getSizeTable($dbt);
         $this->msg("Clean table : $dbt,size = ".$this->humanFileSize($sizes));
 
@@ -508,16 +486,15 @@ class my
         foreach ($nodes as $node)
         {
             $client=$this->getClickHouseCluster()->client($node);
-            
+
             $size=$client->database($db)->tableSize($table);
-            
+
             $this->msg("$node \t {$size['size']} \t {$size['min_date']} \t {$size['max_date']}");
-            
+
             $client->dropOldPartitions($table,30,30);
         }
-
-
     }
+
     public function clean()
     {
         $this->msg("clean");
@@ -528,31 +505,169 @@ class my
         {
             throw new Exception('Replica state is bad , error='.$this->getClickHouseCluster()->getError());
         }
-        
-        
+
         $this->cleanTable('model.history_full_model_sharded');
-        
-        
+
         $this->cleanTable('model.history_model_result_sharded');
-
-
-    }    
+    }
 }
 
 ```
 
-
-### Debug & Verbose
+### HTTPS
 
 ```php
+$db = new ClickHouseDB\Client($config);
+$db->settings()->https();
+```
 
-$cl->verbose();
+
+### ReadOnly ClickHouse user
+
+```php
+$config = [
+    'host' => '192.168.1.20',
+    'port' => '8123',
+    'username' => 'ro',
+    'password' => 'ro',
+    'readonly' => true
+];
+```
+
+
+### Direct write to file
+
+Send result from clickhouse, without parse json.
+
+```php
+$WriteToFile=new ClickHouseDB\WriteToFile('/tmp/_1_select.csv');
+$db->select('select * from summing_url_views',[],null,$WriteToFile);
+// or
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_3_select.tab',true,'TabSeparatedWithNames'));
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
+$statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,new ClickHouseDB\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\WriteToFile::FORMAT_CSV));
+```
+
+### insert Assoc Bulk
+
+```php
+ $oneRow = [
+            'one' => 1,
+            'two' => 2,
+            'thr' => 3,
+            ];
+            $failRow = [
+                'two' => 2,
+                'one' => 1,
+                'thr' => 3,
+            ];
+
+$db->insertAssocBulk([$oneRow, $oneRow, $failRow])
+```
+### progressFunction
+
+```php
+// Apply function
+
+$db->progressFunction(function ($data) {
+    echo "CALL FUNCTION:".json_encode($data)."\n";
+});
+$st=$db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
+
+
+// Print
+// ...
+// CALL FUNCTION:{"read_rows":"2","read_bytes":"16","total_rows":"0"}
+// CALL FUNCTION:{"read_rows":"3","read_bytes":"24","total_rows":"0"}
+// ...
 
 ```
 
 
-### Phpunit Test
 
+### Cluster
+
+```php
+
+$config = [
+    'host' => 'cluster.clickhouse.dns.com', // any node name in cluster
+    'port' => '8123',
+    'username' => 'default', // all node have one login+password 
+    'password' => ''
+];
+
+
+// client connect first node, by DNS, read list IP, then connect to ALL nodes for check is !OK!   
+
+
+$cl = new ClickHouseDB\Cluster($config);
+$cl->setScanTimeOut(2.5); // 2500 ms, max time connect per one node
+
+// Check replica state is OK
+if (!$cl->isReplicasIsOk())
+{
+    throw new Exception('Replica state is bad , error='.$cl->getError());
+}
+
+// get array nodes, and clusers
+print_r($cl->getNodes());
+print_r($cl->getClusterList());
+
+
+// get node by cluster
+$name='some_cluster_name';
+print_r($cl->getClusterNodes($name));
+
+// get counts
+echo "> Count Shard   = ".$cl->getClusterCountShard($name)."\n";
+echo "> Count Replica = ".$cl->getClusterCountReplica($name)."\n";
+
+// get nodes by table & print size per node
+$nodes=$cl->getNodesByTable('shara.adpreview_body_views_sharded');
+foreach ($nodes as $node)
+{
+    echo "$node > \n";
+    // select one node
+    print_r($cl->client($node)->tableSize('adpreview_body_views_sharded'));
+    print_r($cl->client($node)->showCreateTable('shara.adpreview_body_views'));
+}
+
+// work with one node
+
+// select by IP like "*.248*" = `123.123.123.248`, dilitmer `;`  , if not fount -- select first node
+$cli=$cl->clientLike($name,'.298;.964'); // first find .298 then .964 , result is ClickHouseDB\Client
+
+$cli->ping();
+
+
+
+// truncate table on cluster
+$result=$cl->truncateTable('dbNane.TableName_sharded');
+
+// get one active node ( random )
+$cl->activeClient()->setTimeout(0.01);
+$cl->activeClient()->write("DROP TABLE IF EXISTS default.asdasdasd ON CLUSTER cluster2");
+
+
+// find `is_leader` node
+$cl->getMasterNodeForTable('dbNane.TableName_sharded');
+
+
+// errors
+var_dump($cl->getError());
+
+
+//
+
+```
+
+### Debug & Verbose
+
+```php
+$cl->verbose();
+```
+
+### PHPUnit Test
 
 In phpunit.xml change constants:
 ```xml
@@ -564,33 +679,51 @@ In phpunit.xml change constants:
     <const name="phpunit_clickhouse_tmp_path" value="/tmp/" />
 </php>
 ```
- 
- 
+
 License
-----
+-------
 
 MIT
 
 ChangeLog
----
-### 2017-08-25 
+---------
+### 2017-12-28
+
+* Fix `FORMAT JSON` if set FORMAT in sql
+* GetRaw() - result raw response if not json ``SELECT number as format_id FROM system.numbers LIMIT 3 FORMAT CSVWithNames``
+
+### 2017-12-22
+
+* progressFunction()
+* Escape values
+
+### 2017-12-12
+
+* Not set `FORMAT JSON` if set FORMAT in sql
+
+### 2017-11-22
+
+- Add insertAssocBulk
+
+### 2017-08-25
+
 - Fix tablesSize(), use database filter
 - Fix partitions(), use database filter
 
-
 ### 2017-08-14
+
 - Add session_id support
 
-
 ### 2017-02-20
+
 - Build composer 0.17.02
-- 
 
 ### 2016-12-09
+
 - for ReadOnly users need set : `client->setReadOnlyUser(true);` or `$confi['readonly']` , see exam19_readonly_user.php
 
-
 ###  2016-11-25
+
 - `client->truncateTable('tableName')`
 - `cluster->getMasterNodeForTable('dbName.tableName') // node have is_leader=1`
 - `cluster->getSizeTable('dbName.tableName')`
@@ -599,16 +732,18 @@ ChangeLog
 - See example cluster_06_truncate_table.php
 
 ###  2016-11-24
+
 - add `cluster->setSoftCheck()`
 - insertBatchFiles() support `$file_names` - string or array , `$columns_array` - array or null
 - add insertBatchStream() return `\Curler\Request` no exec
-- writeStreamData() return `\Curler\Request` 
+- writeStreamData() return `\Curler\Request`
 - fix httpCompression(false)
 - getHeaders() as array from `\Curler\Request`
-- `setReadFunction( function() )` in `Request` 
-- Add class StreamInsert, direct read from stream_resource to clickhouse:stream     
+- `setReadFunction( function() )` in `Request`
+- Add class StreamInsert, direct read from stream_resource to clickhouse:stream
 
 ###  2016-11-04
+
 - add `$db->insertBatchTSVFiles()`,
 - add format param in `$db->insertBatchFiles(,,,format)`,
 - deprecated class CSV
@@ -617,32 +752,32 @@ ChangeLog
 - Update exam12_array.php + unit tests
 
 ###  2016-11-03
-- `$db->enableLogQueries(true)` - write to system.query_log
-- `$db->enableExtremes(true);` - default extremes now, disabled 
-- `$db->isExists($database,$table)` 
 
- 
-###  2016-10-27 
+- `$db->enableLogQueries(true)` - write to system.query_log
+- `$db->enableExtremes(true);` - default extremes now, disabled
+- `$db->isExists($database,$table)`
+
+###  2016-10-27
+
 - add Connect timeout , $db->setConnectTimeOut(5);
 - change default ConnectTimeOut = 5 seconds. before 1 sec.
 - change DNS_CACHE default to 120 seconds
-   
 
 ###  2016-10-25 Release 0.16.10
+
 - fix timeout error and add test
 
-
-###  2016-10-23 
+###  2016-10-23
 
 - client->setTimeout($seconds)
 - cluster->clientLike($cluster,$ip_addr_like)
-- Delete all migration code from driver, move to https://github.com/smi2/phpMigrationsClickhouse 
- 
-###  2016-09-20 Release 0.16.09 
+- Delete all migration code from driver, move to https://github.com/smi2/phpMigrationsClickhouse
+
+###  2016-09-20 Release 0.16.09
 
 - Version/Release names: [ zero dot year dot month]
 - Support cluster: new class Cluster and ClusterQuery
-- output_format_write_statistics, for clickhouse version > v1.1.54019-stable 
+- output_format_write_statistics, for clickhouse version > v1.1.54019-stable
 - WriteToFile in select,selectAsync
 - Degeneration for Bindings & Conditions
 - $db->select(new Query("Select..."));
@@ -653,10 +788,10 @@ ChangeLog
 - tablesSize() - add `sizebytes`
 
 
+### 2016-08-11 Release 0.2.0
 
+- exception on error write
 
-### 2016-08-11 Release 0.2.0  
-- exception on error write 
+### 2016-08-06 Release 0.1.0
 
-### 2016-08-06 Release 0.1.0 
 - init
