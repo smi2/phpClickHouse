@@ -72,11 +72,6 @@ class Statement
     private $rows_before_limit_at_least = false;
 
     /**
-     * @var
-     */
-    private $rawResult;
-
-    /**
      * @var array
      */
     private $array_data = [];
@@ -94,6 +89,7 @@ class Statement
     public function __construct(Request $request)
     {
         $this->_request = $request;
+        $this->format = $this->_request->getRequestExtendedInfo('format');
         $this->query = $this->_request->getRequestExtendedInfo('query');
         $this->sql = $this->_request->getRequestExtendedInfo('sql');
     }
@@ -214,7 +210,7 @@ class Statement
         $this->check();
 
 
-        $this->_rawData = $this->response()->json();
+        $this->_rawData = $this->response()->rawDataOrJson($this->format);
 
         if (!$this->_rawData) {
             $this->_init = true;
@@ -368,7 +364,7 @@ class Statement
 
         $this->check();
 
-        return $this->response()->json();
+        return $this->response()->rawDataOrJson($this->format);
     }
     /**
      * @param bool $key
@@ -444,6 +440,15 @@ class Statement
             'speed_upload'   => $this->response()->speed_upload(),
             'time_request'   => $this->response()->total_time()
         ];
+    }
+
+    /**
+     * get format in sql
+     * @return mixed
+     */
+    public function getFormat()
+    {
+        return $this->format;
     }
 
     /**

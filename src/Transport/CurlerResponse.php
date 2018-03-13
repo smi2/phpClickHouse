@@ -287,4 +287,17 @@ class Response
 
         return $d[$key];
     }
+
+    /**
+     * @return mixed
+     */
+    public function rawDataOrJson($format)
+    {
+        if (stripos($format,'json')!==false)
+        {
+            return $this->json();
+        }
+        return $this->body();
+
+    }
 }

@@ -42,7 +42,7 @@ class Client
     /**
      * @var array
      */
-    private $_support_format=['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames'];
+    private $_support_format=['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames','JSONEachRow'];
     /**
      * Client constructor.
      * @param $connect_params
@@ -401,6 +401,24 @@ class Client
         return $this->transport()->executeAsync();
     }
 
+    public function progressFunction($callback)
+    {
+        if (!is_callable($callback)) throw new \InvalidArgumentException('Not is_callable progressFunction');
+
+        if (!$this->settings()->is('send_progress_in_http_headers'))
+        {
+            $this->settings()->set('send_progress_in_http_headers', 1);
+        }
+        if (!$this->settings()->is('http_headers_progress_interval_ms'))
+        {
+            $this->settings()->set('http_headers_progress_interval_ms', 100);
+
+        }
+
+
+        $this->transport()->setProgressFunction($callback);
+    }
+
     /**
      * Подготовить запрос SELECT
      *
@@ -467,7 +485,7 @@ class Client
     }
 
     /**
-     * Вставить массив
+     * Insert Array
      *
      * @param $table
      * @param $values
@@ -489,6 +507,47 @@ class Client
         }
         $sql = trim($sql, ', ');
         return $this->transport()->write($sql);
+    }
+
+    /**
+     * Готовит значения для вставки из ассоциативного массива.
+     * Может быть вставления одна строка или много строк, но тогда ключи внутри списка массивов должны совпадать (в том числе и по порядку следования)
+     *
+     * @param array $values - массив column_name=>value (если вставляем одну строку) или список массивов column_name=>value если вставляем много строк
+     * @return array - список массивов - 0=>поля, 1=>список массивов значений для вставки
+     */
+    public function prepareInsertAssocBulk(array $values)
+    {
+        if (isset($values[0]) && is_array($values[0])){ //случай, когда много строк вставляется
+            $preparedFields = array_keys($values[0]);
+            $preparedValues = [];
+            foreach ($values as $idx => $row){
+                $_fields = array_keys($row);
+                if ($_fields !== $preparedFields){
+                    throw new QueryException("Fields not match: ".implode(',',$_fields)." and ".implode(',', $preparedFields)." on element $idx");
+                }
+                $preparedValues[] = array_values($row);
+            }
+        }else{ //одна строка
+            $preparedFields = array_keys($values);
+            $preparedValues = [array_values($values)];
+        }
+        return [$preparedFields, $preparedValues];
+    }
+
+    /**
+     * Вставляет одну или много строк из ассоциативного массива.
+     * Если внутри списка массивов значений будет расхождение по ключам (или их порядку) - выбросит исключение.
+     *
+     * @param string $table - имя таблицы
+     * @param array $values - массив column_name=>value (если вставляем одну строку) или список массивов column_name=>value если вставляем много строк
+     * @return Statement
+     * @throws QueryException
+     */
+    public function insertAssocBulk($table, array $values)
+    {
+        list($columns, $vals) = $this->prepareInsertAssocBulk($values);
+        return $this->insert($table, $vals, $columns);
     }
 
     /**
@@ -561,11 +620,12 @@ class Client
     }
 
     /**
-     * @param $table_name
-     * @param $stream
-     * @param $columns_array
+     * @param string $table_name
+     * @param array $columns_array
      * @param string $format
+     *
      * @return \Curler\Request
+     * @internal param $stream
      */
     public function insertBatchStream($table_name, $columns_array,$format="CSV")
     {
@@ -694,6 +754,8 @@ class Client
     public function dropPartition($dataBaseTableName, $partition_id)
     {
 
+        $partition_id=trim($partition_id,'\'');
+        $this->settings()->set('replication_alter_partitions_sync',2);
         $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id', [
             'dataBaseTableName'  => $dataBaseTableName,
             'partion_id' => $partition_id

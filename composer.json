@@ -1,7 +1,7 @@
 {
   "name": "smi2/phpclickhouse",
   "type": "library",
-  "version" : "0.17.02",
+  "version" : "0.17.12.1",
   "description": "php ClickHouse client library",
   "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client"],
   "homepage": "https://github.com/smi2/phpClickHouse",
@@ -19,12 +19,12 @@
   },
   "require-dev": {
     "ext-curl": "*",
-    "phpunit/phpunit": ">=5.5.0"
+    "phpunit/phpunit": "5.5.*"
   },
   "autoload": {
     "files": ["include.php"]
   },
   "autoload-dev": {
-    "files": ["include.php","tests/test_functions.php"]
+    "files": ["include.php"]
   }
 }
