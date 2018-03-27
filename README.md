@@ -687,6 +687,11 @@ MIT
 
 ChangeLog
 ---------
+### 2018-03-26
+
+* Fix StreamInsert : one stream work faster and safe than loop #PR43
+* Fix cluster->clientLike()
+
 ### 2017-12-28
 
 * Fix `FORMAT JSON` if set FORMAT in sql
