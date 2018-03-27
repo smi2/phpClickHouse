@@ -361,6 +361,7 @@ class Cluster
      */
     public function clientLike($cluster,$ip_addr_like)
     {
+        $nodes_check=$this->nodes;
         $nodes=$this->getClusterNodes($cluster);
         $list_ips_need=explode(';',$ip_addr_like);
         $find=false;
@@ -368,9 +369,18 @@ class Cluster
         {
             foreach ($nodes as $node)
             {
+
                 if (stripos($node,$like)!==false)
                 {
-                    $find=$node;
+                    if (in_array($node,$nodes_check))
+                    {
+                        $find=$node;
+                    }
+                    else
+                    {
+                        // node exists on cluster, but not check
+                    }
+
                 }
                 if ($find) break;
             }
