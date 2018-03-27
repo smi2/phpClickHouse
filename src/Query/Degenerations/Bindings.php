@@ -33,7 +33,13 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
         $this->bindings[$column] = $value;
     }
 
-    private function escape($string)
+    /**
+     * Escape an string
+     *
+     * @param string $value
+     * @return string
+     */
+    private function escapeString($value)
     {
 //        $non_displayables = array(
 //            '/%0[0-8bcef]/',            // url encoded 00-08, 11, 12, 14, 15
@@ -44,9 +50,31 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 //            '/[\x0e-\x1f]/'             // 14-31
 //        );
 //        foreach ( $non_displayables as $regex ) $data = preg_replace( $regex, '', $data );
-        return addslashes($string);
-
+        return addslashes($value);
     }
+
+    /**
+     * Escape an array
+     *
+     * @param array $values
+     * @return array
+     */
+    private function escapeArray($values)
+    {
+        $escapedValues = [];
+        foreach ($values as $value) {
+            if (is_numeric($value)) {
+                $escapedValues[] = $value;
+            } elseif (is_string($value)) {
+                $escapedValues[] = $this->escapeString($value);
+            } elseif (is_array($value)) {
+                $escapedValues[] = $this->escapeArray($value);
+            }
+        }
+        
+        return $escapedValues;
+    }
+
     /**
      * @param $sql
      * @return mixed
@@ -63,8 +91,9 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
             }
 
             if (is_array($value)) {
-                $valueSetText = "'" . implode("','", $value) . "'";
-                $valueSet = implode(", ", $value);
+                $escapedValue = $this->escapeArray($value);
+                $valueSetText = "'" . implode("','", $escapedValue) . "'";
+                $valueSet = implode(", ", $escapedValue);
             }
 
             if (is_numeric($value)) {
@@ -74,7 +103,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 
             if (is_string($value)) {
                 $valueSet = $value;
-                $valueSetText = "'" . $this->escape($value) . "'";
+                $valueSetText = "'" . $this->escapeString($value) . "'";
             }
 
             if ($valueSetText !== null) {

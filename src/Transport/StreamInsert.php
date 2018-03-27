@@ -1,52 +1,68 @@
 <?php
+
 namespace ClickHouseDB\Transport;
+
+use Curler\Request;
+use Curler\CurlerRolling;
+use ClickHouseDB\Statement;
+
+/**
+ * Class StreamInsert
+ * @package ClickHouseDB\Transport
+ */
 class StreamInsert
 {
     /**
-     * @var \Curler\Request
-     */
-    private $insert;
-    /**
      * @var resource
      */
-    private $read;
+    private $source;
 
     /**
-     * @var \Curler\CurlerRolling
+     * @var Request
      */
-    private $roll;
+    private $request;
 
-    public function __construct($resource_read,\Curler\Request $insert_request,\Curler\CurlerRolling $roll)
+    /**
+     * @var CurlerRolling
+     */
+    private $curlerRolling;
+
+    /**
+     * StreamInsert constructor.
+     * @param resource $source
+     * @param Request $request
+     * @param \Curler\CurlerRolling $curlerRolling
+     */
+    public function __construct($source, Request $request, CurlerRolling $curlerRolling)
     {
-        $this->read=$resource_read;
-
-        $this->insert=$insert_request;
-
-        $this->roll=$roll;
+        if (!is_resource($source)) {
+            throw new \InvalidArgumentException('Argument $source must be resource');
+        }
+        $this->source = $source;
+        $this->request = $request;
+        $this->curlerRolling = $curlerRolling;
     }
 
     /**
-     *
+     * @param callable $callback function for stream read data
      * @return \ClickHouseDB\Statement
+     * @throws \Exception
      */
-    public function insert()
+    public function insert($callback)
     {
-        $read_stream=$this->read;
+        try {
+            if (!is_callable($callback)) {
+                throw new \InvalidArgumentException('Argument $callback can not be called as a function');
+            }
 
-        $this->insert->header('Transfer-Encoding','chunked');
-        $this->insert->setReadFunction(function ($ch, $fd, $length) use ($read_stream) {
-            $d=fread($read_stream, $length);
-            return  ($d?$d:"");
-        });
-        $this->insert->setCallbackFunction(function (\Curler\Request $request)  use ($read_stream)  {
-            fclose($read_stream);
-        });
-
-        $this->roll->addQueLoop($this->insert);
-        $this->roll->execLoopWait();
-
-        $state=new \ClickHouseDB\Statement($this->insert);
-        $state->error();
-        return $state;
+            $this->request->header('Transfer-Encoding', 'chunked');
+            $this->request->setReadFunction($callback);
+            $this->curlerRolling->execOne($this->request, true);
+            $statement = new Statement($this->request);
+            $statement->error();
+            return $statement;
+        } finally {
+            fclose($this->source);
+        }
     }
 }
