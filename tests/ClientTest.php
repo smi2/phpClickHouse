@@ -861,6 +861,9 @@ class ClientTest extends TestCase
     {
         $this->db->write('');
     }
+
+
+
     /**
      *
      */

@@ -59,7 +59,6 @@ class FormatQueryTest extends TestCase
     }
 
 
-
     public function testCreateTableTEMPORARYNoSession()
     {
         $this->setUp();
@@ -92,5 +91,14 @@ class FormatQueryTest extends TestCase
 
     }
 
+    public function testClientTimeoutSettings()
+    {
+        $this->setUp();
+        $this->db->database('default');
+        $this->db->setTimeout(1.5);      // 1500 ms
+        $this->db->setTimeout(10);       // 10 seconds
+        $this->db->setConnectTimeOut(5); // 5 seconds
+
+    }
 
 }
