@@ -590,11 +590,15 @@ $st=$db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
 ```php
 
 $config = [
-    'host' => 'cluster.clickhouse.dns.com',
+    'host' => 'cluster.clickhouse.dns.com', // any node name in cluster
     'port' => '8123',
-    'username' => 'default',
+    'username' => 'default', // all node have one login+password
     'password' => ''
 ];
+
+
+// client connect first node, by DNS, read list IP, then connect to ALL nodes for check is !OK!
+
 
 $cl = new ClickHouseDB\Cluster($config);
 $cl->setScanTimeOut(2.5); // 2500 ms, max time connect per one node
@@ -657,7 +661,6 @@ var_dump($cl->getError());
 
 ```
 
-
 ### Debug & Verbose
 
 ```php
@@ -684,6 +687,11 @@ MIT
 
 ChangeLog
 ---------
+### 2018-03-26
+
+* Fix StreamInsert : one stream work faster and safe than loop #PR43
+* Fix cluster->clientLike()
+
 ### 2017-12-28
 
 * Fix `FORMAT JSON` if set FORMAT in sql

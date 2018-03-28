@@ -115,7 +115,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
             }
         }
 
-        return $sql;
+        return ($sql);
     }
 
 }
