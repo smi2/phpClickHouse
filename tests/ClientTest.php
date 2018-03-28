@@ -210,19 +210,6 @@ class ClientTest extends TestCase
         );
 
 
-        $keys=[
-            'key1'=>1,
-            'key111'=>111,
-            'key11'=>11,
-            'key123' => 123,
-        ];
-
-
-        $this->assertEquals(
-            '123=123 , 11=11, 111=111, 1=1, 1= 1, 123=123 FORMAT JSON',
-            $this->db->selectAsync('123=:key123 , 11={key11}, 111={key111}, 1={key1}, 1= :key1, 123=:key123', $keys)->sql()
-        );
-
 
         $isset=[
             'FALSE'=>false,
@@ -235,7 +222,6 @@ class ClientTest extends TestCase
             '|ZERO||  FORMAT JSON',
             $this->db->selectAsync('{if FALSE}FALSE{/if}|{if ZERO}ZERO{/if}|{if NULL}NULL{/if}| ' ,$isset)->sql()
         );
-
 
 
 

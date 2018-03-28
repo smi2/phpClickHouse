@@ -13,12 +13,12 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      * @var array
      */
     protected $bindings = [];
-
     /**
      * @param array $bindings
      */
     public function bindParams(array $bindings)
     {
+        $this->bindings=[];
         foreach ($bindings as $column => $value) {
             $this->bindParam($column, $value);
         }
@@ -35,6 +35,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 
     /**
      * Escape an string
+     * Can overwrite use CodeIgniter->escape_str()  https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
      *
      * @param string $value
      * @return string
@@ -75,14 +76,23 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
         return $escapedValues;
     }
 
+
     /**
+     * Compile Bindings
+     *
      * @param $sql
      * @return mixed
      */
     public function process($sql)
     {
+        // CodeIgniter->bind() : https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
+
         arsort($this->bindings);
+
+
         foreach ($this->bindings as $key => $value) {
+
+
             $valueSet = null;
             $valueSetText = null;
 

@@ -62,33 +62,6 @@ class ProgressAndEscapeTest extends TestCase
     }
 
 
-    public function testEscape()
-    {
-        // chr(0....255);
-        $this->db->settings()->set('max_block_size', 100);
-
-        $bind['k1']=1;
-        $bind['k2']=2;
-
-        $select=[];
-        for($z=0;$z<200;$z++)
-        {
-            $bind['k'.$z]=chr($z);
-            $select[]=":k{$z} as k{$z}";
-        }
-
-        $rows=$this->db->select("SELECT ".implode(",\n",$select),$bind)->rows();
-        $row=$rows[0];
-
-        for($z=10;$z<100;$z++) {
-            $this->assertArrayHasKey('k'.$z,$row);
-            $this->assertEquals(chr($z),$row['k'.$z]);
-
-        }
-
-
-    }
-
     public function testProgressFunction()
     {
         global $resultTest;
