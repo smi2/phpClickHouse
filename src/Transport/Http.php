@@ -10,10 +10,6 @@ use ClickHouseDB\WriteToFile;
 use Curler\CurlerRolling;
 use Curler\Request;
 
-/**
- * Class Http like simpleCurl
- * @package ClickHouseDB\Transport
- */
 class Http
 {
     /**

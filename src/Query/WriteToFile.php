@@ -2,10 +2,6 @@
 
 namespace ClickHouseDB;
 
-/**
- * Class WriteToFile
- * @package ClickHouseDB
- */
 class WriteToFile
 {
     /**

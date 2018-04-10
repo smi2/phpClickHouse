@@ -2,10 +2,6 @@
 
 namespace Curler;
 
-/**
- * Class Response
- * @package Curler
- */
 class Response
 {
     /**

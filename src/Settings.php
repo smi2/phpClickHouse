@@ -4,10 +4,6 @@ namespace ClickHouseDB;
 
 use ClickHouseDB\Transport\Http;
 
-/**
- * Class Settings
- * @package ClickHouseDB
- */
 class Settings
 {
     /**

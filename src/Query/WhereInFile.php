@@ -25,10 +25,6 @@ curl -F 'passwd=@passwd.tsv;' 'http://localhost:8123/
 &passwd_structure=login+String,+unused+String,+uid+UInt16,+gid+UInt16,+comment+String,+home+String,+shell+String'
 */
 
-/**
- * Class WhereInFile
- * @package ClickHouseDB
- */
 class WhereInFile
 {
     /**

@@ -2,10 +2,6 @@
 
 namespace ClickHouseDB;
 
-/**
- * Class Query
- * @package ClickHouseDB
- */
 class Query
 {
     /**
