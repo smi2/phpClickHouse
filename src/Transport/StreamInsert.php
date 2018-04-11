@@ -6,10 +6,6 @@ use Curler\Request;
 use Curler\CurlerRolling;
 use ClickHouseDB\Statement;
 
-/**
- * Class StreamInsert
- * @package ClickHouseDB\Transport
- */
 class StreamInsert
 {
     /**

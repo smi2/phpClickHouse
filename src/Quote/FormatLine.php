@@ -1,10 +1,6 @@
 <?php
 namespace ClickHouseDB;
 
-/**
- * Class FormatLine
- * @package ClickHouseDB
- */
 class FormatLine
 {
     /**

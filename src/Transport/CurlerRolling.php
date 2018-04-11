@@ -4,10 +4,6 @@ namespace Curler;
 
 use ClickHouseDB\TransportException;
 
-/**
- * Class CurlerRolling
- * @package Curler
- */
 class CurlerRolling
 {
     /**

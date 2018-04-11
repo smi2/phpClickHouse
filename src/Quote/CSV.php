@@ -1,9 +1,8 @@
 <?php
 
 namespace ClickHouseDB;
+
 /**
- * Class CSV
- * @package ClickHouseDB
  * @deprecated Оставлен для совместимости
  */
 class CSV

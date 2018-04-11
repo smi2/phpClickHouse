@@ -1,10 +1,6 @@
 <?php
 namespace ClickHouseDB;
 
-/**
- * Class StrictQuote
- * @package ClickHouseDB
- */
 class StrictQuoteLine
 {
 

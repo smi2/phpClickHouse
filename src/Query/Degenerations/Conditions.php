@@ -2,11 +2,6 @@
 
 namespace ClickHouseDB\Query\Degeneration;
 
-/**
- * Class QueryDegeneration
- * @package ClickHouseDB
- */
-
 class Conditions implements \ClickHouseDB\Query\Degeneration
 {
     /**

@@ -5,10 +5,6 @@ namespace ClickHouseDB;
 use Curler\Request;
 use Curler\Response;
 
-/**
- * Class Statement
- * @package ClickHouseDB
- */
 class Statement
 {
     /**

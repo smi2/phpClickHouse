@@ -2,10 +2,6 @@
 
 namespace Curler;
 
-/**
- * Class Request
- * @package Curler
- */
 class Request
 {
     /**

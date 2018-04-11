@@ -3,8 +3,6 @@ namespace ClickHouseDB;
 
 class Cluster
 {
-
-
     /**
      * @var array
      */

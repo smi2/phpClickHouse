@@ -4,10 +4,6 @@ namespace ClickHouseDB;
 
 use ClickHouseDB\Transport\Http;
 
-/**
- * Class Client
- * @package ClickHouseDB
- */
 class Client
 {
     /**
@@ -43,6 +39,7 @@ class Client
      * @var array
      */
     private $_support_format=['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames','JSONEachRow'];
+
     /**
      * Client constructor.
      * @param $connect_params
