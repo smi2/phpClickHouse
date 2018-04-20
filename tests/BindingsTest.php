@@ -1,32 +1,13 @@
 <?php
 
+namespace ClickHouseDB\Tests;
+
+use ClickHouseDB\Query\Degeneration\Bindings;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Class BindingsTest
- */
-class BindingsTest extends TestCase
+final class BindingsTest extends TestCase
 {
-    /**
-     * @var \ClickHouseDB\Client
-     */
-    private $db;
-
-    /**
-     * @throws Exception
-     */
-    public function setUp()
-    {
-        $config = [
-            'host' => phpunit_clickhouse_host,
-            'port' => phpunit_clickhouse_port,
-            'username' => phpunit_clickhouse_user,
-            'password' => phpunit_clickhouse_pass,
-
-        ];
-        $this->db = new ClickHouseDB\Client($config);
-
-    }
+    use WithClient;
 
     /**
      * @return array
@@ -62,35 +43,30 @@ class BindingsTest extends TestCase
         ];
     }
 
-
     public function testBindselectAsync()
     {
-        $this->setUp();
-        //
         // https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
 
-        $a=$this->db->selectAsync("SELECT :a, :a2", [
+        $a=$this->client->selectAsync("SELECT :a, :a2", [
             "a" => "a",
             "a2" => "a2"
         ]);
         $this->assertEquals("SELECT 'a', 'a2' FORMAT JSON",$a->sql());
 
-        $a=$this->db->selectAsync("SELECT :a, :a2", [
+        $a=$this->client->selectAsync("SELECT :a, :a2", [
             "a1" => "x",
             "a2" => "x"
         ]);
+
         $this->assertEquals("SELECT :a, 'x' FORMAT JSON",$a->sql());
 
 
 
-        $a=$this->db->selectAsync("SELECT {a}, {b}", [
+        $a=$this->client->selectAsync("SELECT {a}, {b}", [
             "a" => ":b",
             "b" => ":B"
         ]);
         $this->assertEquals("SELECT ':B', :B FORMAT JSON",$a->sql());
-
-
-
 
         $keys=[
             'key1'=>1,
@@ -99,25 +75,10 @@ class BindingsTest extends TestCase
             'key123' => 123,
         ];
 
-
         $this->assertEquals(
             '123=123 , 11=11, 111=111, 1=1, 1= 1, 123=123 FORMAT JSON',
-            $this->db->selectAsync('123=:key123 , 11={key11}, 111={key111}, 1={key1}, 1= :key1, 123=:key123', $keys)->sql()
+            $this->client->selectAsync('123=:key123 , 11={key11}, 111={key111}, 1={key1}, 1= :key1, 123=:key123', $keys)->sql()
         );
-
-
-
-//
-//
-//        $bind=[];
-//        for ($z=0;$z<10;$z++)
-//        {
-//            $bind['k'.$z]=$z;
-//        }
-//
-//
-//
-
     }
 
 
@@ -130,22 +91,16 @@ class BindingsTest extends TestCase
     public function testEscape($sql, $params, $expectedSql)
     {
 
-        $bindings = new \ClickHouseDB\Query\Degeneration\Bindings();
+        $bindings = new Bindings();
         $bindings->bindParams($params);
         $sql = $bindings->process($sql);
         $this->assertSame($expectedSql, $sql);
-
-
-
-
-
-
     }
 
     public function testSelectAsKeys()
     {
         // chr(0....255);
-        $this->db->settings()->set('max_block_size', 100);
+        $this->client->settings()->set('max_block_size', 100);
 
         $bind['k1']=1;
         $bind['k2']=2;
@@ -157,7 +112,10 @@ class BindingsTest extends TestCase
             $select[]=":k{$z} as k{$z}";
         }
 
-        $rows=$this->db->select("SELECT ".implode(",\n",$select),$bind)->rows();
+        $rows=$this->client->select("SELECT ".implode(",\n",$select),$bind)->rows();
+
+        $this->assertNotEmpty($rows);
+
         $row=$rows[0];
 
         for($z=10;$z<100;$z++) {
