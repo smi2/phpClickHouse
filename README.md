@@ -672,11 +672,11 @@ $cl->verbose();
 In phpunit.xml change constants:
 ```xml
 <php>
-    <const name="phpunit_clickhouse_host" value="192.168.1.20" />
-    <const name="phpunit_clickhouse_port" value="8123" />
-    <const name="phpunit_clickhouse_user" value="default" />
-    <const name="phpunit_clickhouse_pass" value="" />
-    <const name="phpunit_clickhouse_tmp_path" value="/tmp/" />
+    <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
+    <env name="CLICKHOUSE_PORT" value="8123" />
+    <env name="CLICKHOUSE_USER" value="default" />
+    <env name="CLICKHOUSE_PASSWORD" value="" />
+    <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
 </php>
 ```
 
