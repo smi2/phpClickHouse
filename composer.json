@@ -18,8 +18,7 @@
     "ext-curl": "*"
   },
   "require-dev": {
-    "ext-curl": "*",
-    "phpunit/phpunit": "5.5.*"
+    "phpunit/phpunit": "^7.0"
   },
   "autoload": {
     "files": ["include.php"]
