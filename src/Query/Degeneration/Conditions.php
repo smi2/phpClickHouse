@@ -2,7 +2,9 @@
 
 namespace ClickHouseDB\Query\Degeneration;
 
-class Conditions implements \ClickHouseDB\Query\Degeneration
+use ClickHouseDB\Query\Degeneration;
+
+class Conditions implements Degeneration
 {
     /**
      * @var array

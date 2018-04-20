@@ -1,8 +1,8 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-class Request
+class CurlerRequest
 {
     /**
      * @var array
@@ -95,7 +95,6 @@ class Request
     private $resultFileHandle = null;
 
     /**
-     * Request constructor.
      * @param bool $id
      */
     public function __construct($id = false)
@@ -131,9 +130,6 @@ class Request
     }
 
 
-    /**
-     *
-     */
     public function close()
     {
         if ($this->handle)
@@ -251,9 +247,6 @@ class Request
         $this->callback_functionName = $functionName;
     }
 
-    /**
-     *
-     */
     public function onCallback()
     {
         if ($this->callback_function) {
@@ -469,7 +462,7 @@ class Request
     /**
      * @param $data
      * @return $this
-     * @throws \ClickHouseDB\TransportException
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function parameters_json($data)
     {
@@ -490,7 +483,7 @@ class Request
         $this->parameters = json_encode($data);
 
         if (!$this->parameters && $data) {
-            throw new \ClickHouseDB\TransportException('Cant json_encode: ' . $data);
+            throw new \ClickHouseDB\Exception\TransportException('Cant json_encode: ' . $data);
         }
 
         return $this;
@@ -591,13 +584,13 @@ class Request
     }
 
     /**
-     * @return \Curler\Response
-     * @throws \ClickHouseDB\TransportException
+     * @return CurlerResponse
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function response()
     {
         if (!$this->resp) {
-            throw new \ClickHouseDB\TransportException('Can`t fetch response - is empty');
+            throw new \ClickHouseDB\Exception\TransportException('Can`t fetch response - is empty');
         }
 
         return $this->resp;
@@ -611,12 +604,9 @@ class Request
         return ($this->resp ? true : false);
     }
 
-    /**
-     * @param Response $resp
-     */
-    public function setResponse(\Curler\Response $resp)
+    public function setResponse(CurlerResponse $response)
     {
-        $this->resp = $resp;
+        $this->resp = $response;
     }
 
     /**

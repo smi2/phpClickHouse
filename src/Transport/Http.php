@@ -2,13 +2,12 @@
 
 namespace ClickHouseDB\Transport;
 
-use ClickHouseDB\Query;
+use ClickHouseDB\Query\Degeneration;
+use ClickHouseDB\Query\Query;
+use ClickHouseDB\Query\WhereInFile;
+use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Settings;
 use ClickHouseDB\Statement;
-use ClickHouseDB\WhereInFile;
-use ClickHouseDB\WriteToFile;
-use Curler\CurlerRolling;
-use Curler\Request;
 
 class Http
 {
@@ -168,11 +167,11 @@ class Http
 
     /**
      * @param $extendinfo
-     * @return Request
+     * @return CurlerRequest
      */
     private function newRequest($extendinfo)
     {
-        $new = new \Curler\Request();
+        $new = new CurlerRequest();
         $new->auth($this->_username, $this->_password)
             ->POST()
             ->setRequestExtendedInfo($extendinfo);
@@ -196,7 +195,7 @@ class Http
      * @param Query $query
      * @param array $urlParams
      * @param bool $query_as_string
-     * @return Request
+     * @return CurlerRequest
      */
     private function makeRequest(Query $query, $urlParams = [], $query_as_string = false)
     {
@@ -233,7 +232,7 @@ class Http
     /**
      * @param $sql
      * @param $stream
-     * @return Request
+     * @return CurlerRequest
      */
     public function writeStreamData($sql)
     {
@@ -279,7 +278,7 @@ class Http
         $request = $this->newRequest($extendinfo);
         $request->url($url);
 
-        $request->setCallbackFunction(function (Request $request) {
+        $request->setCallbackFunction(function (CurlerRequest $request) {
             fclose($request->getInfileHandle());
         });
 
@@ -355,7 +354,7 @@ class Http
     /**
      * @param Query $query
      * @param null $whereInFile
-     * @return Request
+     * @return CurlerRequest
      */
     public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
     {
@@ -422,7 +421,7 @@ class Http
         return true;
     }
 
-    public function addQueryDegeneration(Query\Degeneration $degeneration)
+    public function addQueryDegeneration(Degeneration $degeneration)
     {
         $this->_query_degenerations[] = $degeneration;
         return true;
@@ -430,7 +429,7 @@ class Http
 
     /**
      * @param Query $query
-     * @return Request
+     * @return CurlerRequest
      */
     public function getRequestWrite(Query $query)
     {
@@ -458,7 +457,7 @@ class Http
      * @param $sql
      * @param $bindings
      * @param $whereInFile
-     * @return Request
+     * @return CurlerRequest
      */
     private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null)
     {
@@ -476,7 +475,7 @@ class Http
     /**
      * @param $sql
      * @param $bindings
-     * @return Request
+     * @return CurlerRequest
      */
     private function prepareWrite($sql, $bindings = [])
     {

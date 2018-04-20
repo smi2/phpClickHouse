@@ -1,6 +1,6 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Query;
 
 /*
 // $structure - структура таблицы, в форме UserID UInt64, URL String. Определяет имена и типы столбцов.

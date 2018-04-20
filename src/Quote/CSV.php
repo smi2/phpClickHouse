@@ -1,6 +1,6 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Quote;
 
 /**
  * @deprecated Оставлен для совместимости

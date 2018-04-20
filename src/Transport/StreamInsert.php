@@ -2,8 +2,6 @@
 
 namespace ClickHouseDB\Transport;
 
-use Curler\Request;
-use Curler\CurlerRolling;
 use ClickHouseDB\Statement;
 
 class StreamInsert
@@ -14,7 +12,7 @@ class StreamInsert
     private $source;
 
     /**
-     * @var Request
+     * @var CurlerRequest
      */
     private $request;
 
@@ -24,12 +22,9 @@ class StreamInsert
     private $curlerRolling;
 
     /**
-     * StreamInsert constructor.
      * @param resource $source
-     * @param Request $request
-     * @param \Curler\CurlerRolling $curlerRolling
      */
-    public function __construct($source, Request $request, CurlerRolling $curlerRolling)
+    public function __construct($source, CurlerRequest $request, CurlerRolling $curlerRolling)
     {
         if (!is_resource($source)) {
             throw new \InvalidArgumentException('Argument $source must be resource');

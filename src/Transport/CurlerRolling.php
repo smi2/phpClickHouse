@@ -1,8 +1,8 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-use ClickHouseDB\TransportException;
+use ClickHouseDB\Exception\TransportException;
 
 class CurlerRolling
 {
@@ -14,7 +14,7 @@ class CurlerRolling
     private $simultaneousLimit = 10;
 
     /**
-     * @var Request[]
+     * @var CurlerRequest[]
      *
      * Requests currently being processed by curl
      */
@@ -26,7 +26,7 @@ class CurlerRolling
     private $runningRequests = 0;
 
     /**
-     * @var Request[]
+     * @var CurlerRequest[]
      *
      * Requests queued to be processed
      */
@@ -57,11 +57,6 @@ class CurlerRolling
      */
     private $_lashmakeQue_state = '';
 
-
-    /**
-     * CurlerRolling constructor.
-     */
-    public function __construct() {}
 
     /**
      *
@@ -100,13 +95,13 @@ class CurlerRolling
 
 
     /**
-     * @param Request $req
+     * @param CurlerRequest $req
      * @param bool $checkMultiAdd
      * @param bool $force
      * @return bool
      * @throws TransportException
      */
-    public function addQueLoop(Request $req, $checkMultiAdd = true, $force = false)
+    public function addQueLoop(CurlerRequest $req, $checkMultiAdd = true, $force = false)
     {
         $id = $req->getId();
 
@@ -128,7 +123,7 @@ class CurlerRolling
 
     /**
      * @param $oneHandle
-     * @return Response
+     * @return CurlerResponse
      */
     private function makeResponse($oneHandle)
     {
@@ -137,7 +132,7 @@ class CurlerRolling
         $header = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
-        $n = new Response();
+        $n = new CurlerResponse();
         $n->_headers = $this->parse_headers_from_curl_response($header);
         $n->_body = $body;
         $n->_info = curl_getinfo($oneHandle);
@@ -260,22 +255,22 @@ class CurlerRolling
     }
 
     /**
-     * @param Request $req
-     * @param bool $auto_close
+     * @param CurlerRequest $request
+     * @param bool          $auto_close
      * @return mixed
      */
-    public function execOne(Request $req, $auto_close = false)
+    public function execOne(CurlerRequest $request, $auto_close = false)
     {
-        $h = $req->handle();
+        $h = $request->handle();
         curl_exec($h);
 
-        $req->setResponse($this->makeResponse($h));
+        $request->setResponse($this->makeResponse($h));
 
         if ($auto_close) {
-            $req->close();
+            $request->close();
         }
 
-        return $req->response()->http_code();
+        return $request->response()->http_code();
     }
 
     /**
@@ -338,9 +333,6 @@ class CurlerRolling
         return $this->countActive();
     }
 
-    /**
-     *
-     */
     public function makePendingRequestsQue()
     {
         $this->_lashmakeQue_state = "";
@@ -395,7 +387,6 @@ class CurlerRolling
         $this->activeRequests[$task_id] = 1;
         $this->waitRequests++;
 
-        //
         $h = $this->pendingRequests[$task_id]->handle();
 
         // pool

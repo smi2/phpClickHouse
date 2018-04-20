@@ -2,6 +2,10 @@
 
 namespace ClickHouseDB;
 
+use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\Degeneration\Bindings;
+use ClickHouseDB\Query\WhereInFile;
+use ClickHouseDB\Quote\FormatLine;
 use ClickHouseDB\Transport\Http;
 
 class Client
@@ -84,7 +88,7 @@ class Client
         );
 
 
-        $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Bindings());
+        $this->_transport->addQueryDegeneration(new Bindings());
 
         // apply settings to transport class
         $this->settings()->database('default');

@@ -1,8 +1,8 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-class Response
+class CurlerResponse
 {
     /**
      * @var
