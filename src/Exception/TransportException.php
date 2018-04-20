@@ -1,5 +1,5 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Exception;
 
 class TransportException extends \Exception {}

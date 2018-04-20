@@ -21,9 +21,13 @@
     "phpunit/phpunit": "^7.0"
   },
   "autoload": {
-    "files": ["include.php"]
+    "psr-4": {
+      "ClickHouseDB\\": "src/"
+    }
   },
   "autoload-dev": {
-    "files": ["include.php"]
+    "psr-4": {
+      "ClickHouseDB\\Tests\\": "tests/"
+    }
   }
 }

@@ -1,6 +1,8 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Query;
+
+use ClickHouseDB\Exception\QueryException;
 
 class WriteToFile
 {

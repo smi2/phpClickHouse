@@ -1,5 +1,7 @@
 <?php
-namespace ClickHouseDB;
+namespace ClickHouseDB\Quote;
+
+use ClickHouseDB\Exception\QueryException;
 
 class StrictQuoteLine
 {

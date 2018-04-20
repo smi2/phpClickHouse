@@ -2,8 +2,11 @@
 
 namespace ClickHouseDB;
 
-use Curler\Request;
-use Curler\Response;
+use ClickHouseDB\Exception\DatabaseException;
+use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\Query;
+use ClickHouseDB\Transport\CurlerRequest;
+use ClickHouseDB\Transport\CurlerResponse;
 
 class Statement
 {
@@ -18,7 +21,7 @@ class Statement
     private $_http_code = -1;
 
     /**
-     * @var Request|null
+     * @var CurlerRequest|null
      */
     private $_request = null;
 
@@ -78,11 +81,7 @@ class Statement
     private $statistics;
 
 
-    /**
-     * Statement constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
+    public function __construct(CurlerRequest $request)
     {
         $this->_request = $request;
         $this->format = $this->_request->getRequestExtendedInfo('format');
@@ -91,14 +90,14 @@ class Statement
     }
 
     /**
-     * @return Request
+     * @return CurlerRequest
      */
     public function getRequest()
     {
         return $this->_request;
     }
     /**
-     * @return Response
+     * @return CurlerResponse
      */
     private function response()
     {

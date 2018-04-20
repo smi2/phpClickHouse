@@ -1,5 +1,6 @@
 <?php
-namespace ClickHouseDB;
+
+namespace ClickHouseDB\Quote;
 
 class FormatLine
 {

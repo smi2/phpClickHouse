@@ -1,6 +1,8 @@
 <?php
 namespace ClickHouseDB;
 
+use ClickHouseDB\Exception\QueryException;
+
 class Cluster
 {
     /**
