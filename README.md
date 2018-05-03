@@ -19,7 +19,7 @@ PHP ClickHouse driver
 - Async get ClickHouse progress function
 
 
-[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
+[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr 2](https://habrahabr.ru/company/smi2/blog/317682/) [on habr 1](https://habr.com/company/smi2/blog/314558/)
 
 ## Install composer
 
