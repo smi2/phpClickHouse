@@ -402,7 +402,7 @@ class Http
             }
 
 
-            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (Request $request) {
+            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (CurlerRequest $request) {
                 fclose($request->getResultFileHandle());
             });
         }

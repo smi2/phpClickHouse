@@ -2,7 +2,7 @@
 
 include_once __DIR__ . '/../include.php';
 
-$config = include_once __DIR__ . '00_config_connect.php';
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
@@ -62,7 +62,7 @@ $db->write('CREATE TABLE testRFCCSVWrite (
            ints Int32,
            arr1 Array(UInt8),
            arrs Array(String)
-        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+        ) ENGINE = TinyLog()');
 
 @unlink($fileName);
 
@@ -79,7 +79,7 @@ $data=[
 //
 foreach ($data as $row)
 {
-    file_put_contents($fileName,\ClickHouseDB\FormatLine::CSV($row)."\n",FILE_APPEND);
+    file_put_contents($fileName,\ClickHouseDB\Quote\FormatLine::CSV($row)."\n",FILE_APPEND);
 }
 //
 echo "FILE:\n\n";
@@ -113,7 +113,7 @@ $db->write('CREATE TABLE testTABWrite (
            ints Int32,
            arr1 Array(UInt8),
            arrs Array(String)
-        ) ENGINE = Log(event_date, (event_time, keyz,keyb), 8192)');
+        ) ENGINE = Log()');
 
 
 
@@ -128,7 +128,7 @@ $data=[
 
 foreach ($data as $row)
 {
-    file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
+    file_put_contents($fileName,\ClickHouseDB\Quote\FormatLine::TSV($row)."\n",FILE_APPEND);
 }
 //
 echo "FILE:\n\n";

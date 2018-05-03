@@ -3,23 +3,9 @@
 include_once __DIR__ . '/../include.php';
 
 
-$config = include_once __DIR__ . '00_config_connect.php';
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 
-$db = new ClickHouseDB\Client($config);
-
-if ($db->settings()->getSetting('max_execution_time') !== 100) {
-    throw new Exception("Bad work settings");
-}
-
-
-// settings via constructor
-$config = [
-    'host' => 'x',
-    'port' => '8123',
-    'username' => 'x',
-    'password' => 'x'
-];
 
 $db = new ClickHouseDB\Client($config, ['max_execution_time' => 100]);
 

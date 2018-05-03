@@ -237,7 +237,14 @@ foreach ($result_insert as $fileName => $state) {
     echo $fileName . ' => ' . json_encode($state->info_upload()) . PHP_EOL;
 }
 ```
-see example/exam8_http_gzip_batch_insert.php
+
+see speed test `example/exam08_http_gzip_batch_insert.php`
+
+### Max execution time
+
+```php
+$db->settings()->max_execution_time(200); // second
+```
 
 ### tablesSize & databaseSize
 
@@ -270,8 +277,8 @@ print_r($db->dropPartition('summing_partions_views', '201512'));
 
 ```php
 $file_name_data1 = '/tmp/temp_csv.txt'; // two column file [int,string]
-$whereIn = new \ClickHouseDB\WhereInFile();
-$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
+$whereIn = new \ClickHouseDB\Query\WhereInFile();
+$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\Query\WhereInFile::FORMAT_CSV);
 $result = $db->select($sql, [], $whereIn);
 
 // see example/exam7_where_in.php
@@ -664,7 +671,7 @@ var_dump($cl->getError());
 ### Return Extremes
 
 ```php
-$cl->enableExtremes(true);
+$db->enableExtremes(true);
 ```
 
 ### Enable Log Query
@@ -672,23 +679,22 @@ $cl->enableExtremes(true);
 You can log all query in ClickHouse
 
 ```php
-$cl = new ClickHouseDB\Client($config);
-$cl->enableLogQueries();
-$cl->select('SELECT 1 as p');
-print_r($cl->select('SELECT * FROM system.query_log')->rows());
+$db->enableLogQueries();
+$db->select('SELECT 1 as p');
+print_r($db->select('SELECT * FROM system.query_log')->rows());
 ```
 
 ### isExists
 
 ```php
-$cl->isExists($database,$table);
+$db->isExists($database,$table);
 ```
 
 
 ### Debug & Verbose
 
 ```php
-$cl->verbose();
+$db->verbose();
 ```
 
 ### Dev & PHPUnit Test
@@ -715,6 +721,20 @@ MIT
 
 ChangeLog
 ---------
+### 2018-05-04
+* Move `\ClickHouseDB\WhereInFile` to `\ClickHouseDB\Query\WhereInFile`
+* Move `\ClickHouseDB\QueryException` to `\ClickHouseDB\Exception\QueryException`
+* Move `\ClickHouseDB\DatabaseException` to `ClickHouseDB\Exception\DatabaseException`
+* Move `\ClickHouseDB\FormatLine` to `\ClickHouseDB\Quote\FormatLine`
+* Move `\ClickHouseDB\WriteToFile` to `ClickHouseDB\Query\WriteToFile`
+* Move `\Curler\Request` to `\ClickHouseDB\Transport\CurlerRequest`
+* Move `ёCurler\CurlerRolling` to `\ClickHouseDB\Transport\CurlerRolling`
+
+* Up to php 7.2 & phpunit 7.1
+
+
+
+
 ### 2018-03-26
 
 * Fix StreamInsert : one stream work faster and safe than loop #PR43

@@ -2,7 +2,7 @@
 
 include_once __DIR__ . '/../include.php';
 
-$config = include_once __DIR__ . '00_config_connect.php';
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);

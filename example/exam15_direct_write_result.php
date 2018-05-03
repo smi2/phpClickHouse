@@ -3,7 +3,7 @@
 include_once __DIR__ . '/../include.php';
 include_once __DIR__ . '/lib_example.php';
 
-$config = include_once __DIR__ . '00_config_connect.php';
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
@@ -26,7 +26,7 @@ $db->write('
 echo "Table EXISTS: " . json_encode($db->showTables()) . "\n";
 
 echo $db->showCreateTable('summing_url_views');
-exit;
+
 // --------------------------------  CREATE csv file ----------------------------------------------------------------
 
 
@@ -51,15 +51,15 @@ $result_insert = $db->insertBatchFiles('summing_url_views', $file_data_names, [
 echo "use time:" . round(microtime(true) - $time_start, 2) . "\n";
 print_r($db->select('select sum(views) from summing_url_views')->rows());
 // ------------------------------------------------------------------------------------------------
-$WriteToFile=new ClickHouseDB\WriteToFile('/tmp/_1_select.csv');
+$WriteToFile=new ClickHouseDB\Query\WriteToFile('/tmp/_1_select.csv');
 $statement=$db->select('select * from summing_url_views',[],null,$WriteToFile);
 print_r($statement->info());
 
 //
-$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_2_select.csv'));
-$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_3_select.tab',true,'TabSeparatedWithNames'));
-$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
-$statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,new ClickHouseDB\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\WriteToFile::FORMAT_CSV));
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\Query\WriteToFile('/tmp/_2_select.csv'));
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\Query\WriteToFile('/tmp/_3_select.tab',true,'TabSeparatedWithNames'));
+$db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\Query\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
+$statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,new ClickHouseDB\Query\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\Query\WriteToFile::FORMAT_CSV));
 $db->executeAsync();
 
 print_r($statement->info());
@@ -68,10 +68,11 @@ echo "END SELECT\n";
 
 echo "TRY GZIP\n";
 
-$WriteToFile=new ClickHouseDB\WriteToFile('/tmp/_0_select.csv.gz');
-$WriteToFile->setFormat(ClickHouseDB\WriteToFile::FORMAT_TabSeparatedWithNames);
+$WriteToFile=new ClickHouseDB\Query\WriteToFile('/tmp/_0_select.csv.gz');
+$WriteToFile->setFormat(ClickHouseDB\Query\WriteToFile::FORMAT_TabSeparatedWithNames);
 $WriteToFile->setGzip(true);// cat /tmp/_0_select.csv.gz | gzip -dc > /tmp/w.result
 
 $statement=$db->select('select * from summing_url_views',[],null,$WriteToFile);
 print_r($statement->info());
 
+echo "OK!\n\n";
