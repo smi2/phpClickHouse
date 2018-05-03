@@ -667,7 +667,11 @@ var_dump($cl->getError());
 $cl->verbose();
 ```
 
-### PHPUnit Test
+### Dev & PHPUnit Test
+
+
+* Don't forget to run composer install. It should setup PSR-4 autoloading.
+* Then you can simply run vendor/bin/phpunit and it should output the following
 
 In phpunit.xml change constants:
 ```xml
