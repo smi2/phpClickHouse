@@ -29,7 +29,7 @@ composer require smi2/phpclickhouse
 
 ### OR install submodule
 
-composer require php 7.1, but phpClickHouse can work on php 5.5
+`composer` require php 7.1, but phpClickHouse can work on php 5.5 without autoload and `composer`
 
 
 ```bash
@@ -740,9 +740,7 @@ ChangeLog
 * Move `\ClickHouseDB\WriteToFile` to `ClickHouseDB\Query\WriteToFile`
 * Move `\Curler\Request` to `\ClickHouseDB\Transport\CurlerRequest`
 * Move `ёCurler\CurlerRolling` to `\ClickHouseDB\Transport\CurlerRolling`
-
-* Up to php 7.2 & phpunit 7.1
-
+* Up to php 7.2 & phpunit 7.1 for Dev & Prs4 Autoloading
 
 
 
