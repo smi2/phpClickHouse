@@ -2,7 +2,7 @@ PHP ClickHouse driver
 =====================
 ## Features
 
-- No dependency, only curl
+- No dependency, only curl (php 5.5 without composer)
 - Select parallel queries (asynchronous)
 - Parallelizing bulk inserts from CSV file
 - enable_http_compression, for bulk inserts
