@@ -1,5 +1,5 @@
-PHP ClickHouse wrapper
-===================
+PHP ClickHouse driver
+=====================
 ## Features
 
 - No dependency, only curl
@@ -16,7 +16,7 @@ PHP ClickHouse wrapper
 - Insert array as column
 - Get master node replica in cluster
 - Get tableSize in all nodes
-- Async get clickhouse progress
+- Async get ClickHouse progress function
 
 
 [Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
@@ -29,6 +29,9 @@ composer require smi2/phpclickhouse
 
 ### OR install submodule
 
+composer require php 7.1, but phpClickHouse can work on php 5.5
+
+
 ```bash
 git submodule add https://github.com/smi2/phpClickHouse.git
 git submodule init
@@ -38,6 +41,14 @@ git submodule update --init --recursive
 git submodule update --remote
 
 ```
+
+In php
+```php
+include_once __DIR__ . '/phpClickHouse/include.php';
+$db = new ClickHouseDB\Client(['config_array']);
+$db->ping();
+```
+
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
