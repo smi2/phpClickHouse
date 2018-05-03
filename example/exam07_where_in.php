@@ -4,12 +4,7 @@ include_once __DIR__ . '/../include.php';
 include_once __DIR__ . '/lib_example.php';
 include_once __DIR__ . '/../../_clickhouse_config_product.php';
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+$config = include_once __DIR__ . '00_config_connect.php';
 
 
 $start_time = microtime(true);

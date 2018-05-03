@@ -661,6 +661,30 @@ var_dump($cl->getError());
 
 ```
 
+### Return Extremes
+
+```php
+$cl->enableExtremes(true);
+```
+
+### Enable Log Query
+
+You can log all query in ClickHouse
+
+```php
+$cl = new ClickHouseDB\Client($config);
+$cl->enableLogQueries();
+$cl->select('SELECT 1 as p');
+print_r($cl->select('SELECT * FROM system.query_log')->rows());
+```
+
+### isExists
+
+```php
+$cl->isExists($database,$table);
+```
+
+
 ### Debug & Verbose
 
 ```php

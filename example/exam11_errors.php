@@ -3,12 +3,8 @@
 include_once __DIR__ . '/../include.php';
 
 
-$config = [
-    'host' => 'x',
-    'port' => '8123',
-    'username' => 'x',
-    'password' => 'x'
-];
+$config = include_once __DIR__ . '00_config_connect.php';
+
 
 $db = new ClickHouseDB\Client($config);
 
