@@ -1,8 +1,8 @@
-PHP ClickHouse driver
+PHP ClickHouse wrapper
 =====================
 ## Features
 
-- No dependency, only curl (php 5.5 without composer)
+- No dependency, only curl (php 5.6 without composer)
 - Select parallel queries (asynchronous)
 - Parallelizing bulk inserts from CSV file
 - enable_http_compression, for bulk inserts
@@ -29,7 +29,7 @@ composer require smi2/phpclickhouse
 
 ### OR install submodule
 
-`composer` require php 7.1, but phpClickHouse can work on php 5.5 without autoload and `composer`
+`composer` require php 7.1, but phpClickHouse can work on php >=5.6 without autoload and `composer`
 
 
 ```bash
