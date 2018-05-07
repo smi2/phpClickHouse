@@ -4,6 +4,11 @@ namespace ClickHouseDB\Tests;
  
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class FormatQueryTest
+ * @package ClickHouseDB\Tests
+ * @group FormatQueryTest
+ */
 final class FormatQueryTest extends TestCase
 {
     use WithClient;

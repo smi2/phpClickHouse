@@ -5,6 +5,11 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Exception\QueryException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class InsertAssocTest
+ * @group InsertAssocTest
+ * @package ClickHouseDB\Tests
+ */
 final class InsertAssocTest extends TestCase
 {
     use WithClient;

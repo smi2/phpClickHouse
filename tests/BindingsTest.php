@@ -5,6 +5,11 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class BindingsTest
+ * @package ClickHouseDB\Tests
+ * @group BindingsTest
+ */
 final class BindingsTest extends TestCase
 {
     use WithClient;

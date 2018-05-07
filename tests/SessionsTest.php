@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientTest
+ * @group ClientTest
  */
 final class SessionsTest extends TestCase
 {

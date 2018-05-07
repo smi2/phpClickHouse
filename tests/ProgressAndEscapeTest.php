@@ -4,6 +4,11 @@ namespace ClickHouseDB\Tests;
 
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class ProgressAndEscapeTest
+ * @group ProgressAndEscapeTest
+ * @package ClickHouseDB\Tests
+ */
 final class ProgressAndEscapeTest extends TestCase
 {
     use WithClient;

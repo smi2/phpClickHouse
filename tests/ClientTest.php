@@ -15,6 +15,11 @@ use ClickHouseDB\Transport\StreamInsert;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class ClientTest
+ * @package ClickHouseDB\Tests
+ * @group ClientTest
+ */
 class ClientTest extends TestCase
 {
     use WithClient;

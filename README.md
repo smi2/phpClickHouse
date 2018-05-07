@@ -725,6 +725,15 @@ In phpunit.xml change constants:
 </php>
 ```
 
+Run test
+```bash
+
+./vendor/bin/phpunit
+
+./vendor/bin/phpunit --group ClientTest
+
+```
+
 License
 -------
 
