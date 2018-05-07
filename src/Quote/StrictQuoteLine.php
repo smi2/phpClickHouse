@@ -11,7 +11,7 @@ class StrictQuoteLine
             'EnclosureArray'=>'"',
             'EncodeEnclosure'=>'"',
             'Enclosure'=>'"',
-            'Null'=>"\N",
+            'Null'=>"\\N",
             'Delimiter'=>",",
             'TabEncode'=>false,
         ],
