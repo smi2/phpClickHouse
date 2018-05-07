@@ -193,7 +193,7 @@ class CurlerRequest
     }
 
     /**
-     * @return resource
+     * @return bool|resource
      */
     public function getInfileHandle()
     {
@@ -424,7 +424,7 @@ class CurlerRequest
     }
 
     /**
-     * Количество секунд ожидания при попытке соединения. Используйте 0 для бесконечного ожидания.
+     * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
      *
      * @param int $seconds
      * @return $this
@@ -436,7 +436,7 @@ class CurlerRequest
     }
 
     /**
-     * Максимально позволенное количество секунд для выполнения cURL-функций.
+     * The maximum number of seconds allowed to execute cURL functions.
      *
      * @param int $seconds
      * @return $this
@@ -447,7 +447,7 @@ class CurlerRequest
     }
 
     /**
-     * Максимально позволенное количество миллисекунд для выполнения cURL-функций.
+     * The maximum allowed number of milliseconds to perform cURL functions.
      *
      * @param int $ms
      * @return $this
@@ -520,7 +520,7 @@ class CurlerRequest
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function PUT()
     {
@@ -528,7 +528,7 @@ class CurlerRequest
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function POST()
     {
@@ -536,7 +536,7 @@ class CurlerRequest
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function OPTIONS()
     {
@@ -544,7 +544,7 @@ class CurlerRequest
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function GET()
     {
@@ -552,7 +552,7 @@ class CurlerRequest
     }
 
     /**
-     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
      * @param $set
      * @return $this
@@ -564,7 +564,7 @@ class CurlerRequest
     }
 
     /**
-     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
      * @return int
      */
