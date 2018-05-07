@@ -53,12 +53,6 @@ class CurlerRolling
     private $handleMapTasks = array();
 
     /**
-     * @var string
-     */
-    private $_lashmakeQue_state = '';
-
-
-    /**
      *
      */
     public function __destructor()
@@ -146,6 +140,7 @@ class CurlerRolling
     /**
      * @param int $usleep
      * @return bool
+     * @throws TransportException
      */
     public function execLoopWait($usleep = 10000)
     {
@@ -256,8 +251,9 @@ class CurlerRolling
 
     /**
      * @param CurlerRequest $request
-     * @param bool          $auto_close
+     * @param bool $auto_close
      * @return mixed
+     * @throws TransportException
      */
     public function execOne(CurlerRequest $request, $auto_close = false)
     {
@@ -335,12 +331,10 @@ class CurlerRolling
 
     public function makePendingRequestsQue()
     {
-        $this->_lashmakeQue_state = "";
 
         $max = $this->getSimultaneousLimit();
         $active = $this->countActive();
 
-        $this->_lashmakeQue_state .= "Active=$active | Max=$max |";
 
         if ($active < $max) {
 
@@ -349,16 +343,13 @@ class CurlerRolling
 
             $add = array();
 
-            $this->_lashmakeQue_state .= " canAdd:$canAdd | pending=$pending |";
 
             foreach ($this->pendingRequests as $task_id => $params) {
                 if (empty($this->activeRequests[$task_id])) {
                     $add[$task_id] = $task_id;
-                    $this->_lashmakeQue_state .= '{A}';
                 }
             }
 
-            $this->_lashmakeQue_state .= ' sizeAdd=' . sizeof($add);
 
             if (sizeof($add)) {
                 if ($canAdd >= sizeof($add)) {
