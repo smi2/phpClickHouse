@@ -290,7 +290,7 @@ class Http
     }
 
     /**
-     * getCountPendingQueue
+     * get Count Pending Query in Queue
      *
      * @return int
      */
@@ -300,7 +300,7 @@ class Http
     }
 
     /**
-     * setConnectTimeOut
+     * set Connect TimeOut in seconds [CURLOPT_CONNECTTIMEOUT] ( int )
      *
      * @param int $connectTimeOut
      */
@@ -310,7 +310,7 @@ class Http
     }
 
     /**
-     * getConnectTimeOut
+     * get ConnectTimeOut in seconds
      *
      * @return int
      */
