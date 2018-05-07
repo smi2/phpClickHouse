@@ -52,9 +52,9 @@ class Http
     private $_query_degenerations = [];
 
     /**
-     * Количество секунд ожидания при попытке соединения
+     * Count seconds
      *
-     * @var int
+     * @var float
      */
     private $_connectTimeOut = 5;
 
@@ -196,6 +196,7 @@ class Http
      * @param array $urlParams
      * @param bool $query_as_string
      * @return CurlerRequest
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     private function makeRequest(Query $query, $urlParams = [], $query_as_string = false)
     {
@@ -231,7 +232,6 @@ class Http
 
     /**
      * @param $sql
-     * @param $stream
      * @return CurlerRequest
      */
     public function writeStreamData($sql)
@@ -259,6 +259,7 @@ class Http
      * @param $sql
      * @param $file_name
      * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function writeAsyncCSV($sql, $file_name)
     {
@@ -289,6 +290,8 @@ class Http
     }
 
     /**
+     * getCountPendingQueue
+     *
      * @return int
      */
     public function getCountPendingQueue()
@@ -297,7 +300,7 @@ class Http
     }
 
     /**
-     * Количество секунд ожидания
+     * setConnectTimeOut
      *
      * @param int $connectTimeOut
      */
@@ -307,7 +310,7 @@ class Http
     }
 
     /**
-     * Количество секунд ожидания
+     * getConnectTimeOut
      *
      * @return int
      */
@@ -354,7 +357,9 @@ class Http
     /**
      * @param Query $query
      * @param null $whereInFile
+     * @param null $writeToFile
      * @return CurlerRequest
+     * @throws \Exception
      */
     public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
     {
@@ -514,7 +519,9 @@ class Http
      * @param $sql
      * @param array $bindings
      * @param null $whereInFile
+     * @param null $writeToFile
      * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
     {
