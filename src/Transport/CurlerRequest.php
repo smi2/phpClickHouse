@@ -436,9 +436,9 @@ class CurlerRequest
     }
 
     /**
-     * The maximum number of seconds allowed to execute cURL functions.
+     * The maximum number of seconds (float) allowed to execute cURL functions.
      *
-     * @param int $seconds
+     * @param float $seconds
      * @return $this
      */
     public function timeOut($seconds = 10)
@@ -452,7 +452,7 @@ class CurlerRequest
      * @param int $ms
      * @return $this
      */
-    protected function timeOutMs($ms = 10)
+    protected function timeOutMs($ms = 10000)
     {
         $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;

@@ -52,9 +52,9 @@ class Http
     private $_query_degenerations = [];
 
     /**
-     * Count seconds
+     * Count seconds (int)
      *
-     * @var float
+     * @var int
      */
     private $_connectTimeOut = 5;
 
@@ -458,11 +458,14 @@ class Http
         return new Query($sql, $this->_query_degenerations);
     }
 
+
     /**
      * @param $sql
      * @param $bindings
      * @param $whereInFile
+     * @param null $writeToFile
      * @return CurlerRequest
+     * @throws \Exception
      */
     private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null)
     {
