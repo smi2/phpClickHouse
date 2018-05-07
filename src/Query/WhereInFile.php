@@ -2,6 +2,8 @@
 
 namespace ClickHouseDB\Query;
 
+use ClickHouseDB\Exception\QueryException;
+
 class WhereInFile
 {
     /**

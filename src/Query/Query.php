@@ -24,7 +24,7 @@ class Query
     /**
      * Query constructor.
      * @param $sql
-     * @param array $bindings
+     * @param array $degenerations
      */
     public function __construct($sql,$degenerations=[])
     {
