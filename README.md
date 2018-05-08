@@ -741,14 +741,14 @@ MIT
 
 ChangeLog
 ---------
-### 2018-05-04
+### 2018-05-09
 * Move `\ClickHouseDB\WhereInFile` to `\ClickHouseDB\Query\WhereInFile`
 * Move `\ClickHouseDB\QueryException` to `\ClickHouseDB\Exception\QueryException`
 * Move `\ClickHouseDB\DatabaseException` to `ClickHouseDB\Exception\DatabaseException`
 * Move `\ClickHouseDB\FormatLine` to `\ClickHouseDB\Quote\FormatLine`
 * Move `\ClickHouseDB\WriteToFile` to `ClickHouseDB\Query\WriteToFile`
 * Move `\Curler\Request` to `\ClickHouseDB\Transport\CurlerRequest`
-* Move `ёCurler\CurlerRolling` to `\ClickHouseDB\Transport\CurlerRolling`
+* Move `\Curler\CurlerRolling` to `\ClickHouseDB\Transport\CurlerRolling`
 * Up to php 7.2 & phpunit 7.1 for Dev & Prs4 Autoloading
 
 

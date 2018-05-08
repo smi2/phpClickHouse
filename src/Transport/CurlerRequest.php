@@ -449,7 +449,7 @@ class CurlerRequest
     /**
      * The maximum allowed number of milliseconds to perform cURL functions.
      *
-     * @param int $ms
+     * @param int $ms millisecond
      * @return $this
      */
     protected function timeOutMs($ms = 10000)
