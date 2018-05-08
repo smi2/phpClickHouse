@@ -6,6 +6,7 @@ PHP ClickHouse wrapper
 <a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/d/total.svg" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/license.svg" alt="License"></a>
+<a href="https://scan.coverity.com/projects/smi2-phpclickhouse"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/15720/badge.svg"/></a>
 </p>
 
 
