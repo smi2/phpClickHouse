@@ -1,5 +1,17 @@
 PHP ClickHouse wrapper
-=====================
+======================
+
+<p align="center">
+<a href="https://travis-ci.org/smi2/phpClickHouse/"><img src="https://travis-ci.org/smi2/phpClickHouse.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/d/total.svg" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/license.svg" alt="License"></a>
+</p>
+
+
+
+
+
 ## Features
 
 - No dependency, only curl (php 5.6 without composer)
@@ -17,9 +29,6 @@ PHP ClickHouse wrapper
 - Get master node replica in cluster
 - Get tableSize in all nodes
 - Async get ClickHouse progress function
-
-
-[![Build Status](https://travis-ci.org/smi2/phpClickHouse.svg?branch=master)](https://travis-ci.org/smi2/phpClickHouse)
 
 
 [Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr 2](https://habrahabr.ru/company/smi2/blog/317682/) [on habr 1](https://habr.com/company/smi2/blog/314558/)
