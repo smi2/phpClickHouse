@@ -80,7 +80,9 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function process($sql)
     {
-        // CodeIgniter->bind() : https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
+        // Can try use
+        // CodeIgniter->bind()
+        // https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
 
         arsort($this->bindings);
 

@@ -1,5 +1,6 @@
 <?php
-namespace ClickHouseDB;
+
+namespace ClickHouseDB\Quote;
 
 class FormatLine
 {
@@ -10,7 +11,7 @@ class FormatLine
     private static $strict=[];
 
     /**
-     * Форматер
+     * Format
      *
      * @param $format
      * @return StrictQuoteLine
@@ -25,7 +26,7 @@ class FormatLine
     }
 
     /**
-     * Массив в строку для запроса Insert
+     * Array in a string for a query Insert
      *
      * @param array $row
      * @return string
@@ -36,7 +37,7 @@ class FormatLine
     }
 
     /**
-     * Массив в строку TSV
+     * Array to TSV
      *
      * @param array $row
      * @return string
@@ -47,7 +48,7 @@ class FormatLine
     }
 
     /**
-     * Массив в строку CSV
+     * Array to CSV
      *
      * @param array $row
      * @return string

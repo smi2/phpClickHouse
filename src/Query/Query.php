@@ -1,6 +1,8 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Query;
+
+use ClickHouseDB\Exception\QueryException;
 
 class Query
 {
@@ -22,7 +24,7 @@ class Query
     /**
      * Query constructor.
      * @param $sql
-     * @param array $bindings
+     * @param array $degenerations
      */
     public function __construct($sql,$degenerations=[])
     {

@@ -3,12 +3,7 @@
 include_once __DIR__ . '/../include.php';
 include_once __DIR__ . '/lib_example.php';
 
-$config = [
-    'host' => '127.0.0.1',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 $db = new ClickHouseDB\Client($config);
 $db->enableHttpCompression(true);

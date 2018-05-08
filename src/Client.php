@@ -2,6 +2,10 @@
 
 namespace ClickHouseDB;
 
+use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\Degeneration\Bindings;
+use ClickHouseDB\Query\WhereInFile;
+use ClickHouseDB\Quote\FormatLine;
 use ClickHouseDB\Transport\Http;
 
 class Client
@@ -84,7 +88,7 @@ class Client
         );
 
 
-        $this->_transport->addQueryDegeneration(new \ClickHouseDB\Query\Degeneration\Bindings());
+        $this->_transport->addQueryDegeneration(new Bindings());
 
         // apply settings to transport class
         $this->settings()->database('default');
@@ -109,7 +113,7 @@ class Client
     }
 
     /**
-     * если у пользовалетя установленно только чтение в конфиге
+     * if the user has only read in the config file
      *
      * @param $flag
      */
@@ -119,7 +123,7 @@ class Client
         $this->settings()->setReadOnlyUser($this->_connect_user_readonly);
     }
     /**
-     * Очистить пред обработку запроса [шаблонизация]
+     * Clear Degeneration processing request [template ]
      *
      * @return bool
      */
@@ -129,7 +133,7 @@ class Client
     }
 
     /**
-     * Добавить пред обработку запроса
+     * add Degeneration processing
      *
      * @param Query\Degeneration $degeneration
      * @return bool
@@ -140,7 +144,7 @@ class Client
     }
 
     /**
-     * Замена :var в запросе
+     * add Conditions in query
      *
      * @return bool
      */
@@ -177,7 +181,7 @@ class Client
     }
 
     /**
-     * Таймаут
+     * Timeout
      *
      * @return mixed
      */
@@ -187,7 +191,7 @@ class Client
     }
 
     /**
-     * Количество секунд ожидания
+     * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
      *
      * @param int $connectTimeOut
      */
@@ -197,7 +201,7 @@ class Client
     }
 
     /**
-     * Количество секунд ожидания
+     * get ConnectTimeOut
      *
      * @return int
      */
@@ -309,7 +313,7 @@ class Client
     }
 
     /**
-     * Запрос на запись CREATE/DROP
+     * Query CREATE/DROP
      *
      * @param $sql
      * @param array $bindings
@@ -322,6 +326,7 @@ class Client
     }
 
     /**
+     * set db name
      * @param $db
      * @return $this
      */
@@ -332,7 +337,7 @@ class Client
     }
 
     /**
-     * Логгировать запросы и писать лог в системную таблицу. <database>system</database> <table>query_log</table>
+     * Write to system.query_log
      *
      * @param bool $flag
      * @return $this
@@ -344,7 +349,7 @@ class Client
     }
 
     /**
-     * Сжимать результат, если клиент по HTTP сказал, что он понимает данные, сжатые методом gzip или deflate
+     * Compress the result if the HTTP client said that it understands data compressed with gzip or deflate
      *
      * @param bool $flag
      * @return $this
@@ -355,7 +360,12 @@ class Client
         return $this;
     }
 
-
+    /**
+     * Enable / Disable HTTPS
+     *
+     * @param bool $flag
+     * @return $this
+     */
     public function https($flag=true)
     {
         $this->settings()->https($flag);
@@ -363,7 +373,7 @@ class Client
     }
 
     /**
-     * Считать минимумы и максимумы столбцов результата. Они могут выводиться в JSON-форматах.
+     * Read extremes of the result columns. They can be output in JSON-formats.
      *
      * @param bool $flag
      * @return $this
@@ -379,8 +389,8 @@ class Client
      *
      * @param $sql
      * @param array $bindings
-     * @param WhereInFile $whereInFile
-     * @param WriteToFile $writeToFile
+     * @param null $whereInFile
+     * @param null $writeToFile
      * @return Statement
      */
     public function select($sql, $bindings = [], $whereInFile = null, $writeToFile=null)
@@ -389,7 +399,7 @@ class Client
     }
 
     /**
-     * Исполнить запросы из очереди
+     * execute run
      *
      * @return bool
      */
@@ -398,6 +408,11 @@ class Client
         return $this->transport()->executeAsync();
     }
 
+    /**
+     * set progressFunction
+     *
+     * @param $callback
+     */
     public function progressFunction($callback)
     {
         if (!is_callable($callback)) throw new \InvalidArgumentException('Not is_callable progressFunction');
@@ -417,12 +432,12 @@ class Client
     }
 
     /**
-     * Подготовить запрос SELECT
+     * prepare select
      *
      * @param $sql
      * @param array $bindings
-     * @param WhereInFile $whereInFile
-     * @param WriteToFile $writeToFile
+     * @param null $whereInFile
+     * @param null $writeToFile
      * @return Statement
      */
     public function selectAsync($sql, $bindings = [], $whereInFile = null,$writeToFile=null)
@@ -472,7 +487,7 @@ class Client
     }
 
     /**
-     * Получить кол-во одновременных запросов
+     * Get the number of simultaneous/Pending requests
      *
      * @return int
      */
@@ -507,12 +522,12 @@ class Client
     }
 
     /**
-     * Готовит значения для вставки из ассоциативного массива.
-     * Может быть вставления одна строка или много строк, но тогда ключи внутри списка массивов должны совпадать (в том числе и по порядку следования)
-     *
-     * @param array $values - массив column_name=>value (если вставляем одну строку) или список массивов column_name=>value если вставляем много строк
-     * @return array - список массивов - 0=>поля, 1=>список массивов значений для вставки
-     */
+      * Prepares the values to insert from the associative array.
+      * There may be one or more lines inserted, but then the keys inside the array list must match (including in the sequence)
+      *
+      * @param array $ values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+      * @return array - list of arrays - 0 => fields, 1 => list of value arrays for insertion
+      */
     public function prepareInsertAssocBulk(array $values)
     {
         if (isset($values[0]) && is_array($values[0])){ //случай, когда много строк вставляется
@@ -533,14 +548,14 @@ class Client
     }
 
     /**
-     * Вставляет одну или много строк из ассоциативного массива.
-     * Если внутри списка массивов значений будет расхождение по ключам (или их порядку) - выбросит исключение.
-     *
-     * @param string $table - имя таблицы
-     * @param array $values - массив column_name=>value (если вставляем одну строку) или список массивов column_name=>value если вставляем много строк
-     * @return Statement
-     * @throws QueryException
-     */
+      * Inserts one or more rows from an associative array.
+      * If there is a discrepancy between the keys of the value arrays (or their order) - throws an exception.
+      *
+      * @param string $ table - table name
+      * @param array $ values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+      * @return Statement
+      * @throws QueryException
+      */
     public function insertAssocBulk($table, array $values)
     {
         list($columns, $vals) = $this->prepareInsertAssocBulk($values);
@@ -560,7 +575,7 @@ class Client
         return $this->insertBatchFiles($table_name,$file_names,$columns_array,'TabSeparated');
     }
     /**
-     *
+     * insert Batch Files
      *
      * @param $table_name
      * @param $file_names
@@ -617,12 +632,12 @@ class Client
     }
 
     /**
-     * @param string $table_name
-     * @param array $columns_array
-     * @param string $format
+     * insert Batch Stream
      *
-     * @return \Curler\Request
-     * @internal param $stream
+     * @param $table_name
+     * @param $columns_array
+     * @param string $format
+     * @return Transport\CurlerRequest
      */
     public function insertBatchStream($table_name, $columns_array,$format="CSV")
     {
@@ -651,7 +666,7 @@ class Client
 
 
     /**
-     * Размер базы
+     * Size of database
      *
      * @return mixed|null
      */
@@ -668,7 +683,7 @@ class Client
     }
 
     /**
-     * Размер таблицы
+     * Size of tables
      *
      * @param $tableName
      * @return mixed
@@ -685,6 +700,8 @@ class Client
     }
 
     /**
+     * ping & check
+     *
      * @return bool
      */
     public function ping()
@@ -694,7 +711,7 @@ class Client
     }
 
     /**
-     * Размеры таблиц
+     * Tables sizes
      *
      * @return array
      */
@@ -720,6 +737,14 @@ class Client
 
     }
 
+
+    /**
+     * isExists
+     *
+     * @param $database
+     * @param $table
+     * @return array
+     */
     public function isExists($database,$table)
     {
         return $this->select('
@@ -728,7 +753,11 @@ class Client
             WHERE name=\''.$table.'\' AND database=\''.$database.'\''
         )->rowsAsTree('name');
     }
+
+
     /**
+     * List of partitions
+     *
      * @param $table
      * @param int $limit
      * @return array
@@ -744,6 +773,8 @@ class Client
     }
 
     /**
+     * dropPartition
+     *
      * @param $dataBaseTableName database_name.table_name
      * @param $partition_id
      * @return Statement
@@ -760,7 +791,12 @@ class Client
         return $state;
     }
 
-
+    /**
+     * Truncate ( drop all partitions )
+     *
+     * @param $tableName
+     * @return array
+     */
     public function truncateTable($tableName)
     {
         $partions=$this->partitions($tableName);
@@ -774,6 +810,8 @@ class Client
     }
 
     /**
+     * dropOldPartitions by day_ago
+     *
      * @param $table_name
      * @param $days_ago
      * @param int $count_partitons_per_one

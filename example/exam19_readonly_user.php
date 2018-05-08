@@ -2,12 +2,8 @@
 
 include_once __DIR__ . '/../include.php';
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'ro',
-    'password' => 'ro'
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
+
 
 $db = new ClickHouseDB\Client($config);
 
@@ -21,14 +17,6 @@ $db->showDatabases();
 
 // ----------------------------
 
-
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'ro',
-    'password' => 'ro',
-    'readonly' => true
-];
 
 $db = new ClickHouseDB\Client($config);
 

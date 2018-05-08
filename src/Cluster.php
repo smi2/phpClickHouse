@@ -1,6 +1,8 @@
 <?php
 namespace ClickHouseDB;
 
+use ClickHouseDB\Exception\QueryException;
+
 class Cluster
 {
     /**
@@ -58,12 +60,12 @@ class Cluster
 
 
     /**
-     * Признак напрягать CH при проверке кластера запросом в Zookiper
-     * false - отправлять запрос в ZK, точнне делать SELECT * FROM system.replicas
+     * A symptom of straining CH when checking a cluster request in Zookiper
+     * false - send a request to ZK, do not do SELECT * FROM system.replicas
      *
      * @var bool
      */
-    private $softCheck = false;
+    private $softCheck = true;
 
     /**
      * @var bool
@@ -71,13 +73,15 @@ class Cluster
     private $replicasIsOk;
 
     /**
-     * Кэш
+     * Cache
+     *
      * @var array
      */
     private $_table_size_cache=[];
 
     /**
      * Cluster constructor.
+     *
      * @param $connect_params
      * @param array $settings
      * @param int $scanTimeOut
@@ -212,9 +216,8 @@ class Cluster
 
     private function getSelectSystemReplicas()
     {
-        //  Если запрашивать все столбцы, то таблица может работать слегка медленно, так как на каждую строчку делается несколько чтений из ZK.
-        //  Если не запрашивать последние 4 столбца (log_max_index, log_pointer, total_replicas, active_replicas), то таблица работает быстро.
-        if ($this->softCheck)
+        // If you query all the columns, then the table may work slightly slow, since there are several readings from ZK per line.
+        // If you do not query the last 4 columns (log_max_index, log_pointer, total_replicas, active_replicas), then the table works quickly.        if ($this->softCheck)
         {
 
             return 'SELECT 
@@ -233,12 +236,12 @@ class Cluster
     {
         $this->error = [];
         /*
-         * 1) Получаем список IP
-         * 2) К каждому подключаемся по IP, через activeClient подменяя host на ip
-         * 3) Достаем информацию system.clusters + system.replicas c каждой машины , overwrite { DnsCache + timeOuts }
-         * 4) Определяем нужные машины для кластера/реплики
+         * 1) Get the IP list
+         * 2) To each connect via IP, through activeClient replacing host on ip
+         * 3) We get information system.clusters + system.replicas from each machine, overwrite {DnsCache + timeOuts}
+         * 4) Determine the necessary machines for the cluster / replica
          * 5) .... ?
-         */
+         */
         $statementsReplicas = [];
         $statementsClusters = [];
         $result = [];
@@ -302,7 +305,7 @@ class Cluster
             $this->hostsnames = $hosts;
             $this->tables = $tables;
             // ---------------------------------------------------------------------------------------------------
-            // Проверим что репликации хорошо идут
+            // Let's check that replication goes well
             $rIsOk = $this->isReplicasWork($result['replicas'][$node]);
             $result['replicasIsOk'][$node] = $rIsOk;
             if (!$rIsOk) $replicasIsOk = false;
@@ -312,7 +315,7 @@ class Cluster
         // badNodes = array(6) {  '222.222.222.44' =>  string(13) "HttpCode:0 ; " , '222.222.222.11' =>  string(13) "HttpCode:0 ; "
         $this->badNodes = $badNodes;
 
-        // Востановим DNS имя хоста в клиенте
+        // Restore DNS host name on ch_client
         $this->defaultClient()->setHost($this->defaultHostName);
 
 
@@ -320,14 +323,14 @@ class Cluster
         $this->replicasIsOk = $replicasIsOk;
         $this->error[] = "Bad replicasIsOk, in " . json_encode($result['replicasIsOk']);
         // ------------------------------------------------
-        // @todo Уточнить на боевых падениях и при разношорсных конфигурациях...
+        // @todo : To specify on fighting falls and at different-sided configurations ...
         if (sizeof($this->badNodes)) {
             $this->error[] = 'Have bad node : ' . json_encode($this->badNodes);
             $this->replicasIsOk = false;
         }
         if (!sizeof($this->error)) $this->error = false;
         $this->resultScan = $result;
-        // @todo Мы подключаемся ко всем в списке DNS, нужно пререить что запросы вернули все хосты к которым мы подключались
+        // @todo  : We connect to everyone in the DNS list, we need to decry that the requests were returned by all the hosts to which we connected
         return $this;
     }
 
@@ -455,7 +458,7 @@ class Cluster
     }
 
     /**
-     * Список всех таблиц и бд. во всех кластерах
+     * list all tables on all nodes
      *
      * @return array
      */
@@ -482,7 +485,7 @@ class Cluster
     }
 
     /**
-     * Размер таблицы в кластере
+     * Table size on cluster
      *
      * @param $database_table
      * @return array
@@ -523,7 +526,7 @@ class Cluster
 
 
     /**
-     * truncate
+     * Truncate on all nodes
      *
      * @param $database_table
      * @return array
@@ -545,7 +548,7 @@ class Cluster
     }
 
     /**
-     * is_leader ноды
+     * is_leader node
      *
      * @param $database_table
      * @return array

@@ -1,9 +1,9 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Quote;
 
 /**
- * @deprecated Оставлен для совместимости
+ * @deprecated Left for compatibility
  */
 class CSV
 {

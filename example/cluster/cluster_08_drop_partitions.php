@@ -1,18 +1,10 @@
 <?php
 
-include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/../../include.php';
+include_once __DIR__ . '/../lib_example.php';
 // load production config
+$config = include_once __DIR__ . '/00_config_connect.php';
 
-
-
-$config = [
-    'host' => 'tabix.dev7',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
-//
 
 
 $db = new ClickHouseDB\Client($config);

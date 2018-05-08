@@ -1,19 +1,9 @@
 <?php
 
-include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/../../include.php';
+include_once __DIR__ . '/../lib_example.php';
 
-
-//$config = [
-//    'host' => 'cluster.clickhouse.dns.com',
-//    'port' => '8123',
-//    'username' => 'default',
-//    'password' => ''
-//];
-//
-
-// load production config
-$config = include_once __DIR__ . '/../../_clickhouse_config_product.php';
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 // ----------------------------------------------------------------------
 $cl = new ClickHouseDB\Cluster($config);

@@ -1,8 +1,8 @@
 PHP ClickHouse wrapper
-===================
+=====================
 ## Features
 
-- No dependency, only curl
+- No dependency, only curl (php 5.6 without composer)
 - Select parallel queries (asynchronous)
 - Parallelizing bulk inserts from CSV file
 - enable_http_compression, for bulk inserts
@@ -16,10 +16,10 @@ PHP ClickHouse wrapper
 - Insert array as column
 - Get master node replica in cluster
 - Get tableSize in all nodes
-- Async get clickhouse progress
+- Async get ClickHouse progress function
 
 
-[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
+[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr 2](https://habrahabr.ru/company/smi2/blog/317682/) [on habr 1](https://habr.com/company/smi2/blog/314558/)
 
 ## Install composer
 
@@ -28,6 +28,9 @@ composer require smi2/phpclickhouse
 ```
 
 ### OR install submodule
+
+`composer` require php 7.1, but phpClickHouse can work on php >=5.6 without autoload and `composer`
+
 
 ```bash
 git submodule add https://github.com/smi2/phpClickHouse.git
@@ -38,6 +41,14 @@ git submodule update --init --recursive
 git submodule update --remote
 
 ```
+
+In php
+```php
+include_once __DIR__ . '/phpClickHouse/include.php';
+$db = new ClickHouseDB\Client(['config_array']);
+$db->ping();
+```
+
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
@@ -237,7 +248,14 @@ foreach ($result_insert as $fileName => $state) {
     echo $fileName . ' => ' . json_encode($state->info_upload()) . PHP_EOL;
 }
 ```
-see example/exam8_http_gzip_batch_insert.php
+
+see speed test `example/exam08_http_gzip_batch_insert.php`
+
+### Max execution time
+
+```php
+$db->settings()->max_execution_time(200); // second
+```
 
 ### tablesSize & databaseSize
 
@@ -270,8 +288,8 @@ print_r($db->dropPartition('summing_partions_views', '201512'));
 
 ```php
 $file_name_data1 = '/tmp/temp_csv.txt'; // two column file [int,string]
-$whereIn = new \ClickHouseDB\WhereInFile();
-$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
+$whereIn = new \ClickHouseDB\Query\WhereInFile();
+$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\Query\WhereInFile::FORMAT_CSV);
 $result = $db->select($sql, [], $whereIn);
 
 // see example/exam7_where_in.php
@@ -661,23 +679,59 @@ var_dump($cl->getError());
 
 ```
 
+### Return Extremes
+
+```php
+$db->enableExtremes(true);
+```
+
+### Enable Log Query
+
+You can log all query in ClickHouse
+
+```php
+$db->enableLogQueries();
+$db->select('SELECT 1 as p');
+print_r($db->select('SELECT * FROM system.query_log')->rows());
+```
+
+### isExists
+
+```php
+$db->isExists($database,$table);
+```
+
+
 ### Debug & Verbose
 
 ```php
-$cl->verbose();
+$db->verbose();
 ```
 
-### PHPUnit Test
+### Dev & PHPUnit Test
+
+
+* Don't forget to run composer install. It should setup PSR-4 autoloading.
+* Then you can simply run vendor/bin/phpunit and it should output the following
 
 In phpunit.xml change constants:
 ```xml
 <php>
-    <const name="phpunit_clickhouse_host" value="192.168.1.20" />
-    <const name="phpunit_clickhouse_port" value="8123" />
-    <const name="phpunit_clickhouse_user" value="default" />
-    <const name="phpunit_clickhouse_pass" value="" />
-    <const name="phpunit_clickhouse_tmp_path" value="/tmp/" />
+    <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
+    <env name="CLICKHOUSE_PORT" value="8123" />
+    <env name="CLICKHOUSE_USER" value="default" />
+    <env name="CLICKHOUSE_PASSWORD" value="" />
+    <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
 </php>
+```
+
+Run test
+```bash
+
+./vendor/bin/phpunit
+
+./vendor/bin/phpunit --group ClientTest
+
 ```
 
 License
@@ -687,6 +741,18 @@ MIT
 
 ChangeLog
 ---------
+### 2018-05-09
+* Move `\ClickHouseDB\WhereInFile` to `\ClickHouseDB\Query\WhereInFile`
+* Move `\ClickHouseDB\QueryException` to `\ClickHouseDB\Exception\QueryException`
+* Move `\ClickHouseDB\DatabaseException` to `ClickHouseDB\Exception\DatabaseException`
+* Move `\ClickHouseDB\FormatLine` to `\ClickHouseDB\Quote\FormatLine`
+* Move `\ClickHouseDB\WriteToFile` to `ClickHouseDB\Query\WriteToFile`
+* Move `\Curler\Request` to `\ClickHouseDB\Transport\CurlerRequest`
+* Move `\Curler\CurlerRolling` to `\ClickHouseDB\Transport\CurlerRolling`
+* Up to php 7.2 & phpunit 7.1 for Dev & Prs4 Autoloading
+
+
+
 ### 2018-03-26
 
 * Fix StreamInsert : one stream work faster and safe than loop #PR43

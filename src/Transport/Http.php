@@ -2,13 +2,12 @@
 
 namespace ClickHouseDB\Transport;
 
-use ClickHouseDB\Query;
+use ClickHouseDB\Query\Degeneration;
+use ClickHouseDB\Query\Query;
+use ClickHouseDB\Query\WhereInFile;
+use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Settings;
 use ClickHouseDB\Statement;
-use ClickHouseDB\WhereInFile;
-use ClickHouseDB\WriteToFile;
-use Curler\CurlerRolling;
-use Curler\Request;
 
 class Http
 {
@@ -53,7 +52,7 @@ class Http
     private $_query_degenerations = [];
 
     /**
-     * Количество секунд ожидания при попытке соединения
+     * Count seconds (int)
      *
      * @var int
      */
@@ -168,11 +167,11 @@ class Http
 
     /**
      * @param $extendinfo
-     * @return Request
+     * @return CurlerRequest
      */
     private function newRequest($extendinfo)
     {
-        $new = new \Curler\Request();
+        $new = new CurlerRequest();
         $new->auth($this->_username, $this->_password)
             ->POST()
             ->setRequestExtendedInfo($extendinfo);
@@ -196,7 +195,8 @@ class Http
      * @param Query $query
      * @param array $urlParams
      * @param bool $query_as_string
-     * @return Request
+     * @return CurlerRequest
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     private function makeRequest(Query $query, $urlParams = [], $query_as_string = false)
     {
@@ -232,8 +232,7 @@ class Http
 
     /**
      * @param $sql
-     * @param $stream
-     * @return Request
+     * @return CurlerRequest
      */
     public function writeStreamData($sql)
     {
@@ -260,6 +259,7 @@ class Http
      * @param $sql
      * @param $file_name
      * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function writeAsyncCSV($sql, $file_name)
     {
@@ -279,7 +279,7 @@ class Http
         $request = $this->newRequest($extendinfo);
         $request->url($url);
 
-        $request->setCallbackFunction(function (Request $request) {
+        $request->setCallbackFunction(function (CurlerRequest $request) {
             fclose($request->getInfileHandle());
         });
 
@@ -290,6 +290,8 @@ class Http
     }
 
     /**
+     * get Count Pending Query in Queue
+     *
      * @return int
      */
     public function getCountPendingQueue()
@@ -298,7 +300,7 @@ class Http
     }
 
     /**
-     * Количество секунд ожидания
+     * set Connect TimeOut in seconds [CURLOPT_CONNECTTIMEOUT] ( int )
      *
      * @param int $connectTimeOut
      */
@@ -308,7 +310,7 @@ class Http
     }
 
     /**
-     * Количество секунд ожидания
+     * get ConnectTimeOut in seconds
      *
      * @return int
      */
@@ -355,7 +357,9 @@ class Http
     /**
      * @param Query $query
      * @param null $whereInFile
-     * @return Request
+     * @param null $writeToFile
+     * @return CurlerRequest
+     * @throws \Exception
      */
     public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
     {
@@ -403,7 +407,7 @@ class Http
             }
 
 
-            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (Request $request) {
+            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (CurlerRequest $request) {
                 fclose($request->getResultFileHandle());
             });
         }
@@ -422,7 +426,7 @@ class Http
         return true;
     }
 
-    public function addQueryDegeneration(Query\Degeneration $degeneration)
+    public function addQueryDegeneration(Degeneration $degeneration)
     {
         $this->_query_degenerations[] = $degeneration;
         return true;
@@ -430,7 +434,7 @@ class Http
 
     /**
      * @param Query $query
-     * @return Request
+     * @return CurlerRequest
      */
     public function getRequestWrite(Query $query)
     {
@@ -454,11 +458,14 @@ class Http
         return new Query($sql, $this->_query_degenerations);
     }
 
+
     /**
      * @param $sql
      * @param $bindings
      * @param $whereInFile
-     * @return Request
+     * @param null $writeToFile
+     * @return CurlerRequest
+     * @throws \Exception
      */
     private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null)
     {
@@ -476,7 +483,7 @@ class Http
     /**
      * @param $sql
      * @param $bindings
-     * @return Request
+     * @return CurlerRequest
      */
     private function prepareWrite($sql, $bindings = [])
     {
@@ -515,7 +522,9 @@ class Http
      * @param $sql
      * @param array $bindings
      * @param null $whereInFile
+     * @param null $writeToFile
      * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
     {

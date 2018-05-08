@@ -1,8 +1,8 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-class Request
+class CurlerRequest
 {
     /**
      * @var array
@@ -95,7 +95,6 @@ class Request
     private $resultFileHandle = null;
 
     /**
-     * Request constructor.
      * @param bool $id
      */
     public function __construct($id = false)
@@ -131,9 +130,6 @@ class Request
     }
 
 
-    /**
-     *
-     */
     public function close()
     {
         if ($this->handle)
@@ -197,7 +193,7 @@ class Request
     }
 
     /**
-     * @return resource
+     * @return bool|resource
      */
     public function getInfileHandle()
     {
@@ -251,9 +247,6 @@ class Request
         $this->callback_functionName = $functionName;
     }
 
-    /**
-     *
-     */
     public function onCallback()
     {
         if ($this->callback_function) {
@@ -431,7 +424,7 @@ class Request
     }
 
     /**
-     * Количество секунд ожидания при попытке соединения. Используйте 0 для бесконечного ожидания.
+     * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
      *
      * @param int $seconds
      * @return $this
@@ -443,9 +436,9 @@ class Request
     }
 
     /**
-     * Максимально позволенное количество секунд для выполнения cURL-функций.
+     * The maximum number of seconds (float) allowed to execute cURL functions.
      *
-     * @param int $seconds
+     * @param float $seconds
      * @return $this
      */
     public function timeOut($seconds = 10)
@@ -454,12 +447,12 @@ class Request
     }
 
     /**
-     * Максимально позволенное количество миллисекунд для выполнения cURL-функций.
+     * The maximum allowed number of milliseconds to perform cURL functions.
      *
-     * @param int $ms
+     * @param int $ms millisecond
      * @return $this
      */
-    protected function timeOutMs($ms = 10)
+    protected function timeOutMs($ms = 10000)
     {
         $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;
@@ -469,7 +462,7 @@ class Request
     /**
      * @param $data
      * @return $this
-     * @throws \ClickHouseDB\TransportException
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function parameters_json($data)
     {
@@ -490,7 +483,7 @@ class Request
         $this->parameters = json_encode($data);
 
         if (!$this->parameters && $data) {
-            throw new \ClickHouseDB\TransportException('Cant json_encode: ' . $data);
+            throw new \ClickHouseDB\Exception\TransportException('Cant json_encode: ' . $data);
         }
 
         return $this;
@@ -527,7 +520,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function PUT()
     {
@@ -535,7 +528,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function POST()
     {
@@ -543,7 +536,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function OPTIONS()
     {
@@ -551,7 +544,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function GET()
     {
@@ -559,7 +552,7 @@ class Request
     }
 
     /**
-     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
      * @param $set
      * @return $this
@@ -571,7 +564,7 @@ class Request
     }
 
     /**
-     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
      * @return int
      */
@@ -591,13 +584,13 @@ class Request
     }
 
     /**
-     * @return \Curler\Response
-     * @throws \ClickHouseDB\TransportException
+     * @return CurlerResponse
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function response()
     {
         if (!$this->resp) {
-            throw new \ClickHouseDB\TransportException('Can`t fetch response - is empty');
+            throw new \ClickHouseDB\Exception\TransportException('Can`t fetch response - is empty');
         }
 
         return $this->resp;
@@ -611,12 +604,9 @@ class Request
         return ($this->resp ? true : false);
     }
 
-    /**
-     * @param Response $resp
-     */
-    public function setResponse(\Curler\Response $resp)
+    public function setResponse(CurlerResponse $response)
     {
-        $this->resp = $resp;
+        $this->resp = $response;
     }
 
     /**

@@ -3,16 +3,11 @@
 include_once __DIR__ . '/../include.php';
 include_once __DIR__ . '/lib_example.php';
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
-$create = false;
+$create = true;
 
 if ($create) {
     $db->write("DROP TABLE IF EXISTS summing_partions_views");

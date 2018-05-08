@@ -26,12 +26,8 @@ class CustomDegeneration implements \ClickHouseDB\Query\Degeneration
 }
 
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
+
 
 $db = new ClickHouseDB\Client($config);
 
