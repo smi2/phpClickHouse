@@ -3,6 +3,7 @@
 namespace ClickHouseDB\Query;
 
 use ClickHouseDB\Exception\QueryException;
+use function sizeof;
 
 class Query
 {
@@ -79,12 +80,9 @@ class Query
         return $this->format;
     }
 
-    /**
-     * @return string
-     */
-    public function toSql()
+    public function toSql() : string
     {
-        if (null !== $this->format) {
+        if ($this->format !== null) {
             $this->applyFormatQuery();
         }
 
@@ -92,8 +90,9 @@ class Query
         {
             foreach ($this->degenerations as $degeneration)
             {
-                if ($degeneration instanceof \ClickHouseDB\Query\Degeneration)
-                $this->sql=$degeneration->process($this->sql);
+                if ($degeneration instanceof Degeneration) {
+                    $this->sql=$degeneration->process($this->sql);
+                }
             }
         }
 

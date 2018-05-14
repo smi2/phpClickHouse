@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ruleset>
+    <arg name="basepath" value="."/>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg name="parallel" value="80"/>
+    <arg name="cache" value=".phpcs-cache"/>
+
+    <!-- Ignore warnings, show progress of the run and show sniff names -->
+    <arg value="nps"/>
+
+    <file>src</file>
+
+    <rule ref="Doctrine"/>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
+        <properties>
+            <property name="psr12Compatible" type="bool" value="true"/>
+        </properties>
+    </rule>
+
+</ruleset>
