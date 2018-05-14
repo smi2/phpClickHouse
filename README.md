@@ -740,6 +740,14 @@ Run test
 
 ./vendor/bin/phpunit --group ClientTest
 
+
+```
+
+
+Run PHPStan
+
+```
+./vendor/bin/phpstan analyse src tests example
 ```
 
 License
