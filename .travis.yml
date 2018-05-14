@@ -15,7 +15,6 @@ php:
   - nightly
 
 before_install:
-  - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
   - docker pull yandex/clickhouse-server
   - docker run -d -p 8123:8123 --name clickhouse --ulimit nofile=262144:262144 yandex/clickhouse-server
   - docker ps -a
@@ -54,3 +53,9 @@ jobs:
       install:
         - composer config minimum-stability dev
         - travis_retry composer update -n --prefer-dist
+
+after_script:
+  # upload clover.xml file to Scrutinizer to analyze it
+  - |
+    if [ "$TRAVIS_PHP_VERSION" == "7.1" ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
+    if [ "$TRAVIS_PHP_VERSION" == "7.1" ]; then php ocular.phar code-coverage:upload --format=php-clover temp/clover.xml; fi
