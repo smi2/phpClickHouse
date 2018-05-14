@@ -1,3 +1,5 @@
+.phpcs-cache
+phpcs.xml
 phpunit.xml
 composer.lock
 vendor/
