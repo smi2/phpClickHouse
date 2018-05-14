@@ -507,14 +507,16 @@ class Http
     /**
      * @param $sql
      * @param array $bindings
-     * @param null $whereInFile
+     * @param null|WhereInFile $whereInFile
+     * @param null|WriteToFile $writeToFile
      * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
+     * @throws \Exception
      */
     public function select($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
-        $code = $this->_curler->execOne($request);
-
+        $this->_curler->execOne($request);
         return new Statement($request);
     }
 
@@ -525,6 +527,7 @@ class Http
      * @param null $writeToFile
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
+     * @throws \Exception
      */
     public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
     {
@@ -540,17 +543,18 @@ class Http
     {
         $this->xClickHouseProgress=$callback;
     }
+
     /**
      * @param $sql
      * @param array $bindings
      * @param bool $exception
      * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function write($sql, array $bindings = [], $exception = true)
     {
         $request = $this->prepareWrite($sql, $bindings);
-        $code = $this->_curler->execOne($request);
-
+        $this->_curler->execOne($request);
         $response = new Statement($request);
         if ($exception) {
             if ($response->isError()) {

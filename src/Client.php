@@ -5,6 +5,7 @@ namespace ClickHouseDB;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Query\WhereInFile;
+use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Quote\FormatLine;
 use ClickHouseDB\Transport\Http;
 
@@ -319,6 +320,7 @@ class Client
      * @param array $bindings
      * @param bool $exception
      * @return Statement
+     * @throws Exception\TransportException
      */
     public function write($sql, $bindings = [], $exception = true)
     {
@@ -389,9 +391,11 @@ class Client
      *
      * @param $sql
      * @param array $bindings
-     * @param null $whereInFile
-     * @param null $writeToFile
+     * @param null|WhereInFile $whereInFile
+     * @param null|WriteToFile $writeToFile
      * @return Statement
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function select($sql, $bindings = [], $whereInFile = null, $writeToFile=null)
     {
@@ -424,7 +428,6 @@ class Client
         if (!$this->settings()->is('http_headers_progress_interval_ms'))
         {
             $this->settings()->set('http_headers_progress_interval_ms', 100);
-
         }
 
 
@@ -439,6 +442,8 @@ class Client
      * @param null $whereInFile
      * @param null $writeToFile
      * @return Statement
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function selectAsync($sql, $bindings = [], $whereInFile = null,$writeToFile=null)
     {
@@ -449,6 +454,8 @@ class Client
      * SHOW PROCESSLIST
      *
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function showProcesslist()
     {
@@ -459,6 +466,8 @@ class Client
      * show databases
      *
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function showDatabases()
     {
@@ -470,6 +479,8 @@ class Client
      *
      * @param $table
      * @return mixed
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function showCreateTable($table)
     {
@@ -480,6 +491,8 @@ class Client
      * SHOW TABLES
      *
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function showTables()
     {
@@ -503,6 +516,7 @@ class Client
      * @param $values
      * @param array $columns
      * @return Statement
+     * @throws Exception\TransportException
      */
     public function insert($table, $values, $columns = [])
     {
@@ -569,11 +583,13 @@ class Client
      * @param $file_names
      * @param $columns_array
      * @return mixed
+     * @throws Exception\TransportException
      */
     public function insertBatchTSVFiles($table_name, $file_names, $columns_array)
     {
         return $this->insertBatchFiles($table_name,$file_names,$columns_array,'TabSeparated');
     }
+
     /**
      * insert Batch Files
      *
@@ -582,6 +598,7 @@ class Client
      * @param $columns_array
      * @param $format string ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return array
+     * @throws Exception\TransportException
      */
     public function insertBatchFiles($table_name, $file_names, $columns_array,$format="CSV")
     {
@@ -669,6 +686,8 @@ class Client
      * Size of database
      *
      * @return mixed|null
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function databaseSize()
     {
@@ -703,6 +722,8 @@ class Client
      * ping & check
      *
      * @return bool
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function ping()
     {
@@ -713,7 +734,10 @@ class Client
     /**
      * Tables sizes
      *
+     * @param bool $flatList
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function tablesSize($flatList=false)
     {
@@ -744,6 +768,8 @@ class Client
      * @param $database
      * @param $table
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function isExists($database,$table)
     {
@@ -761,6 +787,8 @@ class Client
      * @param $table
      * @param int $limit
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function partitions($table, $limit = -1)
     {
@@ -796,6 +824,8 @@ class Client
      *
      * @param $tableName
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function truncateTable($tableName)
     {
@@ -816,6 +846,8 @@ class Client
      * @param $days_ago
      * @param int $count_partitons_per_one
      * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function dropOldPartitions($table_name, $days_ago, $count_partitons_per_one = 100)
     {
