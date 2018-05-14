@@ -1,17 +1,12 @@
 PHP ClickHouse wrapper
 ======================
 
-<p align="center">
-<a href="https://travis-ci.org/smi2/phpClickHouse/"><img src="https://travis-ci.org/smi2/phpClickHouse.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/smi2/phpClickHouse/"><img src="https://poser.pugx.org/smi2/phpClickHouse/license.svg" alt="License"></a>
-<a href="https://scan.coverity.com/projects/smi2-phpclickhouse"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/15720/badge.svg"/></a>
-</p>
-
-
-
-
+[![Build Status](https://img.shields.io/travis/smi2/phpClickHouse/master.svg)](https://travis-ci.org/smi2/phpClickHouse)
+[![Downloads](https://img.shields.io/github/downloads/smi2/phpClickHouse/total.svg)](https://packagist.org/packages/smi2/phpClickHouse)
+[![Packagist](https://img.shields.io/packagist/v/smi2/phpClickHouse.svg)](https://packagist.org/packages/smi2/phpClickHouse)
+[![Licence](https://img.shields.io/github/license/smi2/phpClickHouse.svg)](https://packagist.org/packages/smi2/phpClickHouse)
+[![Quality Score](https://img.shields.io/scrutinizer/g/smi2/phpClickHouse.svg)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
+[![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/smi2/phpClickHouse.svg)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
 
 ## Features
 

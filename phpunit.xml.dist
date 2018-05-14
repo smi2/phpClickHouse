@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/7.0/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          beStrictAboutChangesToGlobalState="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTodoAnnotatedTests="true"
@@ -16,4 +16,14 @@
             <directory suffix=".php">src</directory>
         </whitelist>
     </filter>
+
+    <logging>
+        <log
+                showOnlySummary="true"
+                showUncoveredFiles="true"
+                target="php://stdout"
+                type="coverage-text"
+        />
+        <log type="coverage-clover" target="temp/clover.xml"/>
+    </logging>
 </phpunit>
