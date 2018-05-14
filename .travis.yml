@@ -54,6 +54,10 @@ jobs:
         - composer config minimum-stability dev
         - travis_retry composer update -n --prefer-dist
 
+    - stage: Code Quality
+      install: travis_retry composer install --prefer-dist
+      script: vendor/bin/phpstan analyse -c phpstan.neon src
+
 after_script:
   # upload clover.xml file to Scrutinizer to analyze it
   - |

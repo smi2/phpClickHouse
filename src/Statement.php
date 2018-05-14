@@ -35,6 +35,9 @@ class Statement
      */
     private $query;
 
+    /** @var mixed */
+    private $format;
+
     /**
      * @var string
      */

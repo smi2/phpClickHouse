@@ -3,7 +3,6 @@
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
-use ClickHouseDB\Exception;
 use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\WhereInFile;
@@ -24,9 +23,6 @@ class ClientTest extends TestCase
 {
     use WithClient;
 
-    /**
-     * @throws Exception
-     */
     public function setUp()
     {
         date_default_timezone_set('Europe/Moscow');
