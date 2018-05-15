@@ -13,7 +13,7 @@ class Query
     protected $sql;
 
     /**
-     * @var null
+     * @var string|null
      */
     protected $format = null;
 
@@ -74,13 +74,17 @@ class Query
 
 
     }
+
+    /**
+     * @return null|string
+     */
     public function getFormat()
     {
 
         return $this->format;
     }
 
-    public function toSql() : string
+    public function toSql()
     {
         if ($this->format !== null) {
             $this->applyFormatQuery();
