@@ -747,7 +747,11 @@ Run test
 Run PHPStan
 
 ```
-./vendor/bin/phpstan analyse src tests example
+# Main
+./vendor/bin/phpstan analyse src tests
+
+# Examples
+./vendor/bin/phpstan analyse example -a ./example/Helper.php
 ```
 
 License

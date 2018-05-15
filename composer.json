@@ -28,7 +28,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "ClickHouseDB\\Tests\\": "tests/"
+      "ClickHouseDB\\Tests\\": "tests/",
+      "ClickHouseDB\\Example\\": "example/"
     }
   }
 }

@@ -1,7 +1,11 @@
 <?php
 
 include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/Helper.php';
+\ClickHouseDB\Example\Helper::init();
+
+
+
 
 $config = include_once __DIR__ . '/00_config_connect.php';
 
@@ -39,7 +43,7 @@ $file_data_names = [
 ];
 
 foreach ($file_data_names as $file_name) {
-    makeSomeDataFile($file_name, 5);
+    \ClickHouseDB\Example\Helper::makeSomeDataFile($file_name, 5);
 }
 
 // ----------------------------------------------------------------------------------------------------

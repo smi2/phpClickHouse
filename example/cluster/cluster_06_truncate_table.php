@@ -1,7 +1,8 @@
 <?php
 
 include_once __DIR__ . '/../../include.php';
-include_once __DIR__ . '/../lib_example.php';
+include_once __DIR__ . '/../Helper.php';
+\ClickHouseDB\Example\Helper::init();
 // load production config
 $config = include_once __DIR__ . '/00_config_connect.php';
 
@@ -25,7 +26,7 @@ foreach ($tables as $dbtable=>$tmp)
     $size=$cl->getSizeTable($dbtable);
 
 
-    echo "\t".humanFileSize($size)."\n";
+    echo "\t".\ClickHouseDB\Example\Helper::humanFileSize($size)."\n";
 
 }
 

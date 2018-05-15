@@ -1,6 +1,7 @@
 <?php
 include_once __DIR__ . '/../../include.php';
-include_once __DIR__ . '/../lib_example.php';
+include_once __DIR__ . '/../Helper.php';
+\ClickHouseDB\Example\Helper::init();
 
 $config = include_once __DIR__ . '/00_config_connect.php';
 

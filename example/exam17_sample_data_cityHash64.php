@@ -1,7 +1,8 @@
 <?php
 
 include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/Helper.php';
+\ClickHouseDB\Example\Helper::init();
 
 $config = include_once __DIR__ . '/00_config_connect.php';
 
@@ -48,7 +49,7 @@ if ($_flag_create_table) {
     foreach ($file_data_names as $file_name) {
         $c++;
         $shift_days=( -1* $c*3);
-        makeSomeDataFileBig($file_name, 23 * $c,$shift_days);
+        \ClickHouseDB\Example\Helper::makeSomeDataFileBig($file_name, 23 * $c,$shift_days);
     }
 
     echo "----------------------------------------------------------------------------------------------------\n";

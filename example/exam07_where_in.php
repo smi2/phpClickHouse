@@ -1,8 +1,11 @@
 <?php
 
 include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
-include_once __DIR__ . '/../../_clickhouse_config_product.php';
+include_once __DIR__ . '/Helper.php';
+\ClickHouseDB\Example\Helper::init();
+
+
+
 
 $config = include_once __DIR__ . '/00_config_connect.php';
 
@@ -17,8 +20,8 @@ $file_name_data1 = "/tmp/temp_csv.txt";
 $file_name_data2 = "/tmp/site_keys.data";
 
 // create CSV file
-makeListSitesKeysDataFile($file_name_data1, 1000, 2000); // see lib_example.php
-makeListSitesKeysDataFile($file_name_data2, 5000, 6000); // see lib_example.php
+\ClickHouseDB\Example\Helper::makeListSitesKeysDataFile($file_name_data1, 1000, 2000); // see lib_example.php
+\ClickHouseDB\Example\Helper::makeListSitesKeysDataFile($file_name_data2, 5000, 6000); // see lib_example.php
 
 
 // create WhereInFile
