@@ -30,7 +30,7 @@ class WriteToFile
     private $gzip=false;
     /**
      * WriteToFile constructor.
-     * @param $file_name
+     * @param string $file_name
      * @param bool $overwrite
      * @param null $format
      */
@@ -74,7 +74,7 @@ class WriteToFile
     }
 
     /**
-     * @param $flag
+     * @param bool $flag
      */
     public function setGzip($flag)
     {
@@ -82,7 +82,7 @@ class WriteToFile
     }
 
     /**
-     * @param $format
+     * @param string $format
      */
     public function setFormat($format)
     {

@@ -65,10 +65,10 @@ class Http
 
     /**
      * Http constructor.
-     * @param $host
-     * @param $port
-     * @param $username
-     * @param $password
+     * @param string $host
+     * @param string $port
+     * @param string $username
+     * @param string $password
      */
     public function __construct($host, $port, $username, $password)
     {

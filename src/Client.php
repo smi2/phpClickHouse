@@ -14,27 +14,27 @@ class Client
     /**
      * @var Http
      */
-    private $_transport = false;
+    private $_transport = null;
 
     /**
      * @var string
      */
-    private $_connect_username = false;
+    private $_connect_username = '';
 
     /**
      * @var string
      */
-    private $_connect_password = false;
+    private $_connect_password = '';
 
     /**
      * @var string
      */
-    private $_connect_host = false;
+    private $_connect_host = '';
 
     /**
-     * @var int
+     * @var string
      */
-    private $_connect_port = false;
+    private $_connect_port = '';
 
     /**
      * @var bool
@@ -156,7 +156,7 @@ class Client
     /**
      * Set connection host
      *
-     * @param string $host
+     * @param string|array $host
      */
     public function setHost($host)
     {
@@ -581,8 +581,8 @@ class Client
      * insert TabSeparated files
      *
      * @param string $table_name
-     * @param $file_names
-     * @param $columns_array
+     * @param string|array $file_names
+     * @param array $columns_array
      * @return mixed
      * @throws Exception\TransportException
      */
@@ -597,7 +597,7 @@ class Client
      * @param string $table_name
      * @param string|array $file_names
      * @param array $columns_array
-     * @param $format string ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return array
      * @throws Exception\TransportException
      */
@@ -652,9 +652,9 @@ class Client
     /**
      * insert Batch Stream
      *
-     * @param $table_name
-     * @param $columns_array
-     * @param string $format
+     * @param string $table_name
+     * @param array $columns_array
+     * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return Transport\CurlerRequest
      */
     public function insertBatchStream($table_name, $columns_array,$format="CSV")
@@ -705,8 +705,10 @@ class Client
     /**
      * Size of tables
      *
-     * @param $tableName
+     * @param string $tableName
      * @return mixed
+     * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function tableSize($tableName)
     {
@@ -766,8 +768,8 @@ class Client
     /**
      * isExists
      *
-     * @param $database
-     * @param $table
+     * @param string $database
+     * @param string $table
      * @return array
      * @throws Exception\TransportException
      * @throws \Exception
@@ -785,7 +787,7 @@ class Client
     /**
      * List of partitions
      *
-     * @param $table
+     * @param string $table
      * @param int $limit
      * @return array
      * @throws Exception\TransportException
@@ -804,9 +806,10 @@ class Client
     /**
      * dropPartition
      *
-     * @param $dataBaseTableName database_name.table_name
-     * @param $partition_id
+     * @param string $dataBaseTableName database_name.table_name
+     * @param string $partition_id
      * @return Statement
+     * @throws Exception\TransportException
      */
     public function dropPartition($dataBaseTableName, $partition_id)
     {
@@ -823,7 +826,7 @@ class Client
     /**
      * Truncate ( drop all partitions )
      *
-     * @param $tableName
+     * @param string $tableName
      * @return array
      * @throws Exception\TransportException
      * @throws \Exception
@@ -843,8 +846,8 @@ class Client
     /**
      * dropOldPartitions by day_ago
      *
-     * @param $table_name
-     * @param $days_ago
+     * @param string $table_name
+     * @param int $days_ago
      * @param int $count_partitons_per_one
      * @return array
      * @throws Exception\TransportException

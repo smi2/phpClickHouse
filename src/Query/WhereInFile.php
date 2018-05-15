@@ -26,9 +26,9 @@ class WhereInFile
 
 
     /**
-     * @param $file_name
-     * @param $table_name
-     * @param $structure
+     * @param string $file_name
+     * @param string $table_name
+     * @param string $structure
      * @param string $format
      */
     public function attachFile($file_name, $table_name, $structure, $format = 'CSV')
@@ -66,7 +66,7 @@ class WhereInFile
     }
 
     /**
-     * @param $table
+     * @param string $table
      * @return string
      */
     public function fetchStructure($table)

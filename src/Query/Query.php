@@ -24,7 +24,7 @@ class Query
 
     /**
      * Query constructor.
-     * @param $sql
+     * @param string $sql
      * @param array $degenerations
      */
     public function __construct($sql,$degenerations=[])
@@ -38,7 +38,7 @@ class Query
     }
 
     /**
-     * @param $format
+     * @param string|null $format
      */
     public function setFormat($format)
     {

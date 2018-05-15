@@ -63,7 +63,7 @@ class Conditions implements Degeneration
     }
 
     /**
-     * @param $sql
+     * @param string $sql
      * @return mixed
      */
     public function process($sql)

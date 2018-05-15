@@ -365,10 +365,10 @@ class Statement
         return $this->response()->rawDataOrJson($this->format);
     }
     /**
-     * @param bool $key
+     * @param string $key
      * @return mixed|null
      */
-    public function fetchOne($key = false)
+    public function fetchOne($key = '')
     {
         $this->init();
 

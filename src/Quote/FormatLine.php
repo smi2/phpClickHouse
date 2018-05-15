@@ -13,7 +13,7 @@ class FormatLine
     /**
      * Format
      *
-     * @param $format
+     * @param string $format
      * @return StrictQuoteLine
      */
     private static function strictQuote($format)
