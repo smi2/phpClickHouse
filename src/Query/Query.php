@@ -59,8 +59,8 @@ class Query
             // skip add "format json"
             if (isset($matches[0]))
             {
-                $format=trim(str_ireplace('format','',$matches[0][0]));
-                $this->format=$format;
+
+                $this->format=trim(str_ireplace('format','',$matches[0][0]));
 
             }
         }

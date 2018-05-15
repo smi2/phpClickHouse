@@ -47,7 +47,7 @@ class Client
 
     /**
      * Client constructor.
-     * @param $connect_params
+     * @param array $connect_params
      * @param array $settings
      */
     public function __construct($connect_params, $settings = [])
@@ -116,7 +116,7 @@ class Client
     /**
      * if the user has only read in the config file
      *
-     * @param $flag
+     * @param bool $flag
      */
     public function setReadOnlyUser($flag)
     {
@@ -156,7 +156,7 @@ class Client
     /**
      * Set connection host
      *
-     * @param $host
+     * @param string $host
      */
     public function setHost($host)
     {
@@ -173,7 +173,7 @@ class Client
     /**
      * Таймаут
      *
-     * @param $timeout
+     * @param int $timeout
      * @return Settings
      */
     public function setTimeout($timeout)
@@ -316,7 +316,7 @@ class Client
     /**
      * Query CREATE/DROP
      *
-     * @param $sql
+     * @param string $sql
      * @param array $bindings
      * @param bool $exception
      * @return Statement
@@ -329,7 +329,7 @@ class Client
 
     /**
      * set db name
-     * @param $db
+     * @param string $db
      * @return $this
      */
     public function database($db)
@@ -389,7 +389,7 @@ class Client
     /**
      * SELECT
      *
-     * @param $sql
+     * @param string $sql
      * @param array $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
@@ -406,6 +406,7 @@ class Client
      * execute run
      *
      * @return bool
+     * @throws Exception\TransportException
      */
     public function executeAsync()
     {
@@ -415,7 +416,7 @@ class Client
     /**
      * set progressFunction
      *
-     * @param $callback
+     * @param callable $callback
      */
     public function progressFunction($callback)
     {
@@ -437,7 +438,7 @@ class Client
     /**
      * prepare select
      *
-     * @param $sql
+     * @param string $sql
      * @param array $bindings
      * @param null $whereInFile
      * @param null $writeToFile
@@ -477,7 +478,7 @@ class Client
     /**
      * statement = SHOW CREATE TABLE
      *
-     * @param $table
+     * @param string $table
      * @return mixed
      * @throws Exception\TransportException
      * @throws \Exception
@@ -512,8 +513,8 @@ class Client
     /**
      * Insert Array
      *
-     * @param $table
-     * @param $values
+     * @param string $table
+     * @param array $values
      * @param array $columns
      * @return Statement
      * @throws Exception\TransportException
@@ -539,7 +540,7 @@ class Client
       * Prepares the values to insert from the associative array.
       * There may be one or more lines inserted, but then the keys inside the array list must match (including in the sequence)
       *
-      * @param array $ values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+      * @param array $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
       * @return array - list of arrays - 0 => fields, 1 => list of value arrays for insertion
       */
     public function prepareInsertAssocBulk(array $values)
@@ -579,7 +580,7 @@ class Client
     /**
      * insert TabSeparated files
      *
-     * @param $table_name
+     * @param string $table_name
      * @param $file_names
      * @param $columns_array
      * @return mixed
@@ -593,9 +594,9 @@ class Client
     /**
      * insert Batch Files
      *
-     * @param $table_name
-     * @param $file_names
-     * @param $columns_array
+     * @param string $table_name
+     * @param string|array $file_names
+     * @param array $columns_array
      * @param $format string ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return array
      * @throws Exception\TransportException
