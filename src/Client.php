@@ -306,7 +306,7 @@ class Client
         return $this;
     }
     /**
-     * @return string
+     * @return mixed
      */
     public function getSession()
     {

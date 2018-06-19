@@ -503,7 +503,6 @@ class Cluster
      */
     public function getSizeTable($database_table)
     {
-       $list=[];
        $nodes=$this->getNodesByTable($database_table);
         // scan need node`s
         foreach ($nodes as $node)
