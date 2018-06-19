@@ -83,7 +83,7 @@ class Statement
     /**
      * @var array|null
      */
-    private $statistics=null;
+    private $statistics = null;
 
 
     public function __construct(CurlerRequest $request)
@@ -160,7 +160,7 @@ class Statement
 
         $body = $this->response()->body();
         $error_no = $this->response()->error_no();
-        $error=$this->response()->error();
+        $error = $this->response()->error();
 
         if (!$error_no && !$error) {
             $parse = $this->parseErrorClickHouse($body);
@@ -170,7 +170,7 @@ class Statement
             }
             else {
                 $code = $this->response()->http_code();
-                $message = "HttpCode:" . $this->response()->http_code() . " ; ".$this->response()->error()." ;" . $body;
+                $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
             }
         }
         else {
@@ -227,7 +227,7 @@ class Statement
             return false;
         }
 
-        foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least','statistics'] as $key) {
+        foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least', 'statistics'] as $key) {
             if (isset($this->_rawData[$key])) {
                 $this->{$key} = $this->_rawData[$key];
             }
@@ -344,7 +344,7 @@ class Statement
      * @return array|mixed|null
      * @throws Exception\TransportException
      */
-    public function statistics($key=false)
+    public function statistics($key = false)
     {
         $this->init();
         if ($key)
