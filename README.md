@@ -788,6 +788,12 @@ MIT
 
 ChangeLog
 ---------
+### 2018-06-19
+* Add DataTime Interface for Bind
+* Fix phpDoc
+* `Composer->require->"php": ">=5.6"`
+
+
 ### 2018-05-09
 * Move `\ClickHouseDB\WhereInFile` to `\ClickHouseDB\Query\WhereInFile`
 * Move `\ClickHouseDB\QueryException` to `\ClickHouseDB\Exception\QueryException`
