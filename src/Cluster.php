@@ -218,7 +218,6 @@ class Cluster
     {
         // If you query all the columns, then the table may work slightly slow, since there are several readings from ZK per line.
         // If you do not query the last 4 columns (log_max_index, log_pointer, total_replicas, active_replicas), then the table works quickly.        if ($this->softCheck)
-        {
 
             return 'SELECT 
             database,table,engine,is_leader,is_readonly,
@@ -226,11 +225,12 @@ class Cluster
             queue_size,inserts_in_queue,merges_in_queue,queue_oldest_time,inserts_oldest_time,merges_oldest_time			
             FROM system.replicas
         ';
-        }
-        return 'SELECT * FROM system.replicas';
+        //        return 'SELECT * FROM system.replicas';
     }
+
     /**
      * @return $this
+     * @throws Exception\TransportException
      */
     public function rescan()
     {
