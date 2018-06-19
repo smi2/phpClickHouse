@@ -303,9 +303,29 @@ $result = $db->select($sql, [], $whereIn);
 // see example/exam7_where_in.php
 ```
 
-### Simple sql conditions & template
 
-conditions is deprecated, if need use:
+### Bindings
+
+Bindings:
+
+```php
+$date1 = new DateTime("now"); // DateTimeInterface
+
+$Bindings = [
+  'select_date' => ['2000-10-10', '2000-10-11', '2000-10-12'],
+  'datetime'=>$date,
+  'limit' => 5,
+  'from_table' => 'table'
+];
+
+$statement = $db->selectAsync($select, $Bindings);
+
+```
+
+
+#### Simple sql conditions & template
+
+Conditions is deprecated, if need use:
 `$db->enableQueryConditions();`
 
 Example with QueryConditions:
