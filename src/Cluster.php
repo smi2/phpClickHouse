@@ -27,7 +27,7 @@ class Cluster
     private $badNodes = [];
 
     /**
-     * @var array
+     * @var array|bool
      */
     private $error = [];
     /**
@@ -35,12 +35,12 @@ class Cluster
      */
     private $resultScan = [];
     /**
-     * @var bool
+     * @var string
      */
     private $defaultHostName;
 
     /**
-     * @var int
+     * @var int|float
      */
     private $scanTimeOut=10;
 
@@ -82,9 +82,8 @@ class Cluster
     /**
      * Cluster constructor.
      *
-     * @param $connect_params
+     * @param array $connect_params
      * @param array $settings
-     * @param int $scanTimeOut
      */
     public function __construct($connect_params, $settings = [])
     {
@@ -102,7 +101,7 @@ class Cluster
     }
 
     /**
-     * @param $softCheck
+     * @param bool $softCheck
      */
     public function setSoftCheck($softCheck)
     {
@@ -110,7 +109,7 @@ class Cluster
     }
 
     /**
-     * @param $scanTimeOut
+     * @param float|integer $scanTimeOut
      */
     public function setScanTimeOut($scanTimeOut)
     {
@@ -118,7 +117,7 @@ class Cluster
     }
 
     /**
-     * @param $nodes
+     * @param array $nodes
      */
     public function setNodes($nodes)
     {
@@ -146,6 +145,7 @@ class Cluster
      * Connect all nodes and scan
      *
      * @return $this
+     * @throws Exception\TransportException
      */
     public function connect()
     {
@@ -156,11 +156,11 @@ class Cluster
     }
 
     /**
-     * Проверяете состояние кластера, запрос взят из документации к CH
-     * total_replicas<2 - не подходит для без репликационных кластеров
+     * Check the status of the cluster, the request is taken from the documentation for CH
+     * total_replicas <2 - not suitable for no replication clusters
      *
      *
-     * @param $replicas
+     * @param array $replicas
      * @return bool
      */
     private function isReplicasWork($replicas)
@@ -336,6 +336,7 @@ class Cluster
 
     /**
      * @return boolean
+     * @throws Exception\TransportException
      */
     public function isReplicasIsOk()
     {
@@ -343,6 +344,7 @@ class Cluster
     }
 
     /**
+     * @param  string $node
      * @return Client
      */
     public function client($node)
@@ -359,6 +361,7 @@ class Cluster
 
     /**
      * @return Client
+     * @throws Exception\TransportException
      */
     public function clientLike($cluster,$ip_addr_like)
     {
@@ -401,8 +404,9 @@ class Cluster
     }
 
     /**
-     * @param $cluster
+     * @paramstring $cluster
      * @return int
+     * @throws Exception\TransportException
      */
     public function getClusterCountShard($cluster)
     {
@@ -415,8 +419,9 @@ class Cluster
     }
 
     /**
-     * @param $cluster
+     * @paramstring $cluster
      * @return int
+     * @throws Exception\TransportException
      */
     public function getClusterCountReplica($cluster)
     {
@@ -429,8 +434,9 @@ class Cluster
     }
 
     /**
-     * @param $cluster
+     * @paramstring $cluster
      * @return mixed
+     * @throws Exception\TransportException
      */
     public function getClusterInfoTable($cluster)
     {
@@ -440,8 +446,9 @@ class Cluster
     }
 
     /**
-     * @param $cluster
+     * @paramstring $cluster
      * @return array
+     * @throws Exception\TransportException
      */
     public function getClusterNodes($cluster)
     {
@@ -450,6 +457,7 @@ class Cluster
 
     /**
      * @return array
+     * @throws Exception\TransportException
      */
     public function getClusterList()
     {
@@ -461,6 +469,7 @@ class Cluster
      * list all tables on all nodes
      *
      * @return array
+     * @throws Exception\TransportException
      */
     public function getTables($resultDetail=false)
     {
@@ -487,9 +496,10 @@ class Cluster
     /**
      * Table size on cluster
      *
-     * @param $database_table
-     * @return array
+     * @param string $database_table
+     * @return array|null
      *
+     * @throws Exception\TransportException
      */
     public function getSizeTable($database_table)
     {
@@ -528,8 +538,9 @@ class Cluster
     /**
      * Truncate on all nodes
      *
-     * @param $database_table
+     * @param string $database_table
      * @return array
+     * @throws Exception\TransportException
      */
     public function truncateTable($database_table,$timeOut=2000)
     {
@@ -550,8 +561,9 @@ class Cluster
     /**
      * is_leader node
      *
-     * @param $database_table
+     * @param string $database_table
      * @return array
+     * @throws Exception\TransportException
      */
     public function getMasterNodeForTable($database_table)
     {
@@ -570,8 +582,9 @@ class Cluster
     /**
      * Find nodes by : db_name.table_name
      *
-     * @param $database_table
+     * @param string $database_table
      * @return array
+     * @throws Exception\TransportException
      */
     public function getNodesByTable($database_table)
     {
@@ -585,7 +598,7 @@ class Cluster
     /**
      * Error string
      *
-     * @return string
+     * @return string|bool
      */
     public function getError()
     {

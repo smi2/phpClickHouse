@@ -768,10 +768,17 @@ Run PHPStan
 
 ```
 # Main
-./vendor/bin/phpstan analyse src tests
+./vendor/bin/phpstan analyse src tests --level 7
+# SRC only
+./vendor/bin/phpstan analyse src --level 7
+
+
 
 # Examples
 ./vendor/bin/phpstan analyse example -a ./example/Helper.php
+
+
+
 ```
 
 License

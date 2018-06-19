@@ -32,19 +32,19 @@ class Http
     private $_port = 0;
 
     /**
-     * @var bool
+     * @var bool|int
      */
     private $_verbose = false;
 
     /**
      * @var CurlerRolling
      */
-    private $_curler = false;
+    private $_curler = null;
 
     /**
      * @var Settings
      */
-    private $_settings = false;
+    private $_settings = null;
 
     /**
      * @var array
@@ -59,14 +59,14 @@ class Http
     private $_connectTimeOut = 5;
 
     /**
-     * @var bool
+     * @var callable
      */
-    private $xClickHouseProgress=false;
+    private $xClickHouseProgress=null;
 
     /**
      * Http constructor.
      * @param string $host
-     * @param string $port
+     * @param int $port
      * @param string $username
      * @param string $password
      */
@@ -96,7 +96,7 @@ class Http
     }
 
     /**
-     * @param $host
+     * @param string $host
      * @param int $port
      */
     public function setHost($host, $port = -1)
@@ -128,7 +128,7 @@ class Http
     }
 
     /**
-     * @param $flag
+     * @param bool|int $flag
      * @return mixed
      */
     public function verbose($flag)
@@ -166,7 +166,7 @@ class Http
     }
 
     /**
-     * @param $extendinfo
+     * @param array $extendinfo
      * @return CurlerRequest
      */
     private function newRequest($extendinfo)
@@ -186,7 +186,7 @@ class Http
 
         $new->timeOut($this->settings()->getTimeOut());
         $new->connectTimeOut($this->_connectTimeOut)->keepAlive();// one sec
-        $new->verbose($this->_verbose);
+        $new->verbose(boolval($this->_verbose));
 
         return $new;
     }
@@ -231,7 +231,7 @@ class Http
     }
 
     /**
-     * @param $sql
+     * @param string $sql
      * @return CurlerRequest
      */
     public function writeStreamData($sql)
@@ -256,8 +256,8 @@ class Http
 
 
     /**
-     * @param $sql
-     * @param $file_name
+     * @param string $sql
+     * @param string $file_name
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -356,8 +356,8 @@ class Http
 
     /**
      * @param Query $query
-     * @param null $whereInFile
-     * @param null $writeToFile
+     * @param null|WhereInFile $whereInFile
+     * @param null|WriteToFile $writeToFile
      * @return CurlerRequest
      * @throws \Exception
      */
@@ -435,6 +435,7 @@ class Http
     /**
      * @param Query $query
      * @return CurlerRequest
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function getRequestWrite(Query $query)
     {
@@ -443,8 +444,8 @@ class Http
     }
 
     /**
-     * @param $sql
-     * @param $bindings
+     * @param string $sql
+     * @param array $bindings
      * @return Query
      */
     private function prepareQuery($sql, $bindings)
@@ -460,10 +461,10 @@ class Http
 
 
     /**
-     * @param $sql
-     * @param $bindings
-     * @param $whereInFile
-     * @param null $writeToFile
+     * @param Query|string $sql
+     * @param array $bindings
+     * @param null|WhereInFile $whereInFile
+     * @param null|WriteToFile $writeToFile
      * @return CurlerRequest
      * @throws \Exception
      */
@@ -481,9 +482,10 @@ class Http
     }
 
     /**
-     * @param $sql
-     * @param $bindings
+     * @param Query|string $sql
+     * @param array $bindings
      * @return CurlerRequest
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     private function prepareWrite($sql, $bindings = [])
     {
@@ -496,8 +498,8 @@ class Http
     }
 
     /**
-     *
      * @return bool
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function executeAsync()
     {
@@ -505,7 +507,7 @@ class Http
     }
 
     /**
-     * @param $sql
+     * @param Query|string $sql
      * @param array $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
@@ -521,7 +523,7 @@ class Http
     }
 
     /**
-     * @param $sql
+     * @param Query|string $sql
      * @param array $bindings
      * @param null $whereInFile
      * @param null $writeToFile
@@ -537,7 +539,7 @@ class Http
     }
 
     /**
-     * @param $callback
+     * @param callable $callback
      */
     public function setProgressFunction(callable $callback)
     {
@@ -545,7 +547,7 @@ class Http
     }
 
     /**
-     * @param $sql
+     * @param string $sql
      * @param array $bindings
      * @param bool $exception
      * @return Statement

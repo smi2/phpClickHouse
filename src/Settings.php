@@ -7,9 +7,9 @@ use ClickHouseDB\Transport\Http;
 class Settings
 {
     /**
-     * @var Client
+     * @var Http
      */
-    private $client = false;
+    private $client = null;
 
     /**
      * @var array
@@ -42,16 +42,17 @@ class Settings
     }
 
     /**
-     * @param $key
+     * @param string|int $key
      * @return mixed
      */
     public function get($key)
     {
+        if (!$this->is($key)) return null;
         return $this->settings[$key];
     }
 
     /**
-     * @param $key
+     * @param string|int $key
      * @return bool
      */
     public function is($key)
@@ -61,8 +62,8 @@ class Settings
 
 
     /**
-     * @param $key
-     * @param $value
+     * @param string|int $key
+     * @param mixed $value
      * @return $this
      */
     public function set($key, $value)
@@ -80,7 +81,7 @@ class Settings
     }
 
     /**
-     * @param $db
+     * @param string $db
      * @return $this
      */
     public function database($db)
@@ -106,7 +107,7 @@ class Settings
     }
 
     /**
-     * @param $flag
+     * @param bool|int $flag
      * @return $this
      */
     public function enableHttpCompression($flag)
@@ -129,7 +130,7 @@ class Settings
 
 
     /**
-     * @param $flag
+     * @param int|bool $flag
      * @return $this
      */
     public function readonly($flag)
@@ -139,7 +140,7 @@ class Settings
     }
 
     /**
-     * @param $session_id
+     * @param string $session_id
      * @return $this
      */
     public function session_id($session_id)
@@ -148,7 +149,7 @@ class Settings
         return $this;
     }
     /**
-     * @return string
+     * @return mixed
      */
     public function getSessionId()
     {
@@ -166,7 +167,7 @@ class Settings
     }
 
     /**
-     * @param $time
+     * @param int $time
      * @return $this
      */
     public function max_execution_time($time)
@@ -184,7 +185,7 @@ class Settings
     }
 
     /**
-     * @param $settings_array
+     * @param array $settings_array
      * @return $this
      */
     public function apply($settings_array)
@@ -197,7 +198,7 @@ class Settings
     }
 
     /**
-     * @param $flag
+     * @param int|bool $flag
      */
     public function setReadOnlyUser($flag)
     {
@@ -205,8 +206,7 @@ class Settings
     }
 
     /**
-     *
-     *
+     * @return bool
      */
     public function isReadOnlyUser()
     {
@@ -214,7 +214,7 @@ class Settings
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return mixed|null
      */
     public function getSetting($name)

@@ -14,11 +14,11 @@ class CurlerRolling
     private $simultaneousLimit = 10;
 
     /**
-     * @var CurlerRequest[]
+     * @var array
      *
      * Requests currently being processed by curl
      */
-    private $activeRequests = array();
+    private $activeRequests = [];
 
     /**
      * @var int
@@ -30,7 +30,7 @@ class CurlerRolling
      *
      * Requests queued to be processed
      */
-    private $pendingRequests = array();
+    private $pendingRequests = [];
 
     /**
      * @return int
@@ -50,7 +50,7 @@ class CurlerRolling
     /**
      * @var array
      */
-    private $handleMapTasks = array();
+    private $handleMapTasks = [];
 
     /**
      *
@@ -116,7 +116,7 @@ class CurlerRolling
     }
 
     /**
-     * @param $oneHandle
+     * @param resource $oneHandle
      * @return CurlerResponse
      */
     private function makeResponse($oneHandle)
@@ -165,12 +165,12 @@ class CurlerRolling
     }
 
     /**
-     * @param $response
+     * @param resource $response
      * @return array
      */
     private function parse_headers_from_curl_response($response)
     {
-        $headers = array();
+        $headers = [];
         $header_text = $response;
 
         foreach (explode("\r\n", $header_text) as $i => $line) {
@@ -339,9 +339,9 @@ class CurlerRolling
         if ($active < $max) {
 
             $canAdd = $max - $active;
-            $pending = sizeof($this->pendingRequests);
+//            $pending = sizeof($this->pendingRequests);
 
-            $add = array();
+            $add = [];
 
 
             foreach ($this->pendingRequests as $task_id => $params) {
@@ -371,7 +371,7 @@ class CurlerRolling
     }
 
     /**
-     * @param $task_id
+     * @param string $task_id
      */
     private function _prepareLoopQue($task_id)
     {

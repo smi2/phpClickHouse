@@ -11,7 +11,7 @@ use ClickHouseDB\Transport\CurlerResponse;
 class Statement
 {
     /**
-     * @var
+     * @var string
      */
     private $_rawData;
 
@@ -21,7 +21,7 @@ class Statement
     private $_http_code = -1;
 
     /**
-     * @var CurlerRequest|null
+     * @var CurlerRequest
      */
     private $_request = null;
 
@@ -35,13 +35,15 @@ class Statement
      */
     private $query;
 
-    /** @var mixed */
+    /**
+     * @var mixed
+     */
     private $format;
 
     /**
      * @var string
      */
-    private $sql = false;
+    private $sql = '';
 
     /**
      * @var array
@@ -69,7 +71,7 @@ class Statement
     private $rows;
 
     /**
-     * @var
+     * @var bool|integer
      */
     private $rows_before_limit_at_least = false;
 
@@ -99,14 +101,20 @@ class Statement
     {
         return $this->_request;
     }
+
     /**
      * @return CurlerResponse
+     * @throws Exception\TransportException
      */
     private function response()
     {
         return $this->_request->response();
     }
 
+    /**
+     * @return mixed
+     * @throws Exception\TransportException
+     */
     public function responseInfo()
     {
         return $this->response()->info();
@@ -121,7 +129,7 @@ class Statement
     }
 
     /**
-     * @param $body
+     * @param string $body
      * @return array|bool
      */
     private function parseErrorClickHouse($body)
@@ -142,6 +150,7 @@ class Statement
 
     /**
      * @return bool
+     * @throws Exception\TransportException
      */
     public function error()
     {
@@ -174,6 +183,7 @@ class Statement
 
     /**
      * @return bool
+     * @throws Exception\TransportException
      */
     public function isError()
     {
@@ -181,8 +191,8 @@ class Statement
     }
 
     /**
-     *
      * @return bool
+     * @throws Exception\TransportException
      */
     private function check()
     {
@@ -196,8 +206,10 @@ class Statement
 
         return true;
     }
+
     /**
      * @return bool
+     * @throws Exception\TransportException
      */
     private function init()
     {
@@ -251,6 +263,7 @@ class Statement
 
     /**
      * @return mixed
+     * @throws Exception\TransportException
      */
     public function totalTimeRequest()
     {
@@ -290,7 +303,8 @@ class Statement
     }
 
     /**
-     * @return mixed
+     * @return array
+     * @throws Exception\TransportException
      */
     public function totals()
     {
@@ -316,7 +330,8 @@ class Statement
     }
 
     /**
-     * @return bool
+     * @return bool|int
+     * @throws Exception\TransportException
      */
     public function countAll()
     {
@@ -327,6 +342,7 @@ class Statement
     /**
      * @param bool $key
      * @return array|mixed|null
+     * @throws Exception\TransportException
      */
     public function statistics($key=false)
     {
@@ -342,6 +358,7 @@ class Statement
 
     /**
      * @return int
+     * @throws Exception\TransportException
      */
     public function count()
     {
@@ -350,9 +367,8 @@ class Statement
     }
 
     /**
-     * get rawJson Answer
-     *
-     * @return mixed
+     * @return mixed|string
+     * @throws Exception\TransportException
      */
     public function rawData()
     {
@@ -364,9 +380,11 @@ class Statement
 
         return $this->response()->rawDataOrJson($this->format);
     }
+
     /**
      * @param string $key
      * @return mixed|null
+     * @throws Exception\TransportException
      */
     public function fetchOne($key = '')
     {
@@ -389,8 +407,9 @@ class Statement
     }
 
     /**
-     * @param $path
+     * @param string|null $path
      * @return array
+     * @throws Exception\TransportException
      */
     public function rowsAsTree($path)
     {
@@ -409,6 +428,7 @@ class Statement
      * Return size_upload,upload_content,speed_upload,time_request
      *
      * @return array
+     * @throws Exception\TransportException
      */
     public function info_upload()
     {
@@ -425,6 +445,7 @@ class Statement
      * Return size_upload,upload_content,speed_upload,time_request,starttransfer_time,size_download,speed_download
      *
      * @return array
+     * @throws Exception\TransportException
      */
     public function info()
     {
@@ -451,6 +472,7 @@ class Statement
 
     /**
      * @return array
+     * @throws Exception\TransportException
      */
     public function rows()
     {
@@ -459,8 +481,8 @@ class Statement
     }
 
     /**
-     * @param $arr
-     * @param null $path
+     * @param array|string $arr
+     * @param null|string|array $path
      * @return array
      */
     private function array_to_tree($arr, $path = null)
@@ -495,7 +517,7 @@ class Statement
 
             $tree = array($val => $tree);
         }
-
+        if (!is_array($tree)) return [];
         return $tree;
     }
 }

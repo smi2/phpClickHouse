@@ -5,17 +5,17 @@ namespace ClickHouseDB\Transport;
 class CurlerResponse
 {
     /**
-     * @var
+     * @var mixed
      */
     public $_headers;
 
     /**
-     * @var
+     * @var mixed
      */
     public $_info;
 
     /**
-     * @var
+     * @var mixed
      */
     public $_error;
 
@@ -25,12 +25,12 @@ class CurlerResponse
     public $_errorNo = 0;
 
     /**
-     * @var
+     * @var float
      */
     public $_useTime;
 
     /**
-     * @var
+     * @var string
      */
     public $_body;
 
@@ -114,7 +114,7 @@ class CurlerResponse
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return null
      */
     public function headers($name)
@@ -181,7 +181,7 @@ class CurlerResponse
     }
 
     /**
-     * @param $size
+     * @param int $size
      * @param string $unit
      * @return string
      */

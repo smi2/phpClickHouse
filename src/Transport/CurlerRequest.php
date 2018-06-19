@@ -10,7 +10,7 @@ class CurlerRequest
     public $extendinfo = array();
 
     /**
-     * @var string
+     * @var string|array
      */
     private $parameters = '';
 
@@ -20,17 +20,17 @@ class CurlerRequest
     private $options;
 
     /**
-     * @var
+     * @var array
      */
     private $headers; // Parsed reponse header object.
 
     /**
-     * @var
+     * @var string
      */
     private $url;
 
     /**
-     * @var
+     * @var string
      */
     private $method;
 
@@ -40,14 +40,14 @@ class CurlerRequest
     private $id;
 
     /**
-     * @var
+     * @var resource|null
      */
     private $handle;
 
     /**
-     * @var
+     * @var CurlerResponse
      */
-    private $resp;
+    private $resp=null;
 
     /**
      * @var bool
@@ -75,9 +75,9 @@ class CurlerRequest
     private $_httpCompression = false;
 
     /**
-     * @var
+     * @var callable
      */
-    private $callback_function;
+    private $callback_function=null;
 
     /**
      * @var bool
@@ -140,7 +140,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $attachFiles
+     * @param array $attachFiles
      */
     public function attachFiles($attachFiles)
     {
@@ -170,7 +170,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return $this
      */
     public function setRequestExtendedInfo($params)
@@ -180,7 +180,7 @@ class CurlerRequest
     }
 
     /**
-     * @param null $key
+     * @param string|integer|null $key
      * @return mixed
      */
     public function getRequestExtendedInfo($key = null)
@@ -201,7 +201,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $file_name
+     * @param string $file_name
      * @return bool
      */
     public function setInfile($file_name)
@@ -226,20 +226,24 @@ class CurlerRequest
     }
 
     /**
-     * @param $callback
+     * @param callable $callback
      */
     public function setCallbackFunction($callback)
     {
         $this->callback_function = $callback;
     }
+
+    /**
+     * @param callable $callback
+     */
     public function setReadFunction($callback)
     {
         $this->options[CURLOPT_READFUNCTION]=$callback;
     }
 
     /**
-     * @param $classCallBack
-     * @param $functionName
+     * @param string $classCallBack
+     * @param string $functionName
      */
     public function setCallback($classCallBack, $functionName)
     {
@@ -247,6 +251,9 @@ class CurlerRequest
         $this->callback_functionName = $functionName;
     }
 
+    /**
+     *
+     */
     public function onCallback()
     {
         if ($this->callback_function) {
@@ -278,6 +285,7 @@ class CurlerRequest
         }
 
         echo $message;
+        return '';
     }
 
     /**
@@ -289,8 +297,8 @@ class CurlerRequest
     }
 
     /**
-     * @param $key
-     * @param $value
+     * @param integer $key
+     * @param mixed $value
      * @return $this
      */
     private function option($key, $value)
@@ -340,8 +348,8 @@ class CurlerRequest
     }
 
     /**
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param string $value
      * @return $this
      */
     public function header($key, $value)
@@ -350,6 +358,9 @@ class CurlerRequest
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getHeaders()
     {
         $head=[];
@@ -359,7 +370,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @return $this
      */
     public function url($url)
@@ -378,7 +389,7 @@ class CurlerRequest
 
 
     /**
-     * @param $id
+     * @param string $id
      * @return string
      */
     public function getUniqHash($id)
@@ -387,7 +398,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $flag
+     * @param bool $flag
      */
     public function httpCompression($flag)
     {
@@ -403,8 +414,8 @@ class CurlerRequest
     }
 
     /**
-     * @param $username
-     * @param $password
+     * @param string $username
+     * @param string $password
      * @return $this
      */
     public function auth($username, $password)
@@ -414,7 +425,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $data
+     * @param array|string $data
      * @return $this
      */
     public function parameters($data)
@@ -443,7 +454,7 @@ class CurlerRequest
      */
     public function timeOut($seconds = 10)
     {
-        return $this->timeOutMs($seconds * 1000);
+        return $this->timeOutMs(intval($seconds * 1000));
     }
 
     /**
@@ -460,7 +471,7 @@ class CurlerRequest
 
 
     /**
-     * @param $data
+     * @param array|mixed $data
      * @return $this
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -506,7 +517,8 @@ class CurlerRequest
     }
 
     /**
-     * @param $h resource
+     * @param resource $h resource
+     * @param bool $zlib
      * @return $this
      */
     public function setResultFileHandle($h, $zlib = false)
@@ -554,7 +566,7 @@ class CurlerRequest
     /**
      * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
-     * @param $set
+     * @param integer $set
      * @return $this
      */
     public function setDnsCache($set)
@@ -574,7 +586,7 @@ class CurlerRequest
     }
 
     /**
-     * @param $method
+     * @param string $method
      * @return $this
      */
     private function execute($method)
