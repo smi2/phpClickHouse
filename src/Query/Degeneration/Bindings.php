@@ -2,6 +2,8 @@
 
 namespace ClickHouseDB\Query\Degeneration;
 
+use DateTimeInterface;
+
 class Bindings implements \ClickHouseDB\Query\Degeneration
 {
     /**
@@ -25,6 +27,10 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function bindParam($column, $value)
     {
+        if ($value instanceof DateTimeInterface) {
+            $value = $value->format('Y-m-d H:i:s');
+        }
+
         $this->bindings[$column] = $value;
     }
 
