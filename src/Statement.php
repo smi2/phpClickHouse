@@ -11,7 +11,7 @@ use ClickHouseDB\Transport\CurlerResponse;
 class Statement
 {
     /**
-     * @var string
+     * @var string|mixed
      */
     private $_rawData;
 
@@ -81,9 +81,9 @@ class Statement
     private $array_data = [];
 
     /**
-     * @var array
+     * @var array|null
      */
-    private $statistics;
+    private $statistics=null;
 
 
     public function __construct(CurlerRequest $request)
