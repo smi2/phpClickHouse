@@ -167,13 +167,11 @@ class Statement
 
             if ($parse) {
                 throw new DatabaseException($parse['message'] . "\nIN:" . $this->sql(), $parse['code']);
-            }
-            else {
+            } else {
                 $code = $this->response()->http_code();
                 $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
             }
-        }
-        else {
+        } else {
             $code = $error_no;
             $message = $this->response()->error();
         }
@@ -349,8 +347,12 @@ class Statement
         $this->init();
         if ($key)
         {
-            if (!is_array($this->statistics)) return null;
-            if (!isset($this->statistics[$key])) return null;
+            if (!is_array($this->statistics)) {
+                return null;
+            }
+            if (!isset($this->statistics[$key])) {
+                return null;
+            }
             return $this->statistics[$key];
         }
         return $this->statistics;
@@ -394,8 +396,7 @@ class Statement
             if ($key) {
                 if (isset($this->array_data[0][$key])) {
                     return $this->array_data[0][$key];
-                }
-                else {
+                } else {
                     return null;
                 }
             }
@@ -489,16 +490,14 @@ class Statement
     {
         if (is_array($path)) {
             $keys = $path;
-        }
-        else {
+        } else {
             $args = func_get_args();
             array_shift($args);
 
             if (sizeof($args) < 2) {
                 $separator = '.';
                 $keys = explode($separator, $path);
-            }
-            else {
+            } else {
                 $keys = $args;
             }
         }
@@ -510,14 +509,15 @@ class Statement
 
             if (isset($arr[$key])) {
                 $val = $arr[$key];
-            }
-            else {
+            } else {
                 $val = $key;
             }
 
             $tree = array($val => $tree);
         }
-        if (!is_array($tree)) return [];
+        if (!is_array($tree)) {
+            return [];
+        }
         return $tree;
     }
 }

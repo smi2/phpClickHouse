@@ -61,7 +61,7 @@ class Http
     /**
      * @var callable
      */
-    private $xClickHouseProgress=null;
+    private $xClickHouseProgress = null;
 
     /**
      * Http constructor.
@@ -114,7 +114,9 @@ class Http
     public function getUri()
     {
         $proto='http';
-        if ($this->settings()->isHttps()) $proto='https';
+        if ($this->settings()->isHttps()) {
+            $proto='https';
+        }
 
         return $proto.'://' . $this->_host . ':' . $this->_port;
     }
@@ -185,7 +187,7 @@ class Http
         }
 
         $new->timeOut($this->settings()->getTimeOut());
-        $new->connectTimeOut($this->_connectTimeOut)->keepAlive();// one sec
+        $new->connectTimeOut($this->_connectTimeOut)->keepAlive(); // one sec
         $new->verbose(boolval($this->_verbose));
 
         return $new;
@@ -279,7 +281,7 @@ class Http
         $request = $this->newRequest($extendinfo);
         $request->url($url);
 
-        $request->setCallbackFunction(function (CurlerRequest $request) {
+        $request->setCallbackFunction(function(CurlerRequest $request) {
             fclose($request->getInfileHandle());
         });
 
@@ -328,13 +330,19 @@ class Http
         if ($code==200) {
             $response = curl_multi_getcontent($handle);
             $header_size = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
-            if (!$header_size) return false;
+            if (!$header_size) {
+                return false;
+            }
 
             $header = substr($response, 0, $header_size);
-            if (!$header_size) return false;
+            if (!$header_size) {
+                return false;
+            }
             $pos=strrpos($header,'X-ClickHouse-Progress');
 
-            if (!$pos) return false;
+            if (!$pos) {
+                return false;
+            }
 
             $last=substr($header,$pos);
             $data=@json_decode(str_ireplace('X-ClickHouse-Progress:','',$last),true);
@@ -407,13 +415,13 @@ class Http
             }
 
 
-            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (CurlerRequest $request) {
+            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function(CurlerRequest $request) {
                 fclose($request->getResultFileHandle());
             });
         }
         if ($this->xClickHouseProgress)
         {
-            $request->setFunctionProgress([$this,'__findXClickHouseProgress']);
+            $request->setFunctionProgress([$this, '__findXClickHouseProgress']);
         }
         // ---------------------------------------------------------------------------------
         return $request;
@@ -543,7 +551,7 @@ class Http
      */
     public function setProgressFunction(callable $callback)
     {
-        $this->xClickHouseProgress=$callback;
+        $this->xClickHouseProgress = $callback;
     }
 
     /**

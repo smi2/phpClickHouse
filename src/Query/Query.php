@@ -20,21 +20,21 @@ class Query
     /**
      * @var array
      */
-    private $degenerations=[];
+    private $degenerations = [];
 
     /**
      * Query constructor.
      * @param string $sql
      * @param array $degenerations
      */
-    public function __construct($sql,$degenerations=[])
+    public function __construct($sql, $degenerations = [])
     {
         if (!trim($sql))
         {
             throw new QueryException('Empty Query');
         }
         $this->sql = $sql;
-        $this->degenerations=$degenerations;
+        $this->degenerations = $degenerations;
     }
 
     /**
@@ -49,7 +49,9 @@ class Query
     private function applyFormatQuery()
     {
         // FORMAT\s(\w)*$
-        if (null === $this->format) return false;
+        if (null === $this->format) {
+            return false;
+        }
         $supportFormats=
             "FORMAT\\s+TSV|FORMAT\\s+TSVRaw|FORMAT\\s+TSVWithNames|FORMAT\\s+TSVWithNamesAndTypes|FORMAT\\s+Vertical|FORMAT\\s+JSONCompact|FORMAT\\s+JSONEachRow|FORMAT\\s+TSKV|FORMAT\\s+TabSeparatedWithNames|FORMAT\\s+TabSeparatedWithNamesAndTypes|FORMAT\\s+TabSeparatedRaw|FORMAT\\s+BlockTabSeparated|FORMAT\\s+CSVWithNames|FORMAT\\s+CSV|FORMAT\\s+JSON|FORMAT\\s+TabSeparated";
 
@@ -63,8 +65,7 @@ class Query
                 $this->format=trim(str_ireplace('format','',$matches[0][0]));
 
             }
-        }
-        else {
+        } else {
             $this->sql = $this->sql . ' FORMAT ' . $this->format;
         }
 
@@ -95,7 +96,7 @@ class Query
             foreach ($this->degenerations as $degeneration)
             {
                 if ($degeneration instanceof Degeneration) {
-                    $this->sql=$degeneration->process($this->sql);
+                    $this->sql = $degeneration->process($this->sql);
                 }
             }
         }

@@ -39,11 +39,11 @@ class Client
     /**
      * @var bool
      */
-    private $_connect_user_readonly=false;
+    private $_connect_user_readonly = false;
     /**
      * @var array
      */
-    private $_support_format=['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames','JSONEachRow'];
+    private $_support_format = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
 
     /**
      * Client constructor.
@@ -120,7 +120,7 @@ class Client
      */
     public function setReadOnlyUser($flag)
     {
-        $this->_connect_user_readonly=$flag;
+        $this->_connect_user_readonly = $flag;
         $this->settings()->setReadOnlyUser($this->_connect_user_readonly);
     }
     /**
@@ -163,10 +163,10 @@ class Client
 
         if (is_array($host))
         {
-            $host=array_rand(array_flip($host));
+            $host = array_rand(array_flip($host));
         }
 
-        $this->_connect_host=$host;
+        $this->_connect_host = $host;
         $this->transport()->setHost($host);
     }
 
@@ -178,7 +178,7 @@ class Client
      */
     public function setTimeout($timeout)
     {
-       return $this->settings()->max_execution_time($timeout);
+        return $this->settings()->max_execution_time($timeout);
     }
 
     /**
@@ -289,15 +289,14 @@ class Client
     /**
      * @return $this
      */
-    public function useSession($useSessionId=false)
+    public function useSession($useSessionId = false)
     {
         if (!$this->settings()->getSessionId())
         {
             if (!$useSessionId)
             {
                 $this->settings()->makeSessionId();
-            }
-            else
+            } else
             {
                 $this->settings()->session_id($useSessionId);
             }
@@ -346,7 +345,7 @@ class Client
      */
     public function enableLogQueries($flag = true)
     {
-        $this->settings()->set('log_queries',intval($flag));
+        $this->settings()->set('log_queries', intval($flag));
         return $this;
     }
 
@@ -368,7 +367,7 @@ class Client
      * @param bool $flag
      * @return $this
      */
-    public function https($flag=true)
+    public function https($flag = true)
     {
         $this->settings()->https($flag);
         return $this;
@@ -382,7 +381,7 @@ class Client
      */
     public function enableExtremes($flag = true)
     {
-        $this->settings()->set('extremes',intval($flag));
+        $this->settings()->set('extremes', intval($flag));
         return $this;
     }
 
@@ -397,9 +396,9 @@ class Client
      * @throws Exception\TransportException
      * @throws \Exception
      */
-    public function select($sql, $bindings = [], $whereInFile = null, $writeToFile=null)
+    public function select($sql, $bindings = [], $whereInFile = null, $writeToFile = null)
     {
-        return $this->transport()->select($sql, $bindings, $whereInFile,$writeToFile);
+        return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
     }
 
     /**
@@ -420,7 +419,9 @@ class Client
      */
     public function progressFunction($callback)
     {
-        if (!is_callable($callback)) throw new \InvalidArgumentException('Not is_callable progressFunction');
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('Not is_callable progressFunction');
+        }
 
         if (!$this->settings()->is('send_progress_in_http_headers'))
         {
@@ -446,9 +447,9 @@ class Client
      * @throws Exception\TransportException
      * @throws \Exception
      */
-    public function selectAsync($sql, $bindings = [], $whereInFile = null,$writeToFile=null)
+    public function selectAsync($sql, $bindings = [], $whereInFile = null, $writeToFile = null)
     {
-        return $this->transport()->selectAsync($sql, $bindings, $whereInFile,$writeToFile);
+        return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
     }
 
     /**
@@ -485,7 +486,7 @@ class Client
      */
     public function showCreateTable($table)
     {
-        return ($this->select('SHOW CREATE TABLE '.$table)->fetchOne('statement'));
+        return ($this->select('SHOW CREATE TABLE ' . $table)->fetchOne('statement'));
     }
 
     /**
@@ -555,7 +556,7 @@ class Client
                 }
                 $preparedValues[] = array_values($row);
             }
-        }else{ //одна строка
+        } else{ //одна строка
             $preparedFields = array_keys($values);
             $preparedValues = [array_values($values)];
         }
@@ -588,7 +589,7 @@ class Client
      */
     public function insertBatchTSVFiles($table_name, $file_names, $columns_array)
     {
-        return $this->insertBatchFiles($table_name,$file_names,$columns_array,'TabSeparated');
+        return $this->insertBatchFiles($table_name, $file_names, $columns_array, 'TabSeparated');
     }
 
     /**
@@ -601,17 +602,17 @@ class Client
      * @return array
      * @throws Exception\TransportException
      */
-    public function insertBatchFiles($table_name, $file_names, $columns_array,$format="CSV")
+    public function insertBatchFiles($table_name, $file_names, $columns_array, $format = "CSV")
     {
         if (is_string($file_names))
         {
-            $file_names=[$file_names];
+            $file_names = [$file_names];
         }
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
 
-        if (!in_array($format,$this->_support_format))
+        if (!in_array($format, $this->_support_format))
         {
             throw new QueryException('Format not support in insertBatchFiles');
         }
@@ -627,8 +628,7 @@ class Client
             {
                 $sql = 'INSERT INTO ' . $table_name . ' FORMAT '.$format;
 
-            }
-            else
+            } else
             {
                 $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
 
@@ -672,8 +672,7 @@ class Client
         {
             $sql = 'INSERT INTO ' . $table_name . ' FORMAT '.$format;
 
-        }
-        else
+        } else
         {
             $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
 
@@ -742,9 +741,9 @@ class Client
      * @throws Exception\TransportException
      * @throws \Exception
      */
-    public function tablesSize($flatList=false)
+    public function tablesSize($flatList = false)
     {
-        $z=$this->select('
+        $z = $this->select('
         SELECT name as table,database,
             max(sizebytes) as sizebytes,
             max(size) as size,
@@ -764,7 +763,7 @@ class Client
             ) USING ( table,database )
             WHERE database=:database
             GROUP BY table,database
-        ', [ 'database'=>$this->settings()->getDatabase() ]);
+        ', ['database'=>$this->settings()->getDatabase()]);
 
         if ($flatList) {
             return $z->rows();
@@ -786,12 +785,12 @@ class Client
      * @throws Exception\TransportException
      * @throws \Exception
      */
-    public function isExists($database,$table)
+    public function isExists($database, $table)
     {
         return $this->select('
             SELECT *
             FROM system.tables 
-            WHERE name=\''.$table.'\' AND database=\''.$database.'\''
+            WHERE name=\''.$table . '\' AND database=\'' . $database . '\''
         )->rowsAsTree('name');
     }
 
@@ -810,7 +809,7 @@ class Client
         return $this->select('
             SELECT *
             FROM system.parts 
-            WHERE like(table,\'%' . $table . '%\') AND database=\''.$this->settings()->getDatabase().'\' 
+            WHERE like(table,\'%' . $table . '%\') AND database=\'' . $this->settings()->getDatabase() . '\' 
             ORDER BY max_date ' . ($limit > 0 ? ' LIMIT ' . intval($limit) : '')
         )->rowsAsTree('name');
     }
@@ -826,8 +825,8 @@ class Client
     public function dropPartition($dataBaseTableName, $partition_id)
     {
 
-        $partition_id=trim($partition_id,'\'');
-        $this->settings()->set('replication_alter_partitions_sync',2);
+        $partition_id = trim($partition_id, '\'');
+        $this->settings()->set('replication_alter_partitions_sync', 2);
         $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id', [
             'dataBaseTableName'  => $dataBaseTableName,
             'partion_id' => $partition_id
@@ -845,12 +844,12 @@ class Client
      */
     public function truncateTable($tableName)
     {
-        $partions=$this->partitions($tableName);
-        $out=[];
+        $partions = $this->partitions($tableName);
+        $out = [];
         foreach ($partions as $part_key=>$part)
         {
-            $part_id=$part['partition'];
-            $out[$part_id]=$this->dropPartition($tableName,$part_id);
+            $part_id = $part['partition'];
+            $out[$part_id] = $this->dropPartition($tableName, $part_id);
         }
         return $out;
     }
@@ -885,9 +884,9 @@ class Client
             }
         }
 
-        $result=[];
+        $result = [];
         foreach ($drop as $partition_id) {
-            $result[$partition_id]=$this->dropPartition($table_name, $partition_id);
+            $result[$partition_id] = $this->dropPartition($table_name, $partition_id);
         }
 
         return $result;
