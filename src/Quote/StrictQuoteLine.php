@@ -6,7 +6,7 @@ use ClickHouseDB\Exception\QueryException;
 class StrictQuoteLine
 {
 
-    private $preset=[
+    private $preset = [
         'CSV'=>[
             'EnclosureArray'=>'"',
             'EncodeEnclosure'=>'"',
@@ -32,19 +32,19 @@ class StrictQuoteLine
             'TabEncode'=>true,
         ],
     ];
-    private $settings=[];
+    private $settings = [];
 
     public function __construct($format)
     {
         if (empty($this->preset[$format]))
         {
-            throw new QueryException("Unsupport format encode line:".$format);
+            throw new QueryException("Unsupport format encode line:" . $format);
         }
-        $this->settings=$this->preset[$format];
+        $this->settings = $this->preset[$format];
     }
     public function quoteRow($row)
     {
-        return implode($this->settings['Delimiter'],$this->quoteValue($row));
+        return implode($this->settings['Delimiter'], $this->quoteValue($row));
     }
     public function quoteValue($row)
     {
@@ -53,10 +53,10 @@ class StrictQuoteLine
         $encode = $this->settings['EncodeEnclosure'];
         $encodeArray = $this->settings['EnclosureArray'];
         $null = $this->settings['Null'];
-        $tabEncode=$this->settings['TabEncode'];
+        $tabEncode = $this->settings['TabEncode'];
 
 
-        $quote = function ($value) use ($enclosure,$delimiter,$encode,$encodeArray,$null,$tabEncode) {
+        $quote = function($value) use ($enclosure, $delimiter, $encode, $encodeArray, $null, $tabEncode) {
 
 
 
@@ -75,11 +75,11 @@ class StrictQuoteLine
             if (is_string($value)) {
                 if ($tabEncode)
                 {
-                    return str_replace(["\t","\n"],['\\t','\\n'],$value);
+                    return str_replace(["\t", "\n"], ['\\t', '\\n'], $value);
                 }
 
                 $value = strval($value);
-                $value = preg_replace('/('.$enclosure_esc.'|'.$encode_esc.')/',$encode_esc.'\1', $value);
+                $value = preg_replace('/(' . $enclosure_esc . '|' . $encode_esc . ')/', $encode_esc . '\1', $value);
                 return $enclosure . $value . $enclosure;
             }
 
@@ -90,7 +90,7 @@ class StrictQuoteLine
                 // as in the TabSeparated format, and then the resulting string is output in InsertRow in double quotes.
                 $result_array = FormatLine::Insert($value);
 
-                return $encodeArray . '[' . $result_array . ']' .$encodeArray;
+                return $encodeArray . '[' . $result_array . ']' . $encodeArray;
             }
 
             if (null === $value) {

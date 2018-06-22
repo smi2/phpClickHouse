@@ -42,7 +42,7 @@ class Cluster
     /**
      * @var int|float
      */
-    private $scanTimeOut=10;
+    private $scanTimeOut = 10;
 
     /**
      * @var array
@@ -77,7 +77,7 @@ class Cluster
      *
      * @var array
      */
-    private $_table_size_cache=[];
+    private $_table_size_cache = [];
 
     /**
      * Cluster constructor.
@@ -191,9 +191,11 @@ class Cluster
 
             // @todo : rewrite total_replicas=1 если кластер без реплики , нужно проверять какой класте и сколько в нем реплик
 //            if ($replica['total_replicas']<2) {$ok=false;$this->error[]='total_replicas : '.json_encode($replica);}
-            if ($this->softCheck )
+            if ($this->softCheck)
             {
-                if (!$ok) break;
+                if (!$ok) {
+                    break;
+                }
                 continue;
             }
 
@@ -209,7 +211,9 @@ class Cluster
                 $ok = false;
                 $this->error[] = 'log_max_index : ' . json_encode($replica);
             }
-            if (!$ok) break;
+            if (!$ok) {
+                break;
+            }
         }
         return $ok;
     }
@@ -262,7 +266,7 @@ class Cluster
             $statementsClusters[$node]->getRequest()->setDnsCache(0)->timeOut($this->scanTimeOut)->connectTimeOut($this->scanTimeOut);
         }
         $this->defaultClient()->executeAsync();
-        $tables=[];
+        $tables = [];
 
         foreach ($this->nodes as $node) {
 
@@ -270,16 +274,16 @@ class Cluster
             try {
                 $r = $statementsReplicas[$node]->rows();
                 foreach ($r as $row) {
-                    $tables[$row['database']][$row['table']][$node] =$row;
+                    $tables[$row['database']][$row['table']][$node] = $row;
                 }
                 $result['replicas'][$node] = $r;
-            } catch (\Exception $E) {
+            }catch (\Exception $E) {
                 $result['replicas'][$node] = false;
                 $badNodes[$node] = $E->getMessage();
                 $this->error[] = 'statementsReplicas:' . $E->getMessage();
             }
             // ---------------------------------------------------------------------------------------------------
-            $hosts=[];
+            $hosts = [];
 
             try {
                 $c = $statementsClusters[$node]->rows();
@@ -295,7 +299,7 @@ class Cluster
                         ];
                 }
 
-            } catch (\Exception $E) {
+            }catch (\Exception $E) {
                 $result['clusters'][$node] = false;
 
                 $this->error[] = 'clusters:' . $E->getMessage();
@@ -308,7 +312,9 @@ class Cluster
             // Let's check that replication goes well
             $rIsOk = $this->isReplicasWork($result['replicas'][$node]);
             $result['replicasIsOk'][$node] = $rIsOk;
-            if (!$rIsOk) $replicasIsOk = false;
+            if (!$rIsOk) {
+                $replicasIsOk = false;
+            }
             // ---------------------------------------------------------------------------------------------------
         }
 
@@ -328,7 +334,9 @@ class Cluster
             $this->error[] = 'Have bad node : ' . json_encode($this->badNodes);
             $this->replicasIsOk = false;
         }
-        if (!sizeof($this->error)) $this->error = false;
+        if (!sizeof($this->error)) {
+            $this->error = false;
+        }
         $this->resultScan = $result;
         // @todo  : We connect to everyone in the DNS list, we need to decry that the requests were returned by all the hosts to which we connected
         return $this;
@@ -379,19 +387,22 @@ class Cluster
                     if (in_array($node,$nodes_check))
                     {
                         $find=$node;
-                    }
-                    else
+                    } else
                     {
                         // node exists on cluster, but not check
                     }
 
                 }
-                if ($find) break;
+                if ($find) {
+                    break;
+                }
             }
-            if ($find) break;
+            if ($find) {
+                break;
+            }
         }
-        if (!$find){
-            $find=$nodes[0];
+        if (!$find) {
+            $find = $nodes[0];
         }
         return $this->client($find);
     }
@@ -441,7 +452,9 @@ class Cluster
     public function getClusterInfoTable($cluster)
     {
         $this->connect();
-        if (empty($this->resultScan['cluster.list'][$cluster])) throw new QueryException('Cluster not find:' . $cluster);
+        if (empty($this->resultScan['cluster.list'][$cluster])) {
+            throw new QueryException('Cluster not find:' . $cluster);
+        }
         return $this->resultScan['cluster.list'][$cluster];
     }
 
@@ -471,10 +484,10 @@ class Cluster
      * @return array
      * @throws Exception\TransportException
      */
-    public function getTables($resultDetail=false)
+    public function getTables($resultDetail = false)
     {
         $this->connect();
-        $list=[];
+        $list = [];
         foreach ($this->tables as $db_name=>$tables)
         {
             foreach ($tables as $table_name=>$nodes)
@@ -483,8 +496,7 @@ class Cluster
                 if ($resultDetail)
                 {
                     $list[$db_name.'.'.$table_name]=$nodes;
-                }
-                else
+                } else
                 {
                     $list[$db_name.'.'.$table_name]=array_keys($nodes);
                 }
@@ -503,7 +515,7 @@ class Cluster
      */
     public function getSizeTable($database_table)
     {
-       $nodes=$this->getNodesByTable($database_table);
+        $nodes=$this->getNodesByTable($database_table);
         // scan need node`s
         foreach ($nodes as $node)
         {
@@ -541,17 +553,17 @@ class Cluster
      * @return array
      * @throws Exception\TransportException
      */
-    public function truncateTable($database_table,$timeOut=2000)
+    public function truncateTable($database_table, $timeOut = 2000)
     {
-        $out=[];
-        list($db,$table)=explode('.',$database_table);
-        $nodes=$this->getMasterNodeForTable($database_table);
+        $out = [];
+        list($db, $table) = explode('.', $database_table);
+        $nodes = $this->getMasterNodeForTable($database_table);
         // scan need node`s
         foreach ($nodes as $node)
         {
-            $def=$this->client($node)->getTimeout();
+            $def = $this->client($node)->getTimeout();
             $this->client($node)->database($db)->setTimeout($timeOut);
-            $out[$node]=$this->client($node)->truncateTable($table);
+            $out[$node] = $this->client($node)->truncateTable($table);
             $this->client($node)->setTimeout($def);
         }
         return $out;
@@ -568,13 +580,17 @@ class Cluster
     {
         $list=$this->getTables(true);
 
-        if (empty($list[$database_table])) return [];
+        if (empty($list[$database_table])) {
+            return [];
+        }
 
 
         $result=[];
         foreach ($list[$database_table] as $node=>$row)
         {
-            if ($row['is_leader']) $result[]=$node;
+            if ($row['is_leader']) {
+                $result[]=$node;
+            }
         }
         return $result;
     }
@@ -587,7 +603,7 @@ class Cluster
      */
     public function getNodesByTable($database_table)
     {
-        $list=$this->getTables();
+        $list = $this->getTables();
         if (empty($list[$database_table])) {
             throw new QueryException('Not find :' . $database_table);
         }

@@ -8,7 +8,7 @@ class FormatLine
      *
      * @var array
      */
-    private static $strict=[];
+    private static $strict = [];
 
     /**
      * Format
@@ -20,7 +20,7 @@ class FormatLine
     {
         if (empty(self::$strict[$format]))
         {
-            self::$strict[$format]=new StrictQuoteLine($format);
+            self::$strict[$format] = new StrictQuoteLine($format);
         }
         return self::$strict[$format];
     }

@@ -15,7 +15,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function bindParams(array $bindings)
     {
-        $this->bindings=[];
+        $this->bindings = [];
         foreach ($bindings as $column => $value) {
             $this->bindParam($column, $value);
         }

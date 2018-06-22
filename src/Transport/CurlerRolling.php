@@ -176,8 +176,7 @@ class CurlerRolling
         foreach (explode("\r\n", $header_text) as $i => $line) {
             if ($i === 0) {
                 $headers['http_code'] = $line;
-            }
-            else {
+            } else {
                 $r = explode(': ', $line);
                 if (sizeof($r) == 2) {
                     $headers[$r[0]] = $r[1];
@@ -354,8 +353,7 @@ class CurlerRolling
             if (sizeof($add)) {
                 if ($canAdd >= sizeof($add)) {
                     $ll = $add;
-                }
-                else {
+                } else {
                     $ll = array_rand($add, $canAdd);
                     if (!is_array($ll)) {
                         $ll = array($ll => $ll);

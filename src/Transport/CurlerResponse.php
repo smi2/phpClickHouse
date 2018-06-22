@@ -70,7 +70,7 @@ class CurlerResponse
      */
     public function total_time()
     {
-        return round($this->_info['total_time'],3);
+        return round($this->_info['total_time'], 3);
     }
 
     /**
@@ -78,7 +78,7 @@ class CurlerResponse
      */
     public function starttransfer_time()
     {
-        return round($this->_info['starttransfer_time'],3);
+        return round($this->_info['starttransfer_time'], 3);
     }
 
     /**
@@ -86,7 +86,7 @@ class CurlerResponse
      */
     public function connect_time()
     {
-        return round($this->_info['connect_time'],3);
+        return round($this->_info['connect_time'], 3);
     }
 
     /**
@@ -94,7 +94,7 @@ class CurlerResponse
      */
     public function pretransfer_time()
     {
-        return round($this->_info['pretransfer_time'],3);
+        return round($this->_info['pretransfer_time'], 3);
     }
 
     /**
@@ -289,7 +289,7 @@ class CurlerResponse
      */
     public function rawDataOrJson($format)
     {
-        if (stripos($format,'json')!==false)
+        if (stripos($format, 'json') !== false)
         {
             return $this->json();
         }

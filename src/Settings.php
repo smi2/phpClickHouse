@@ -16,12 +16,12 @@ class Settings
      */
     private $settings = [];
 
-    private $_ReadOnlyUser=false;
+    private $_ReadOnlyUser = false;
 
     /**
      * @var bool
      */
-    private $_isHttps=false;
+    private $_isHttps = false;
 
     /**
      * Settings constructor.
@@ -47,7 +47,9 @@ class Settings
      */
     public function get($key)
     {
-        if (!$this->is($key)) return null;
+        if (!$this->is($key)) {
+            return null;
+        }
         return $this->settings[$key];
     }
 
@@ -117,7 +119,7 @@ class Settings
     }
 
 
-    public function https($flag=true)
+    public function https($flag = true)
     {
         $this->set('https', $flag);
         return $this;
@@ -153,7 +155,9 @@ class Settings
      */
     public function getSessionId()
     {
-        if (empty($this->settings['session_id'])) return false;
+        if (empty($this->settings['session_id'])) {
+            return false;
+        }
         return $this->get('session_id');
     }
 
@@ -202,7 +206,7 @@ class Settings
      */
     public function setReadOnlyUser($flag)
     {
-        $this->_ReadOnlyUser=$flag;
+        $this->_ReadOnlyUser = $flag;
     }
 
     /**

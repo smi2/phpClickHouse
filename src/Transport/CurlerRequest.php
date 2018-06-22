@@ -47,7 +47,7 @@ class CurlerRequest
     /**
      * @var CurlerResponse
      */
-    private $resp=null;
+    private $resp = null;
 
     /**
      * @var bool
@@ -77,7 +77,7 @@ class CurlerRequest
     /**
      * @var callable
      */
-    private $callback_function=null;
+    private $callback_function = null;
 
     /**
      * @var bool
@@ -109,13 +109,13 @@ class CurlerRequest
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_TIMEOUT => 10,
-            CURLOPT_CONNECTTIMEOUT => 5,    // Количество секунд ожидания при попытке соединения
+            CURLOPT_CONNECTTIMEOUT => 5, // Количество секунд ожидания при попытке соединения
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_HEADER => TRUE,
             CURLOPT_FOLLOWLOCATION => TRUE,
-            CURLOPT_AUTOREFERER => 1,       // при редиректе подставлять в «Referer:» значение из «Location:»
-            CURLOPT_BINARYTRANSFER => 1,    // передавать в binary-safe
+            CURLOPT_AUTOREFERER => 1, // при редиректе подставлять в «Referer:» значение из «Location:»
+            CURLOPT_BINARYTRANSFER => 1, // передавать в binary-safe
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_USERAGENT => 'smi2/PHPClickHouse/client',
         );
@@ -238,7 +238,7 @@ class CurlerRequest
      */
     public function setReadFunction($callback)
     {
-        $this->options[CURLOPT_READFUNCTION]=$callback;
+        $this->options[CURLOPT_READFUNCTION] = $callback;
     }
 
     /**
@@ -364,8 +364,9 @@ class CurlerRequest
     public function getHeaders()
     {
         $head=[];
-        foreach ($this->headers as $key=>$value)
-            $head[]= sprintf("%s: %s", $key, $value);
+        foreach ($this->headers as $key=>$value) {
+                    $head[]= sprintf("%s: %s", $key, $value);
+        }
         return $head;
     }
 
@@ -405,8 +406,7 @@ class CurlerRequest
         if ($flag) {
             $this->_httpCompression = $flag;
             $this->options[CURLOPT_ENCODING] = 'gzip';
-        }
-        else
+        } else
         {
             $this->_httpCompression = false;
             unset($this->options[CURLOPT_ENCODING]);
@@ -640,8 +640,8 @@ class CurlerRequest
             throw new \Exception('setFunctionProgress not is_callable');
         }
 
-        $this->option(CURLOPT_NOPROGRESS,false);
-        $this->option(CURLOPT_PROGRESSFUNCTION,$callback); // version 5.5.0
+        $this->option(CURLOPT_NOPROGRESS, false);
+        $this->option(CURLOPT_PROGRESSFUNCTION, $callback); // version 5.5.0
     }
 
 
@@ -704,7 +704,7 @@ class CurlerRequest
         }
 
         if ($this->options[CURLOPT_VERBOSE]) {
-            echo "\n-----------BODY REQUEST----------\n".$curl_opt[CURLOPT_POSTFIELDS]."\n------END--------\n";
+            echo "\n-----------BODY REQUEST----------\n" . $curl_opt[CURLOPT_POSTFIELDS] . "\n------END--------\n";
         }
         curl_setopt_array($this->handle, $curl_opt);
         return true;
