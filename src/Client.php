@@ -745,19 +745,31 @@ class Client
     public function tablesSize($flatList=false)
     {
         $z=$this->select('
-            SELECT table,database,
-            formatReadableSize(sum(bytes)) as size,
-            sum(bytes) as sizebytes,
+        SELECT name as table,database,
+            max(sizebytes) as sizebytes,
+            max(size) as size,
             min(min_date) as min_date,
             max(max_date) as max_date
-            FROM system.parts 
-            WHERE active AND database=\''.$this->settings()->getDatabase().'\'
+            FROM system.tables
+            ANY LEFT JOIN 
+            (
+            SELECT table,database,
+                        formatReadableSize(sum(bytes)) as size,
+                        sum(bytes) as sizebytes,
+                        min(min_date) as min_date,
+                        max(max_date) as max_date
+                        FROM system.parts 
+                        WHERE active AND database=:database
+                        GROUP BY table,database
+            ) USING ( table,database )
+            WHERE database=:database
             GROUP BY table,database
-        ');
+        ', [ 'database'=>$this->settings()->getDatabase() ]);
 
         if ($flatList) {
             return $z->rows();
         }
+
 
         return $z->rowsAsTree('table');
 
