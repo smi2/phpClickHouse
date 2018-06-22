@@ -788,6 +788,11 @@ MIT
 
 ChangeLog
 ---------
+### 2018-06-22
+* Fix `tableSize('name')` and `tablesSize()`
+
+
+
 ### 2018-06-19
 * Add DataTime Interface for Bind
 * Fix phpDoc
