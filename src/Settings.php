@@ -162,7 +162,7 @@ class Settings
     }
 
     /**
-     * @return string
+     * @return string|bool
      */
     public function makeSessionId()
     {
