@@ -80,7 +80,7 @@ class CurlerRequest
     private $callback_function = null;
 
     /**
-     * @var bool
+     * @var bool|resource
      */
     private $infile_handle = false;
 
@@ -202,25 +202,28 @@ class CurlerRequest
 
     /**
      * @param string $file_name
-     * @return bool
+     * @return bool|resource
      */
     public function setInfile($file_name)
     {
         $this->header('Expect', '');
         $this->infile_handle = fopen($file_name, 'r');
+        if (is_resource($this->infile_handle))
+        {
 
-        if ($this->_httpCompression) {
-            $this->header('Content-Encoding', 'gzip');
-            $this->header('Content-Type', 'application/x-www-form-urlencoded');
+            if ($this->_httpCompression) {
+                $this->header('Content-Encoding', 'gzip');
+                $this->header('Content-Type', 'application/x-www-form-urlencoded');
 
-            stream_filter_append($this->infile_handle, 'zlib.deflate', STREAM_FILTER_READ, ["window" => 30]);
+                stream_filter_append($this->infile_handle, 'zlib.deflate', STREAM_FILTER_READ, ["window" => 30]);
 
-            $this->options[CURLOPT_SAFE_UPLOAD] = 1;
-        } else {
-            $this->options[CURLOPT_INFILESIZE] = filesize($file_name);
+                $this->options[CURLOPT_SAFE_UPLOAD] = 1;
+            } else {
+                $this->options[CURLOPT_INFILESIZE] = filesize($file_name);
+            }
+
+            $this->options[CURLOPT_INFILE] = $this->infile_handle;
         }
-
-        $this->options[CURLOPT_INFILE] = $this->infile_handle;
 
         return $this->infile_handle;
     }
@@ -494,7 +497,7 @@ class CurlerRequest
         $this->parameters = json_encode($data);
 
         if (!$this->parameters && $data) {
-            throw new \ClickHouseDB\Exception\TransportException('Cant json_encode: ' . $data);
+            throw new \ClickHouseDB\Exception\TransportException('Cant json_encode: ' . strval($data));
         }
 
         return $this;

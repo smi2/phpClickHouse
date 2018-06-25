@@ -282,7 +282,10 @@ class Http
         $request->url($url);
 
         $request->setCallbackFunction(function(CurlerRequest $request) {
-            fclose($request->getInfileHandle());
+            $handle=$request->getInfileHandle();
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
         });
 
         $request->setInfile($file_name);

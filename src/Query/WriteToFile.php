@@ -32,7 +32,7 @@ class WriteToFile
      * WriteToFile constructor.
      * @param string $file_name
      * @param bool $overwrite
-     * @param null $format
+     * @param string|null $format
      */
     public function __construct($file_name, $overwrite = true, $format = null) {
 
@@ -58,7 +58,7 @@ class WriteToFile
         {
             throw new QueryException('Can`t writable dir: ' . $dir);
         }
-        if ($format)
+        if (is_string($format))
         {
             $this->setFormat($format);
         }

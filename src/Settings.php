@@ -151,7 +151,7 @@ class Settings
         return $this;
     }
     /**
-     * @return mixed
+     * @return mixed|bool
      */
     public function getSessionId()
     {

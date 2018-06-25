@@ -38,7 +38,7 @@ class CurlerRolling
     private $completedRequestCount = 0;
 
     /**
-     * @var null
+     * @var null|resource
      */
     private $_pool_master = null;
 
@@ -165,7 +165,7 @@ class CurlerRolling
     }
 
     /**
-     * @param resource $response
+     * @param string $response
      * @return array
      */
     private function parse_headers_from_curl_response($response)

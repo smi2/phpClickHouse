@@ -160,7 +160,7 @@ class Cluster
      * total_replicas <2 - not suitable for no replication clusters
      *
      *
-     * @param array $replicas
+     * @param mixed $replicas
      * @return bool
      */
     private function isReplicasWork($replicas)

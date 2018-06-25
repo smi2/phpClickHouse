@@ -668,7 +668,7 @@ class Client
             throw new QueryException('Format not support in insertBatchFiles');
         }
 
-        if (!$columns_array)
+        if (empty($columns_array))
         {
             $sql = 'INSERT INTO ' . $table_name . ' FORMAT ' . $format;
 
