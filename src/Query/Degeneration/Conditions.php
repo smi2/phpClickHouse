@@ -29,8 +29,7 @@ class Conditions implements Degeneration
         if ($else)
         {
             list($condition, $preset, $variable, $content_true, $content_false) = $matches;
-        }
-        else
+        } else
         {
             list($condition, $preset, $variable, $content_true) = $matches;
         }

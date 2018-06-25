@@ -277,7 +277,7 @@ class Cluster
                     $tables[$row['database']][$row['table']][$node] = $row;
                 }
                 $result['replicas'][$node] = $r;
-            }catch (\Exception $E) {
+            } catch (\Exception $E) {
                 $result['replicas'][$node] = false;
                 $badNodes[$node] = $E->getMessage();
                 $this->error[] = 'statementsReplicas:' . $E->getMessage();
@@ -299,7 +299,7 @@ class Cluster
                         ];
                 }
 
-            }catch (\Exception $E) {
+            } catch (\Exception $E) {
                 $result['clusters'][$node] = false;
 
                 $this->error[] = 'clusters:' . $E->getMessage();
@@ -371,22 +371,22 @@ class Cluster
      * @return Client
      * @throws Exception\TransportException
      */
-    public function clientLike($cluster,$ip_addr_like)
+    public function clientLike($cluster, $ip_addr_like)
     {
-        $nodes_check=$this->nodes;
-        $nodes=$this->getClusterNodes($cluster);
-        $list_ips_need=explode(';',$ip_addr_like);
-        $find=false;
-        foreach($list_ips_need as $like)
+        $nodes_check = $this->nodes;
+        $nodes = $this->getClusterNodes($cluster);
+        $list_ips_need = explode(';', $ip_addr_like);
+        $find = false;
+        foreach ($list_ips_need as $like)
         {
             foreach ($nodes as $node)
             {
 
-                if (stripos($node,$like)!==false)
+                if (stripos($node, $like) !== false)
                 {
-                    if (in_array($node,$nodes_check))
+                    if (in_array($node, $nodes_check))
                     {
-                        $find=$node;
+                        $find = $node;
                     } else
                     {
                         // node exists on cluster, but not check
@@ -495,10 +495,10 @@ class Cluster
 
                 if ($resultDetail)
                 {
-                    $list[$db_name.'.'.$table_name]=$nodes;
+                    $list[$db_name . '.' . $table_name] = $nodes;
                 } else
                 {
-                    $list[$db_name.'.'.$table_name]=array_keys($nodes);
+                    $list[$db_name . '.' . $table_name] = array_keys($nodes);
                 }
             }
         }
@@ -515,23 +515,23 @@ class Cluster
      */
     public function getSizeTable($database_table)
     {
-        $nodes=$this->getNodesByTable($database_table);
+        $nodes = $this->getNodesByTable($database_table);
         // scan need node`s
         foreach ($nodes as $node)
         {
             if (empty($this->_table_size_cache[$node]))
             {
-                $this->_table_size_cache[$node]=$this->client($node)->tablesSize(true);
+                $this->_table_size_cache[$node] = $this->client($node)->tablesSize(true);
             }
         }
 
-        $sizes=[];
+        $sizes = [];
         foreach ($this->_table_size_cache as $node=>$rows)
         {
             foreach ($rows as $row)
             {
-                $sizes[$row['database'].'.'.$row['table']][$node]=$row;
-                @$sizes[$row['database'].'.'.$row['table']]['total']['sizebytes']+=$row['sizebytes'];
+                $sizes[$row['database'] . '.' . $row['table']][$node] = $row;
+                @$sizes[$row['database'] . '.' . $row['table']]['total']['sizebytes'] += $row['sizebytes'];
 
 
 
@@ -578,18 +578,18 @@ class Cluster
      */
     public function getMasterNodeForTable($database_table)
     {
-        $list=$this->getTables(true);
+        $list = $this->getTables(true);
 
         if (empty($list[$database_table])) {
             return [];
         }
 
 
-        $result=[];
+        $result = [];
         foreach ($list[$database_table] as $node=>$row)
         {
             if ($row['is_leader']) {
-                $result[]=$node;
+                $result[] = $node;
             }
         }
         return $result;

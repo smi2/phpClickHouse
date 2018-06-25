@@ -363,9 +363,9 @@ class CurlerRequest
      */
     public function getHeaders()
     {
-        $head=[];
+        $head = [];
         foreach ($this->headers as $key=>$value) {
-                    $head[]= sprintf("%s: %s", $key, $value);
+                    $head[] = sprintf("%s: %s", $key, $value);
         }
         return $head;
     }

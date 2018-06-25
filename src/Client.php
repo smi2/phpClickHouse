@@ -546,17 +546,17 @@ class Client
       */
     public function prepareInsertAssocBulk(array $values)
     {
-        if (isset($values[0]) && is_array($values[0])){ //случай, когда много строк вставляется
+        if (isset($values[0]) && is_array($values[0])) { //случай, когда много строк вставляется
             $preparedFields = array_keys($values[0]);
             $preparedValues = [];
-            foreach ($values as $idx => $row){
+            foreach ($values as $idx => $row) {
                 $_fields = array_keys($row);
-                if ($_fields !== $preparedFields){
-                    throw new QueryException("Fields not match: ".implode(',',$_fields)." and ".implode(',', $preparedFields)." on element $idx");
+                if ($_fields !== $preparedFields) {
+                    throw new QueryException("Fields not match: " . implode(',', $_fields) . " and " . implode(',', $preparedFields) . " on element $idx");
                 }
                 $preparedValues[] = array_values($row);
             }
-        } else{ //одна строка
+        } else { //одна строка
             $preparedFields = array_keys($values);
             $preparedValues = [array_values($values)];
         }
@@ -621,16 +621,16 @@ class Client
 
         foreach ($file_names as $fileName) {
             if (!is_file($fileName) || !is_readable($fileName)) {
-                throw  new QueryException('Cant read file: ' . $fileName.' '.(is_file($fileName)?'':' is not file'));
+                throw  new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
             if (!$columns_array)
             {
-                $sql = 'INSERT INTO ' . $table_name . ' FORMAT '.$format;
+                $sql = 'INSERT INTO ' . $table_name . ' FORMAT ' . $format;
 
             } else
             {
-                $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
+                $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT ' . $format;
 
             }
             $result[$fileName] = $this->transport()->writeAsyncCSV($sql, $fileName);
@@ -657,24 +657,24 @@ class Client
      * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return Transport\CurlerRequest
      */
-    public function insertBatchStream($table_name, $columns_array,$format="CSV")
+    public function insertBatchStream($table_name, $columns_array, $format = "CSV")
     {
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
 
-        if (!in_array($format,$this->_support_format))
+        if (!in_array($format, $this->_support_format))
         {
             throw new QueryException('Format not support in insertBatchFiles');
         }
 
         if (!$columns_array)
         {
-            $sql = 'INSERT INTO ' . $table_name . ' FORMAT '.$format;
+            $sql = 'INSERT INTO ' . $table_name . ' FORMAT ' . $format;
 
         } else
         {
-            $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT '.$format;
+            $sql = 'INSERT INTO ' . $table_name . ' ( ' . implode(',', $columns_array) . ' ) FORMAT ' . $format;
 
         }
 
