@@ -685,7 +685,7 @@ class CurlerRequest
         $curl_opt[CURLOPT_DNS_CACHE_TIMEOUT] = $this->getDnsCache();
         $curl_opt[CURLOPT_URL] = $this->url;
 
-        if ($this->headers && sizeof($this->headers)) {
+        if (!empty($this->headers) && sizeof($this->headers)) {
             $curl_opt[CURLOPT_HTTPHEADER] = array();
 
             foreach ($this->headers as $key => $value) {

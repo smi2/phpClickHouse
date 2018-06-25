@@ -400,24 +400,27 @@ class Http
         if ($writeToFile instanceof WriteToFile && $writeToFile->fetchFormat()) {
 
             $fout = fopen($writeToFile->fetchFile(), 'w');
-            $isGz = $writeToFile->getGzip();
+            if (is_resource($fout)) {
 
-            if ($isGz) {
-                // write gzip header
-                // "\x1f\x8b\x08\x00\x00\x00\x00\x00"
-                // fwrite($fout, "\x1F\x8B\x08\x08".pack("V", time())."\0\xFF", 10);
-                // write the original file name
-                // $oname = str_replace("\0", "", basename($writeToFile->fetchFile()));
-                // fwrite($fout, $oname."\0", 1+strlen($oname));
+                $isGz = $writeToFile->getGzip();
 
-                fwrite($fout, "\x1f\x8b\x08\x00\x00\x00\x00\x00");
+                if ($isGz) {
+                    // write gzip header
+                    // "\x1f\x8b\x08\x00\x00\x00\x00\x00"
+                    // fwrite($fout, "\x1F\x8B\x08\x08".pack("V", time())."\0\xFF", 10);
+                    // write the original file name
+                    // $oname = str_replace("\0", "", basename($writeToFile->fetchFile()));
+                    // fwrite($fout, $oname."\0", 1+strlen($oname));
 
+                    fwrite($fout, "\x1f\x8b\x08\x00\x00\x00\x00\x00");
+
+                }
+
+
+                $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function(CurlerRequest $request) {
+                    fclose($request->getResultFileHandle());
+                });
             }
-
-
-            $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function(CurlerRequest $request) {
-                fclose($request->getResultFileHandle());
-            });
         }
         if ($this->xClickHouseProgress)
         {
