@@ -113,12 +113,12 @@ class Http
      */
     public function getUri()
     {
-        $proto='http';
+        $proto = 'http';
         if ($this->settings()->isHttps()) {
-            $proto='https';
+            $proto = 'https';
         }
 
-        return $proto.'://' . $this->_host . ':' . $this->_port;
+        return $proto . '://' . $this->_host . ':' . $this->_port;
     }
 
     /**
@@ -324,10 +324,10 @@ class Http
 
     public function __findXClickHouseProgress($handle)
     {
-        $code=curl_getinfo($handle,CURLINFO_HTTP_CODE);
+        $code = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 
         // Search X-ClickHouse-Progress
-        if ($code==200) {
+        if ($code == 200) {
             $response = curl_multi_getcontent($handle);
             $header_size = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
             if (!$header_size) {
@@ -338,21 +338,21 @@ class Http
             if (!$header_size) {
                 return false;
             }
-            $pos=strrpos($header,'X-ClickHouse-Progress');
+            $pos = strrpos($header, 'X-ClickHouse-Progress');
 
             if (!$pos) {
                 return false;
             }
 
-            $last=substr($header,$pos);
-            $data=@json_decode(str_ireplace('X-ClickHouse-Progress:','',$last),true);
+            $last = substr($header, $pos);
+            $data = @json_decode(str_ireplace('X-ClickHouse-Progress:', '', $last), true);
 
             if ($data && is_callable($this->xClickHouseProgress)) {
 
-                if (is_array($this->xClickHouseProgress)){
-                    call_user_func_array($this->xClickHouseProgress,[$data]);
+                if (is_array($this->xClickHouseProgress)) {
+                    call_user_func_array($this->xClickHouseProgress, [$data]);
                 } else {
-                    call_user_func($this->xClickHouseProgress,$data);
+                    call_user_func($this->xClickHouseProgress, $data);
                 }
 
 
