@@ -637,7 +637,7 @@ class Client
         }
 
         // exec
-        $exec = $this->executeAsync();
+        $this->executeAsync();
 
         // fetch resutl
         foreach ($file_names as $fileName) {
@@ -876,7 +876,7 @@ class Client
                 continue;
             }
 
-            $min_date = strtotime($partition['min_date']);
+            // $min_date = strtotime($partition['min_date']);
             $max_date = strtotime($partition['max_date']);
 
             if ($max_date < $days_ago) {
