@@ -277,7 +277,7 @@ class Cluster
                     $tables[$row['database']][$row['table']][$node] = $row;
                 }
                 $result['replicas'][$node] = $r;
-            } catch (\Exception $E) {
+            }catch (\Exception $E) {
                 $result['replicas'][$node] = false;
                 $badNodes[$node] = $E->getMessage();
                 $this->error[] = 'statementsReplicas:' . $E->getMessage();
@@ -299,7 +299,7 @@ class Cluster
                         ];
                 }
 
-            } catch (\Exception $E) {
+            }catch (\Exception $E) {
                 $result['clusters'][$node] = false;
 
                 $this->error[] = 'clusters:' . $E->getMessage();
