@@ -441,8 +441,8 @@ class Client
      *
      * @param string $sql
      * @param array $bindings
-     * @param null $whereInFile
-     * @param null $writeToFile
+     * @param null|WhereInFile $whereInFile
+     * @param null|WriteToFile $writeToFile
      * @return Statement
      * @throws Exception\TransportException
      * @throws \Exception

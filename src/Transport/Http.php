@@ -533,8 +533,8 @@ class Http
     /**
      * @param Query|string $sql
      * @param array $bindings
-     * @param null $whereInFile
-     * @param null $writeToFile
+     * @param null|WhereInFile $whereInFile
+     * @param null|WriteToFile $writeToFile
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
