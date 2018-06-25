@@ -567,8 +567,8 @@ class Client
       * Inserts one or more rows from an associative array.
       * If there is a discrepancy between the keys of the value arrays (or their order) - throws an exception.
       *
-      * @param string $ table - table name
-      * @param array $ values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+      * @param string $table - table name
+      * @param array $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
       * @return Statement
       * @throws QueryException
       */
@@ -624,7 +624,7 @@ class Client
                 throw  new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
-            if (!$columns_array)
+            if (empty($columns_array))
             {
                 $sql = 'INSERT INTO ' . $table_name . ' FORMAT ' . $format;
 
