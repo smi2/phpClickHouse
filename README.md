@@ -794,7 +794,17 @@ MIT
 
 ChangeLog
 ---------
+
+### 2018-06-29
+* Do not convert int parameters in array to string in Bindings [pull 67](https://github.com/smi2/phpClickHouse/pull/67)
+* Release 1.0.1
+
+### 2018-06-25
+* Use Semantic versioning & Release 1.0.0
+
+
 ### 2018-06-22
+
 * Fix `tableSize('name')` and `tablesSize()`
 
 
