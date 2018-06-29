@@ -742,7 +742,13 @@ $db->verbose();
 * Don't forget to run composer install. It should setup PSR-4 autoloading.
 * Then you can simply run vendor/bin/phpunit and it should output the following
 
-In phpunit.xml change constants:
+
+```bash
+cp phpunit.xml.dist phpunit.xml
+mcedit phpunit.xml
+```
+
+Edit in phpunit.xml constants:
 ```xml
 <php>
     <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
