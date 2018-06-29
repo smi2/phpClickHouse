@@ -3,6 +3,14 @@
 namespace ClickHouseDB\Query\Degeneration;
 
 use DateTimeInterface;
+use function array_map;
+use function implode;
+use function is_array;
+use function is_float;
+use function is_int;
+use function is_string;
+use function sprintf;
+use function str_ireplace;
 
 class Bindings implements \ClickHouseDB\Query\Degeneration
 {
@@ -10,6 +18,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      * @var array
      */
     protected $bindings = [];
+
     /**
      * @param array $bindings
      */
@@ -23,7 +32,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 
     /**
      * @param string $column
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function bindParam($column, $value)
     {
@@ -73,10 +82,9 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
                 $escapedValues[] = $this->escapeArray($value);
             }
         }
-        
+
         return $escapedValues;
     }
-
 
     /**
      * Compile Bindings
@@ -92,35 +100,44 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 
         arsort($this->bindings);
 
-
         foreach ($this->bindings as $key => $value) {
+            $valueSet           = null;
+            $formattedParameter = null;
 
-
-            $valueSet = null;
-            $valueSetText = null;
-
-            if (null === $value || $value === false) {
-                $valueSetText = "";
+            if ($value === null || $value === false) {
+                $formattedParameter = '';
             }
 
             if (is_array($value)) {
-                $escapedValue = $this->escapeArray($value);
-                $valueSetText = "'" . implode("','", $escapedValue) . "'";
-                $valueSet = implode(", ", $escapedValue);
+                $escapedValues = $this->escapeArray($value);
+
+                $escapedValues = array_map(
+                    function ($escapedValue) {
+                        if (is_string($escapedValue)) {
+                            return $this->formatStringParameter($escapedValue);
+                        }
+
+                        return $escapedValue;
+                    },
+                    $escapedValues
+                );
+
+                $formattedParameter = implode(',', $escapedValues);
+                $valueSet           = implode(', ', $escapedValues);
             }
 
-            if (is_numeric($value)) {
-                $valueSetText = $value;
-                $valueSet = $value;
+            if (is_float($value) || is_int($value)) {
+                $formattedParameter = $value;
+                $valueSet           = $value;
             }
 
             if (is_string($value)) {
-                $valueSet = $value;
-                $valueSetText = "'" . $this->escapeString($value) . "'";
+                $valueSet           = $value;
+                $formattedParameter = $this->formatStringParameter($this->escapeString($value));
             }
 
-            if ($valueSetText !== null) {
-                $sql = str_ireplace(':' . $key, $valueSetText, $sql);
+            if ($formattedParameter !== null) {
+                $sql = str_ireplace(':' . $key, $formattedParameter, $sql);
             }
 
             if ($valueSet !== null) {
@@ -128,7 +145,14 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
             }
         }
 
-        return ($sql);
+        return $sql;
     }
 
+    /**
+     * @return string
+     */
+    private function formatStringParameter(string $value)
+    {
+        return sprintf("'%s'", $value);
+    }
 }

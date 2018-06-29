@@ -32,8 +32,8 @@ final class BindingsTest extends TestCase
             ],
             [
                 'select * from test. WHERE id IN (:id)',
-                ['id' => ['1', 2]],
-                "select * from test. WHERE id IN ('1','2')",
+                ['id' => [1, 2]],
+                'select * from test. WHERE id IN (1,2)',
             ],
             [
                 'select * from test. WHERE id IN (:id)',
