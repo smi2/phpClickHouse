@@ -37,6 +37,16 @@ final class BindingsTest extends TestCase
             ],
             [
                 'select * from test. WHERE id IN (:id)',
+                ['id' => ["1", "2"]],
+                'select * from test. WHERE id IN (\'1\',\'2\')',
+            ],
+            [
+                'select * from test. WHERE id IN (:id)',
+                ['id' => ["1", 222,333]],
+                'select * from test. WHERE id IN (\'1\',222,333)',
+            ],
+            [
+                'select * from test. WHERE id IN (:id)',
                 ['id' => ['1', "2') OR ('1'='1"]],
                 "select * from test. WHERE id IN ('1','2\') OR (\'1\'=\'1')",
             ],
