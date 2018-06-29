@@ -239,6 +239,13 @@ class CurlerRequest
     /**
      * @param callable $callback
      */
+    public function setWriteFunction($callback)
+    {
+        $this->options[CURLOPT_WRITEFUNCTION]=$callback;
+    }
+    /**
+     * @param callable $callback
+     */
     public function setReadFunction($callback)
     {
         $this->options[CURLOPT_READFUNCTION] = $callback;

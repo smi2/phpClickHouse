@@ -138,15 +138,13 @@ class CurlerRolling
     }
 
     /**
-     * @param int $usleep
      * @return bool
      * @throws TransportException
      */
-    public function execLoopWait($usleep = 10000)
+    public function execLoopWait()
     {
-        // @todo rewrite wait
         $c = 0;
-
+        $usleep = 5000;
         // add all tasks
         do {
             $this->exec();
@@ -154,10 +152,9 @@ class CurlerRolling
             $loop = $this->countActive();
             $c++;
 
-            if ($c > 100000) {
+            if ($c > 200000) {
                 break;
             }
-
             usleep($usleep);
         } while ($loop);
 

@@ -23,15 +23,22 @@ class StreamInsert
 
     /**
      * @param resource $source
+     * @param CurlerRequest $request
+     * @param CurlerRolling|null $curlerRolling
      */
-    public function __construct($source, CurlerRequest $request, CurlerRolling $curlerRolling)
+    public function __construct($source, CurlerRequest $request, $curlerRolling=null)
     {
         if (!is_resource($source)) {
             throw new \InvalidArgumentException('Argument $source must be resource');
         }
+        if ($curlerRolling instanceof CurlerRolling)
+        {
+            $this->curlerRolling = $curlerRolling;
+        } else {
+            $this->curlerRolling = new CurlerRolling();
+        }
         $this->source = $source;
         $this->request = $request;
-        $this->curlerRolling = $curlerRolling;
     }
 
     /**
@@ -46,6 +53,7 @@ class StreamInsert
                 throw new \InvalidArgumentException('Argument $callback can not be called as a function');
             }
 
+            //
             $this->request->header('Transfer-Encoding', 'chunked');
             $this->request->setReadFunction($callback);
             $this->curlerRolling->execOne($this->request, true);

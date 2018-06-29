@@ -976,14 +976,19 @@ class ClientTest extends TestCase
         $this->create_fake_csv_file($file_name, 1);
 
         $source = fopen($file_name, 'rb');
-        $curlerRolling = new CurlerRolling();
-        $streamInsert = new StreamInsert($source, new CurlerRequest(), $curlerRolling);
+        $streamInsert = new StreamInsert($source, new CurlerRequest());
         try {
             $streamInsert->insert([]);
         } catch (\Exception $e) {}
 
         // check the resource was close after insert method
         $this->assertEquals(false, is_resource($source));
+    }
+
+    public function testUptime()
+    {
+        $up = $this->client->getServerUptime();
+        $this->assertGreaterThan(1,$up);
     }
 
     /**

@@ -564,14 +564,15 @@ class Client
     }
 
     /**
-      * Inserts one or more rows from an associative array.
-      * If there is a discrepancy between the keys of the value arrays (or their order) - throws an exception.
-      *
-      * @param string $table - table name
-      * @param array $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
-      * @return Statement
-      * @throws QueryException
-      */
+     * Inserts one or more rows from an associative array.
+     * If there is a discrepancy between the keys of the value arrays (or their order) - throws an exception.
+     *
+     * @param string $table - table name
+     * @param array $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+     * @return Statement
+     * @throws QueryException
+     * @throws Exception\TransportException
+     */
     public function insertAssocBulk($table, array $values)
     {
         list($columns, $vals) = $this->prepareInsertAssocBulk($values);
@@ -587,7 +588,7 @@ class Client
      * @return mixed
      * @throws Exception\TransportException
      */
-    public function insertBatchTSVFiles($table_name, $file_names, $columns_array)
+    public function insertBatchTSVFiles($table_name, $file_names, $columns_array=[])
     {
         return $this->insertBatchFiles($table_name, $file_names, $columns_array, 'TabSeparated');
     }
@@ -602,7 +603,7 @@ class Client
      * @return array
      * @throws Exception\TransportException
      */
-    public function insertBatchFiles($table_name, $file_names, $columns_array, $format = "CSV")
+    public function insertBatchFiles($table_name, $file_names, $columns_array=[], $format = "CSV")
     {
         if (is_string($file_names))
         {
@@ -657,7 +658,7 @@ class Client
      * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return Transport\CurlerRequest
      */
-    public function insertBatchStream($table_name, $columns_array, $format = "CSV")
+    public function insertBatchStream($table_name, $columns_array=[], $format = "CSV")
     {
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
@@ -853,6 +854,37 @@ class Client
         }
         return $out;
     }
+
+    /**
+     * Returns the server's uptime in seconds.
+     *
+     * @return array
+     * @throws Exception\TransportException
+     */
+    public function getServerUptime()
+    {
+        return $this->select('SELECT uptime() as uptime')->fetchOne('uptime');
+    }
+
+
+    /**
+     * Read system.settings table
+     *
+     * @param string $like
+     * @return array
+     * @throws Exception\TransportException
+     */
+    public function getServerSystemSettings($like='')
+    {
+        $l=[];
+        $list=$this->select('SELECT * FROM system.settings'.($like ? ' WHERE name LIKE :like':'' ),['like'=>'%'.$like.'%'])->rows();
+        foreach ($list as $row) {
+            if (isset($row['name'])) {$n=$row['name']; unset($row['name']) ; $l[$n]=$row;}
+        }
+        return $l;
+    }
+
+
 
     /**
      * dropOldPartitions by day_ago

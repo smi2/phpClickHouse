@@ -554,6 +554,15 @@ $db->settings()->https();
 ```
 
 
+
+### getServer SystemSettings
+
+```php
+print_r($db->getServerUptime())
+print_r($db->getServerSystemSettings());
+print_r($db->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read'));
+```
+
 ### ReadOnly ClickHouse user
 
 ```php
@@ -579,6 +588,31 @@ $db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHous
 $db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
 $statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,new ClickHouseDB\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\WriteToFile::FORMAT_CSV));
 ```
+
+## Stream
+
+StreamInsert : Closure stream write
+
+```php
+// Stream/Source read
+$source = fopen($file_name, 'rb');
+// Table to Insert
+$request = $this->client->insertBatchStream('summing_url_views');
+
+
+$streamInsert = new StreamInsert($source, $request);
+// Closure
+$callable = function ($ch, $fd, $length) use ($source) {
+            return ($line = fread($source, $length)) ? $line : '';
+};
+
+$streamInsert->insert($callable);
+
+
+
+```
+
+
 
 ### insert Assoc Bulk
 
@@ -722,6 +756,8 @@ $db->isExists($database,$table);
 $db->verbose();
 ```
 
+
+
 ### Dev & PHPUnit Test
 
 
@@ -780,6 +816,13 @@ MIT
 
 ChangeLog
 ---------
+### 2018-
+* `$client->getServerUptime()` Returns the server's uptime in seconds.
+*
+
+
+* Release 1.0.2
+
 
 ### 2018-06-29
 * Do not convert int parameters in array to string in Bindings [pull 67](https://github.com/smi2/phpClickHouse/pull/67)
