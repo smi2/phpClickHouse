@@ -10,7 +10,7 @@ PHP ClickHouse wrapper
 
 ## Features
 
-- No dependency, only curl (php 5.6 without composer)
+- No dependency, only Curl (support php 5.6, but recommended 7.2 )
 - Select parallel queries (asynchronous)
 - Parallelizing bulk inserts from CSV file
 - enable_http_compression, for bulk inserts
@@ -35,20 +35,6 @@ PHP ClickHouse wrapper
 composer require smi2/phpclickhouse
 ```
 
-### OR install submodule
-
-`composer` require php 7.1, but phpClickHouse can work on php >=5.6 without autoload and `composer`
-
-
-```bash
-git submodule add https://github.com/smi2/phpClickHouse.git
-git submodule init
-
-# update
-git submodule update --init --recursive
-git submodule update --remote
-
-```
 
 In php
 ```php
