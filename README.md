@@ -818,7 +818,7 @@ ChangeLog
 ---------
 ### 2018-
 * `$client->getServerUptime()` Returns the server's uptime in seconds.
-*
+* `$client->getServerSystemSettings()` Read system.settings table and return array
 
 
 * Release 1.0.2

@@ -991,6 +991,12 @@ class ClientTest extends TestCase
         $this->assertGreaterThan(1,$up);
     }
 
+    public function testServerSystemSettings()
+    {
+        $up = $this->client->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read');
+        $this->assertGreaterThan(1,$up['merge_tree_min_rows_for_concurrent_read']['value']);
+    }
+
     /**
      *
      */
