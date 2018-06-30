@@ -4,6 +4,11 @@ namespace ClickHouseDB\Transport;
 
 use ClickHouseDB\Statement;
 
+/**
+ * Class StreamInsert
+ * @deprecated
+ * @package ClickHouseDB\Transport
+ */
 class StreamInsert
 {
     /**

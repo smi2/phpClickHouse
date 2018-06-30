@@ -238,13 +238,12 @@ class Http
      */
     public function writeStreamData($sql)
     {
-        $query = new Query($sql);
 
+        $query = new Query($sql);
         $url = $this->getUrl([
             'readonly' => 0,
             'query' => $query->toSql()
         ]);
-
         $extendinfo = [
             'sql' => $sql,
             'query' => $query,
@@ -487,13 +486,13 @@ class Http
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
         }
-
-
         $query = $this->prepareQuery($sql, $bindings);
         $query->setFormat('JSON');
         return $this->getRequestRead($query, $whereInFile, $writeToFile);
-
     }
+
+
+
 
     /**
      * @param Query|string $sql
@@ -578,5 +577,37 @@ class Http
             }
         }
         return $response;
+    }
+
+
+    /**
+     * @param resource $stream
+     * @param string $sql
+     * @param array $bindings
+     * @param null|callable $callable
+     * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
+     */
+    public function streamWrite($stream,$sql,$bindings=[],$callable=null)
+    {
+        $sql=$this->prepareQuery($sql,$bindings);
+        $request = $this->writeStreamData($sql);
+        try {
+            if (!is_callable($callable)) {
+                $callable = function ($ch, $fd, $length) use ($stream) {
+                    return ($line = fread($stream, $length)) ? $line : '';
+                };
+            }
+            $request->header('Transfer-Encoding', 'chunked');
+            $request->setReadFunction($callable);
+            $this->_curler->execOne($request,true);
+            $response = new Statement($request);
+            if ($response->isError()) {
+                $response->error();
+            }
+            return $response;
+        } finally {
+            fclose($stream);
+        }
     }
 }

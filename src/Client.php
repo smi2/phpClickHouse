@@ -684,6 +684,24 @@ class Client
 
 
     /**
+     * @param $stream
+     * @param $sql
+     * @param $bind
+     * @param $callable
+     * @return Statement
+     * @throws Exception\TransportException
+     */
+    public function streamWrite($stream,$sql,$bind=[],$callable=null)
+    {
+        if ($this->getCountPendingQueue() > 0) {
+            throw new QueryException('Queue must be empty, before streamWrite');
+        }
+        return $this->transport()->streamWrite($stream,$sql,$bind,$callable);
+
+        //
+    }
+
+    /**
      * Size of database
      *
      * @return mixed|null
@@ -817,7 +835,7 @@ class Client
 
     /**
      * dropPartition
-     *
+     * @deprecated
      * @param string $dataBaseTableName database_name.table_name
      * @param string $partition_id
      * @return Statement
@@ -837,7 +855,7 @@ class Client
 
     /**
      * Truncate ( drop all partitions )
-     *
+     * @deprecated
      * @param string $tableName
      * @return array
      * @throws Exception\TransportException
@@ -888,6 +906,7 @@ class Client
 
     /**
      * dropOldPartitions by day_ago
+     * @deprecated
      *
      * @param string $table_name
      * @param int $days_ago

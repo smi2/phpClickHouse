@@ -27,7 +27,7 @@ PHP ClickHouse wrapper
 - Async get ClickHouse progress function
 
 
-[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr 2](https://habrahabr.ru/company/smi2/blog/317682/) [on habr 1](https://habr.com/company/smi2/blog/314558/)
+[Russian articles habr.com 1](https://habrahabr.ru/company/smi2/blog/317682/) [on habr.com 2](https://habr.com/company/smi2/blog/314558/)
 
 ## Install composer
 
@@ -555,12 +555,15 @@ $db->settings()->https();
 
 
 
-### getServer SystemSettings
+### getServer System.Settings & Uptime
 
 ```php
-print_r($db->getServerUptime())
+print_r($db->getServerUptime());
+
 print_r($db->getServerSystemSettings());
+
 print_r($db->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read'));
+
 ```
 
 ### ReadOnly ClickHouse user
@@ -819,6 +822,7 @@ ChangeLog
 ### 2018-
 * `$client->getServerUptime()` Returns the server's uptime in seconds.
 * `$client->getServerSystemSettings()` Read system.settings table and return array
+* Optimize `StreamInsert` class
 
 
 * Release 1.0.2
