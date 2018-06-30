@@ -684,19 +684,19 @@ class Client
 
 
     /**
-     * @param $stream
-     * @param $sql
-     * @param $bind
-     * @param $callable
+     * @param resource $stream
+     * @param string $sql
+     * @param array $bind
+     * @param callable|null $callable
      * @return Statement
      * @throws Exception\TransportException
      */
-    public function streamWrite($stream,$sql,$bind=[],$callable=null)
+    public function streamWrite($stream,$sql,$bind=[],$callable=null,$gzip)
     {
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before streamWrite');
         }
-        return $this->transport()->streamWrite($stream,$sql,$bind,$callable);
+        return $this->transport()->streamWrite($stream,$sql,$bind,$callable,$gzip);
 
         //
     }

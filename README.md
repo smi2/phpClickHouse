@@ -594,27 +594,66 @@ $statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,n
 
 ## Stream
 
-StreamInsert : Closure stream write
+streamWrite() : Closure stream write
 
 ```php
-// Stream/Source read
-$source = fopen($file_name, 'rb');
-// Table to Insert
-$request = $this->client->insertBatchStream('summing_url_views');
+$client->streamWrite(
+        $stream,                                        // Stream/Source read
+        'INSERT INTO {table_name} FORMAT JSONEachRow',  // SQL Query
+        ['table_name'=>'_phpCh_SteamTest']
+    );
+```
 
 
-$streamInsert = new StreamInsert($source, $request);
-// Closure
-$callable = function ($ch, $fd, $length) use ($source) {
-            return ($line = fread($source, $length)) ? $line : '';
-};
+### streamWrite
 
-$streamInsert->insert($callable);
+```php
 
+$stream = fopen('php://memory','r+');
+
+for($f=0;$f<23;$f++) {
+        fwrite($stream, json_encode(['a'=>$f]).PHP_EOL );
+}
+
+rewind($stream); // rewind stream
+
+$callable = function ($ch, $fd, $length) use ($stream) {
+                    return ($line = fread($stream, $length)) ? $line : '';
+                };
+
+
+
+$client->streamWrite(
+        $stream,
+        'INSERT INTO {table_name} FORMAT JSONEachRow',
+        ['table_name'=>'_phpCh_SteamTest'],
+        $callable
+);
+
+print_r($client->select('SELECT sum(a) FROM _phpCh_SteamTest')->rows());
 
 
 ```
 
+
+Support *zlib.deflate* in stream
+
+
+```php
+
+stream_filter_append($stream, 'zlib.deflate', STREAM_FILTER_READ, ['window' => 30]);
+
+$r=$client->streamWrite(
+        $stream,
+        'INSERT INTO {table_name} FORMAT JSONEachRow',
+        ['table_name'=>'_phpCh_SteamTest'],
+        null,   // use default callable
+        true    // add GZIP Headers
+);
+
+print_r($r->info_upload());
+
+```
 
 
 ### insert Assoc Bulk
@@ -822,7 +861,8 @@ ChangeLog
 ### 2018-
 * `$client->getServerUptime()` Returns the server's uptime in seconds.
 * `$client->getServerSystemSettings()` Read system.settings table and return array
-* Optimize `StreamInsert` class
+* Deprecated `StreamInsert` class
+* Add `streamWrite()`
 
 
 * Release 1.0.2

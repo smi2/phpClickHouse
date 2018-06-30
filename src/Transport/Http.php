@@ -239,7 +239,12 @@ class Http
     public function writeStreamData($sql)
     {
 
-        $query = new Query($sql);
+        if ($sql instanceof Query) {
+            $query=$sql;
+        } else {
+            $query = new Query($sql);
+        }
+
         $url = $this->getUrl([
             'readonly' => 0,
             'query' => $query->toSql()
@@ -585,10 +590,11 @@ class Http
      * @param string $sql
      * @param array $bindings
      * @param null|callable $callable
+     * @param bool $gzip
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamWrite($stream,$sql,$bindings=[],$callable=null)
+    public function streamWrite($stream,$sql,$bindings=[],$callable=null,$gzip=false)
     {
         $sql=$this->prepareQuery($sql,$bindings);
         $request = $this->writeStreamData($sql);
@@ -598,6 +604,14 @@ class Http
                     return ($line = fread($stream, $length)) ? $line : '';
                 };
             }
+
+            if ($gzip) {
+                $request->header('Content-Encoding', 'gzip');
+                $request->header('Content-Type', 'application/x-www-form-urlencoded');
+            }
+
+
+
             $request->header('Transfer-Encoding', 'chunked');
             $request->setReadFunction($callable);
             $this->_curler->execOne($request,true);

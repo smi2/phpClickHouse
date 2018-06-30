@@ -151,7 +151,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
     /**
      * @return string
      */
-    private function formatStringParameter(string $value)
+    private function formatStringParameter($value)
     {
         return sprintf("'%s'", $value);
     }
