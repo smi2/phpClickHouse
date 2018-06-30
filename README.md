@@ -597,40 +597,42 @@ $statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,n
 streamWrite() : Closure stream write
 
 ```php
+
+$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+
 $client->streamWrite(
-        $stream,                                        // Stream/Source read
+        $streamWrite,                                   // StreamWrite Class
         'INSERT INTO {table_name} FORMAT JSONEachRow',  // SQL Query
-        ['table_name'=>'_phpCh_SteamTest']
+        ['table_name'=>'_phpCh_SteamTest']              // Binds
     );
 ```
 
 
-### streamWrite
+### streamWrite & custom Closure & Deflate
 
 ```php
 
 $stream = fopen('php://memory','r+');
 
-for($f=0;$f<23;$f++) {
+for($f=0;$f<23;$f++) {  // Make json data in stream
         fwrite($stream, json_encode(['a'=>$f]).PHP_EOL );
 }
 
 rewind($stream); // rewind stream
 
+
+$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+$streamWrite->applyGzip();   // Add Gzip/Deflate
+
 $callable = function ($ch, $fd, $length) use ($stream) {
-                    return ($line = fread($stream, $length)) ? $line : '';
-                };
-
-
-
-$client->streamWrite(
-        $stream,
-        'INSERT INTO {table_name} FORMAT JSONEachRow',
-        ['table_name'=>'_phpCh_SteamTest'],
-        $callable
-);
-
-print_r($client->select('SELECT sum(a) FROM _phpCh_SteamTest')->rows());
+    return ($line = fread($stream, $length)) ? $line : '';
+};
+// Apply closure
+$streamWrite->closure($callable);
+// Run Query
+$r=$client->streamWrite($streamWrite,'INSERT INTO {table_name} FORMAT JSONEachRow', ['table_name'=>'_phpCh_SteamTest']);
+// Result
+print_r($r->info_upload());
 
 
 ```

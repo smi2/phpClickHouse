@@ -8,6 +8,7 @@ use ClickHouseDB\Query\WhereInFile;
 use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Quote\FormatLine;
 use ClickHouseDB\Transport\Http;
+use ClickHouseDB\Transport\StreamWrite;
 
 class Client
 {
@@ -684,19 +685,18 @@ class Client
 
 
     /**
-     * @param resource $stream
+     * @param StreamWrite $StreamWrite
      * @param string $sql
      * @param array $bind
-     * @param callable|null $callable
      * @return Statement
      * @throws Exception\TransportException
      */
-    public function streamWrite($stream,$sql,$bind=[],$callable=null,$gzip)
+    public function streamWrite(StreamWrite $stream,$sql,$bind=[])
     {
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before streamWrite');
         }
-        return $this->transport()->streamWrite($stream,$sql,$bind,$callable,$gzip);
+        return $this->transport()->streamWrite($stream,$sql,$bind);
 
         //
     }

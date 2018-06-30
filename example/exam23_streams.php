@@ -20,25 +20,32 @@ rewind($stream);
 
 echo "\nstreamWrite....\n";
 
-stream_filter_append($stream, 'zlib.deflate', STREAM_FILTER_READ, ['window' => 30]);
+
+$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+$streamWrite->applyGzip();
+
+$callable = function ($ch, $fd, $length) use ($stream) {
+    return ($line = fread($stream, $length)) ? $line : '';
+};
 
 
-$r=$client->streamWrite(
-        $stream,
-        'INSERT INTO {table_name} FORMAT JSONEachRow',
-        ['table_name'=>'_phpCh_SteamTest'],
-        null
-        ,
-        true
-);
+$streamWrite->closure($callable);
+
+$r=$client->streamWrite($streamWrite,'INSERT INTO {table_name} FORMAT JSONEachRow', ['table_name'=>'_phpCh_SteamTest']);
 
 print_r($r->info_upload());
-//stream_filter_append($stream, 'zlib.deflate', STREAM_FILTER_READ, ["window" => 30]);
+//print_r($client->select('SELECT sum(a) FROM _phpCh_SteamTest')->rows());
 
 
-print_r($client->select('SELECT sum(a) FROM _phpCh_SteamTest')->rows());
+// ------------------------------------------------------------------------------------------------------------------------
+$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+$streamWrite->applyDeflate();
+$callable = function ($ch, $fd, $length) use ($stream) {
+    return ($line = fread($stream, $length)) ? $line : '';
+};
+$streamWrite->closure($callable);
 
 
 
 
-// ------------------------
+// ------------------------------------------------------------------------------------------------------------------------

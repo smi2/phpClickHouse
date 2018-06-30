@@ -586,26 +586,31 @@ class Http
 
 
     /**
-     * @param resource $stream
+     * @param StreamWrite $stream
      * @param string $sql
      * @param array $bindings
-     * @param null|callable $callable
-     * @param bool $gzip
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamWrite($stream,$sql,$bindings=[],$callable=null,$gzip=false)
+    public function streamWrite(StreamWrite $streamWrite,$sql,$bindings=[])
     {
         $sql=$this->prepareQuery($sql,$bindings);
         $request = $this->writeStreamData($sql);
+        $callable=$streamWrite->getClosure();
+        $stream=$streamWrite->getStream();
+
+
         try {
+
+
             if (!is_callable($callable)) {
+
                 $callable = function ($ch, $fd, $length) use ($stream) {
                     return ($line = fread($stream, $length)) ? $line : '';
                 };
             }
 
-            if ($gzip) {
+            if ($streamWrite->isGzipHeader()) {
                 $request->header('Content-Encoding', 'gzip');
                 $request->header('Content-Type', 'application/x-www-form-urlencoded');
             }
