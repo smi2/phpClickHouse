@@ -622,7 +622,7 @@ rewind($stream); // rewind stream
 
 
 $streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
-$streamWrite->applyGzip();   // Add Gzip/Deflate
+$streamWrite->applyGzip();   // Add Gzip zlib.deflate in stream
 
 $callable = function ($ch, $fd, $length) use ($stream) {
     return ($line = fread($stream, $length)) ? $line : '';
@@ -634,26 +634,6 @@ $r=$client->streamWrite($streamWrite,'INSERT INTO {table_name} FORMAT JSONEachRo
 // Result
 print_r($r->info_upload());
 
-
-```
-
-
-Support *zlib.deflate* in stream
-
-
-```php
-
-stream_filter_append($stream, 'zlib.deflate', STREAM_FILTER_READ, ['window' => 30]);
-
-$r=$client->streamWrite(
-        $stream,
-        'INSERT INTO {table_name} FORMAT JSONEachRow',
-        ['table_name'=>'_phpCh_SteamTest'],
-        null,   // use default callable
-        true    // add GZIP Headers
-);
-
-print_r($r->info_upload());
 
 ```
 
