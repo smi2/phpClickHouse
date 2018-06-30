@@ -109,7 +109,7 @@ class Client
             $this->https($connect_params['https']);
         }
 
-
+        $this->enableHttpCompression();
 
 
     }
