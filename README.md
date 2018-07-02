@@ -883,7 +883,7 @@ ChangeLog
 * Now default enable`HttpCompression` set true
 * Fix `rawData()` result in `JSONCompact & JSONEachRow` format
 * Fix Statement - unnecessary memory usage
-
+* Fix support php5.6
 * Release 1.1.0
 
 
