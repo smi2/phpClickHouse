@@ -53,11 +53,6 @@ class Statement
     /**
      * @var array
      */
-    private $data;
-
-    /**
-     * @var array
-     */
     private $totals;
 
     /**
@@ -224,10 +219,18 @@ class Statement
             $this->_init = true;
             return false;
         }
-
+        $data=[];
         foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least', 'statistics'] as $key) {
+
             if (isset($this->_rawData[$key])) {
-                $this->{$key} = $this->_rawData[$key];
+                if ($key=='data')
+                {
+                    $data=$this->_rawData[$key];
+                }
+                else{
+                    $this->{$key} = $this->_rawData[$key];
+                }
+
             }
         }
 
@@ -235,12 +238,20 @@ class Statement
             throw  new QueryException('Can`t find meta');
         }
 
+        $isJSONCompact=(stripos($this->format,'JSONCompact')!==false?true:false);
         $this->array_data = [];
-        foreach ($this->data as $rows) {
+        foreach ($data as $rows) {
             $r = [];
 
-            foreach ($this->meta as $meta) {
-                $r[$meta['name']] = $rows[$meta['name']];
+
+            if ($isJSONCompact)
+            {
+                $r[]=$rows;
+            }
+            else {
+                foreach ($this->meta as $meta) {
+                    $r[$meta['name']] = $rows[$meta['name']];
+                }
             }
 
             $this->array_data[] = $r;

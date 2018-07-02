@@ -251,6 +251,11 @@ class CurlerRequest
         $this->options[CURLOPT_READFUNCTION] = $callback;
     }
 
+    public function setHeaderFunction($callback)
+    {
+        $this->options[CURLOPT_HEADERFUNCTION] = $callback;
+    }
+
     /**
      * @param string $classCallBack
      * @param string $functionName
@@ -706,6 +711,11 @@ class CurlerRequest
         if (!empty($curl_opt[CURLOPT_INFILE])) {
 
             $curl_opt[CURLOPT_PUT] = true;
+        }
+
+        if (!empty($curl_opt[CURLOPT_WRITEFUNCTION]))
+        {
+            $curl_opt[CURLOPT_HEADER]=false;
         }
 
         if ($this->resultFileHandle) {

@@ -50,3 +50,12 @@ $r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos
 
 
 ```
+
+
+
+### todo Tests
+
+```
+$d=$client->select('SELECT sin(number) as sin,cos(number) as cos FROM system.numbers LIMIT 2 FORMAT JSONEachRow');
+$d=$client->select('SELECT sin(number) as sin,cos(number) as cos FROM system.numbers LIMIT 1 FORMAT JSONCompact');
+```

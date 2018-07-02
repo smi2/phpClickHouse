@@ -584,41 +584,65 @@ class Http
         return $response;
     }
 
-
     /**
-     * @param StreamWrite $stream
-     * @param string $sql
-     * @param array $bindings
+     * @param Stream $streamRW
+     * @param CurlerRequest $request
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamWrite(StreamWrite $streamWrite,$sql,$bindings=[])
+    private function streaming(Stream $streamRW,CurlerRequest $request)
     {
-        $sql=$this->prepareQuery($sql,$bindings);
-        $request = $this->writeStreamData($sql);
-        $callable=$streamWrite->getClosure();
-        $stream=$streamWrite->getStream();
+        $callable=$streamRW->getClosure();
+        $stream=$streamRW->getStream();
+
 
 
         try {
 
 
             if (!is_callable($callable)) {
+                if ($streamRW->isWrite())
+                {
 
-                $callable = function ($ch, $fd, $length) use ($stream) {
-                    return ($line = fread($stream, $length)) ? $line : '';
-                };
+                    $callable = function ($ch, $fd, $length) use ($stream) {
+                        return ($line = fread($stream, $length)) ? $line : '';
+                    };
+                } else {
+                    $callable = function ($ch, $fd) use ($stream) {
+                        return fwrite($stream, $fd);
+                    };
+                }
             }
 
-            if ($streamWrite->isGzipHeader()) {
-                $request->header('Content-Encoding', 'gzip');
-                $request->header('Content-Type', 'application/x-www-form-urlencoded');
+            if ($streamRW->isGzipHeader()) {
+
+                if ($streamRW->isWrite())
+                {
+                    $request->header('Content-Encoding', 'gzip');
+                    $request->header('Content-Type', 'application/x-www-form-urlencoded');
+                } else {
+                    $request->header('Accept-Encoding', 'gzip');
+                }
+
             }
 
 
 
             $request->header('Transfer-Encoding', 'chunked');
-            $request->setReadFunction($callable);
+
+
+            if ($streamRW->isWrite())
+            {
+                $request->setReadFunction($callable);
+            } else {
+                $request->setWriteFunction($callable);
+
+
+
+//                $request->setHeaderFunction($callableHead);
+            }
+
+
             $this->_curler->execOne($request,true);
             $response = new Statement($request);
             if ($response->isError()) {
@@ -626,7 +650,40 @@ class Http
             }
             return $response;
         } finally {
+            if ($streamRW->isWrite())
             fclose($stream);
         }
+
+
+    }
+
+
+    /**
+     * @param Stream $streamRead
+     * @param string $sql
+     * @param array $bindings
+     * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
+     */
+    public function streamRead(Stream $streamRead,$sql,$bindings=[])
+    {
+        $sql=$this->prepareQuery($sql,$bindings);
+        $request=$this->getRequestRead($sql);
+        return $this->streaming($streamRead,$request);
+
+    }
+
+    /**
+     * @param StreamWrite $streamWrite
+     * @param string $sql
+     * @param array $bindings
+     * @return Statement
+     * @throws \ClickHouseDB\Exception\TransportException
+     */
+    public function streamWrite(Stream $streamWrite,$sql,$bindings=[])
+    {
+        $sql=$this->prepareQuery($sql,$bindings);
+        $request = $this->writeStreamData($sql);
+        return $this->streaming($streamWrite,$request);
     }
 }

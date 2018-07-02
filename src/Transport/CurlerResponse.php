@@ -289,8 +289,11 @@ class CurlerResponse
      */
     public function rawDataOrJson($format)
     {
+        // JSONCompact // JSONEachRow
+
         if (stripos($format, 'json') !== false)
         {
+            if (stripos($format,'JSONEachRow')===false)
             return $this->json();
         }
         return $this->body();

@@ -643,16 +643,31 @@ streamRead is like `WriteToFile`
 
 
 ```php
-// Write to file GZ
+$stream = fopen('php://memory','r+');
 $streamRead=new ClickHouseDB\Transport\StreamRead($stream);
-$streamRead->applyGzip();   // Add Gzip zlib.deflate in stream
-$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 30 FORMAT JSONEachRow', ['table_name'=>'system.number']);
+
+$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 4 FORMAT JSONEachRow', ['table_name'=>'system.numbers']);
+rewind($stream);
+while (($buffer = fgets($stream, 4096)) !== false) {
+    echo ">>> ".$buffer;
+}
+fclose($stream); // Need Close Stream
+
+
 
 // Send to closure
-$streamRead=new ClickHouseDB\Transport\StreamRead($stream);
-$streamRead->closure($callable);
-$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 30 FORMAT JSONEachRow', ['table_name'=>'system.number']);
 
+$stream = fopen('php://memory','r+');
+$streamRead=new ClickHouseDB\Transport\StreamRead($stream);
+$callable = function ($ch, $string) use ($stream) {
+    // some magic for _BLOCK_ data
+    fwrite($stream, str_ireplace('"sin"','"max"',$string));
+    return strlen($string);
+};
+
+$streamRead->closure($callable);
+
+$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 44 FORMAT JSONEachRow', ['table_name'=>'system.numbers']);
 
 ```
 
@@ -864,9 +879,13 @@ ChangeLog
 * `$client->getServerSystemSettings()` Read system.settings table and return array
 * Deprecated `StreamInsert` class
 * Add `streamWrite()` function
+* Add `streamRead()` function
 * Now default enable`HttpCompression` set true
+* Fix `rawData()` result in `JSONCompact & JSONEachRow` format
+* Fix Statement - unnecessary memory usage
 
-* Release 1.0.2
+
+* Release 1.1.0
 
 
 ### 2018-06-29

@@ -8,7 +8,15 @@ echo "\nPrepare....\n";
 $client = new ClickHouseDB\Client($config);
 $client->write('DROP TABLE IF EXISTS _phpCh_SteamTest');
 
+
+
 $client->write('CREATE TABLE _phpCh_SteamTest (a Int32) Engine=Log');
+
+
+
+
+
+echo "\n\n------------------------------------ 0 ---------------------------------------------------------------------------------\n\n";
 
 
 
@@ -22,6 +30,7 @@ echo "\nstreamWrite....\n";
 
 
 $streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+
 $streamWrite->applyGzip();
 
 $callable = function ($ch, $fd, $length) use ($stream) {
@@ -34,18 +43,58 @@ $streamWrite->closure($callable);
 $r=$client->streamWrite($streamWrite,'INSERT INTO {table_name} FORMAT JSONEachRow', ['table_name'=>'_phpCh_SteamTest']);
 
 print_r($r->info_upload());
-//print_r($client->select('SELECT sum(a) FROM _phpCh_SteamTest')->rows());
 
 
-// ------------------------------------------------------------------------------------------------------------------------
-$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
-$streamWrite->applyDeflate();
-$callable = function ($ch, $fd, $length) use ($stream) {
-    return ($line = fread($stream, $length)) ? $line : '';
+print_r($client->select("SELECT sum(a) FROM _phpCh_SteamTest ")->rows());
+
+echo "\n\n------------------------------------ 1 ---------------------------------------------------------------------------------\n\n";
+
+
+$stream = fopen('php://memory','r+');
+
+$streamRead=new ClickHouseDB\Transport\StreamRead($stream);
+
+$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 4 FORMAT JSONEachRow', ['table_name'=>'system.numbers']);
+rewind($stream);
+while (($buffer = fgets($stream, 4096)) !== false) {
+    echo ">>> ".$buffer;
+}
+fclose($stream);
+
+
+
+echo "\n\n---------------------------------- 2 --------------------------------------------------------------------------------------\n\n";
+
+
+
+$stream = fopen('php://memory','r+');
+$streamRead=new ClickHouseDB\Transport\StreamRead($stream);
+$callable = function ($ch, $string) use ($stream) {
+    // some magic for _BLOCK_ data
+    fwrite($stream, str_ireplace('"sin"','"max"',$string));
+    return strlen($string);
 };
-$streamWrite->closure($callable);
+
+$streamRead->closure($callable);
+
+$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 44 FORMAT JSONEachRow', ['table_name'=>'system.numbers']);
+
+echo "size_download:".($r->info()['size_download'])."\n";
 
 
 
+rewind($stream);
 
+
+
+while (($buffer = fgets($stream, 4096)) !== false) {
+    echo "".$buffer;
+}
+fclose($stream);
 // ------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
