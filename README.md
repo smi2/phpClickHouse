@@ -874,7 +874,8 @@ MIT
 
 ChangeLog
 ---------
-### 2018-
+### 2018-07-02
+
 * `$client->getServerUptime()` Returns the server's uptime in seconds.
 * `$client->getServerSystemSettings()` Read system.settings table and return array
 * Deprecated `StreamInsert` class

@@ -45,7 +45,7 @@ $r=$client->streamWrite($streamWrite,'INSERT INTO {table_name} FORMAT JSONEachRo
 print_r($r->info_upload());
 
 
-print_r($client->select("SELECT sum(a) FROM _phpCh_SteamTest ")->rows());
+print_r($client->select("SELECT sum(a) as s FROM _phpCh_SteamTest ")->fetchOne('s'));
 
 echo "\n\n------------------------------------ 1 ---------------------------------------------------------------------------------\n\n";
 
