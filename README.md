@@ -12,20 +12,19 @@ PHP ClickHouse wrapper
 
 - No dependency, only Curl (support php 5.6, but recommended 7.2 )
 - Select parallel queries (asynchronous)
-- Parallelizing bulk inserts from CSV file
-- enable_http_compression, for bulk inserts
-- Find active host and check cluster
+- Asynchronous bulk inserts from CSV file
+- Http compression (Gzip), for bulk inserts
+- Find active host, check cluster
 - Select WHERE IN ( _local csv file_ )
 - SQL conditions & template
 - tablesSize & databaseSize
 - listPartitions
-- dropPartition & dropOldPartitions
 - truncateTable in cluster
 - Insert array as column
 - Get master node replica in cluster
 - Get tableSize in all nodes
 - Async get ClickHouse progress function
-
+- streamRead/Write & Closure functions
 
 [Russian articles habr.com 1](https://habrahabr.ru/company/smi2/blog/317682/) [on habr.com 2](https://habr.com/company/smi2/blog/314558/)
 
@@ -884,7 +883,6 @@ ChangeLog
 * Now default enable`HttpCompression` set true
 * Fix `rawData()` result in `JSONCompact & JSONEachRow` format
 * Fix Statement - unnecessary memory usage
-
 
 * Release 1.1.0
 
