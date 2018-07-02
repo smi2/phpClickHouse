@@ -233,7 +233,7 @@ class Http
     }
 
     /**
-     * @param string $sql
+     * @param string|Query $sql
      * @return CurlerRequest
      */
     public function writeStreamData($sql)
@@ -674,7 +674,7 @@ class Http
     }
 
     /**
-     * @param StreamWrite $streamWrite
+     * @param Stream $streamWrite
      * @param string $sql
      * @param array $bindings
      * @return Statement
