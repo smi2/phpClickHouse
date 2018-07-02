@@ -115,7 +115,7 @@ class CurlerResponse
 
     /**
      * @param string $name
-     * @return null
+     * @return null|string
      */
     public function headers($name)
     {
@@ -127,7 +127,7 @@ class CurlerResponse
     }
 
     /**
-     * @return null
+     * @return null|string
      */
     public function connection()
     {
@@ -266,7 +266,7 @@ class CurlerResponse
         return $this->_info;
     }
     /**
-     * @param null $key
+     * @param string|null $key
      * @return bool|mixed
      */
     public function json($key = null)

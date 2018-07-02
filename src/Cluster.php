@@ -548,7 +548,7 @@ class Cluster
 
     /**
      * Truncate on all nodes
-     *
+     * @deprecated
      * @param string $database_table
      * @return array
      * @throws Exception\TransportException
