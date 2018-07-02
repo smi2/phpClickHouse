@@ -873,26 +873,33 @@ MIT
 
 ChangeLog
 ---------
-### 2018-07-02
+### 2018-07-02 [Release 1.1.0]
 
+
+New:
 * `$client->getServerUptime()` Returns the server's uptime in seconds.
 * `$client->getServerSystemSettings()` Read system.settings table and return array
-* Deprecated `StreamInsert` class
-* Add `streamWrite()` function
-* Add `streamRead()` function
+* `$client->streamWrite()` function
+* `$client->streamRead()` function
+
+
+Warning:
 * Now default enable`HttpCompression` set true
+* Deprecated `StreamInsert` class
+
+Fix:
 * Fix `rawData()` result in `JSONCompact & JSONEachRow` format
 * Fix Statement - unnecessary memory usage
 * Fix support php5.6
-* Release 1.1.0
 
 
-### 2018-06-29
+
+### 2018-06-29 [Release 1.0.1]
 * Do not convert int parameters in array to string in Bindings [pull 67](https://github.com/smi2/phpClickHouse/pull/67)
-* Release 1.0.1
+*
 
-### 2018-06-25
-* Use Semantic versioning & Release 1.0.0
+### 2018-06-25 [Release 1.0.0]
+* Use Semantic versioning
 
 
 ### 2018-06-22
