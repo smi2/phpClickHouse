@@ -839,10 +839,10 @@ class ClientTest extends TestCase
 
         $this->assertGreaterThan(0, $state->totalTimeRequest());
 
-        $state = $this->client->select('SELECT s_key, s_arr FROM arrays_test_ints ARRAY JOIN s_arr');
+        $state = $this->client->select('SELECT s_arr,s_key FROM arrays_test_ints ARRAY JOIN s_arr ORDER BY s_key');
 
         $this->assertEquals(4, $state->count());
-        $this->assertArraySubset([['s_key' => 'HASH1', 's_arr' => 11]], $state->rows());
+        $this->assertArraySubset([['s_arr' => 11,'s_key' => 'HASH1']], $state->rows());
     }
 
     public function testInsertTableTimeout()
