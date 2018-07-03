@@ -19,6 +19,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     protected $bindings = [];
 
+
     /**
      * @param array $bindings
      */
@@ -45,22 +46,13 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
 
     /**
      * Escape an string
-     * Can overwrite use CodeIgniter->escape_str()  https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
      *
      * @param string $value
      * @return string
      */
     private function escapeString($value)
     {
-//        $non_displayables = array(
-//            '/%0[0-8bcef]/',            // url encoded 00-08, 11, 12, 14, 15
-//            '/%1[0-9a-f]/',             // url encoded 16-31
-//            '/[\x00-\x08]/',            // 00-08
-//            '/\x0b/',                   // 11
-//            '/\x0c/',                   // 12
-//            '/[\x0e-\x1f]/'             // 14-31
-//        );
-//        foreach ( $non_displayables as $regex ) $data = preg_replace( $regex, '', $data );
+        // return str_replace("'", "''", remove_invisible_characters($str, FALSE));
         return addslashes($value);
     }
 
@@ -87,6 +79,27 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
     }
 
     /**
+     * Binds a list of values to the corresponding parameters.
+     * This is similar to [[bindValue()]] except that it binds multiple values at a time.
+     *
+     * @param string $sql
+     * @param array $binds
+     * @param string $pattern
+     * @return string
+     */
+    public function compile_binds($sql, $binds,$pattern)
+    {
+        return preg_replace_callback($pattern, function($m) use ($binds){
+            if(isset($binds[$m[1]])){ // If it exists in our array
+                return $binds[$m[1]]; // Then replace it from our array
+            }else{
+                return $m[0]; // Otherwise return the whole match (basically we won't change it)
+            }
+        }, $sql);
+    }
+
+
+    /**
      * Compile Bindings
      *
      * @param string $sql
@@ -94,12 +107,10 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function process($sql)
     {
-        // Can try use
-        // CodeIgniter->bind()
-        // https://github.com/bcit-ci/CodeIgniter/blob/develop/system/database/DB_driver.php#L920
-
         arsort($this->bindings);
 
+        $bindFormatted=[];
+        $bindRaw=[];
         foreach ($this->bindings as $key => $value) {
             $valueSet           = null;
             $formattedParameter = null;
@@ -137,12 +148,20 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
             }
 
             if ($formattedParameter !== null) {
-                $sql = str_ireplace(':' . $key, $formattedParameter, $sql);
+                $bindFormatted[$key]=$formattedParameter;
             }
 
             if ($valueSet !== null) {
-                $sql = str_ireplace('{' . $key . '}', $valueSet, $sql);
+                $bindRaw[$key]=$valueSet;
             }
+        }
+
+        for ($loop=0;$loop<2;$loop++)
+        {
+            // dipping in binds
+            // example [{A} => ':B' , ':B'=>'{C}']
+            $sql=$this->compile_binds($sql,$bindFormatted,'#:([\w+]+)#');
+            $sql=$this->compile_binds($sql,$bindRaw,'#{([\w+]+)}#');
         }
 
         return $sql;

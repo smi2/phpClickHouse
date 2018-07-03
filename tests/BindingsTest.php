@@ -83,6 +83,43 @@ final class BindingsTest extends TestCase
         ]);
         $this->assertEquals("SELECT ':B', :B FORMAT JSON",$a->sql());
 
+
+
+
+
+        $a=$this->client->selectAsync("SELECT {a}, {b}", [
+            "a" => ":b",
+            "b" => ":B"
+        ]);
+        $this->assertEquals("SELECT ':B', :B FORMAT JSON",$a->sql());
+
+
+
+        $arr=[
+            'a'=>'[A]',
+            'b'=>'[B]',
+            'c'=>'[C]',
+            'aa'=>'[AA]',
+            'bb'=>'[BB]',
+            'a1'=>'[A1]',
+            'a2'=>'[A2]',
+            'a3'=>'[A3]',
+            'a11'=>'[A11]',
+            'a23'=>'[A23]',
+            'A23'=>'[-23]',
+            'a5'=>'[a5]',
+            'arra'=>[1,2,3,4],
+        ];
+
+        $a=$this->client->selectAsync(":a :b :c :aa :bb :cc ", $arr);
+        $this->assertEquals("'[A]' '[B]' '[C]' '[AA]' '[BB]' :cc  FORMAT JSON",$a->sql());
+
+        $a=$this->client->selectAsync(":a1 :a2 :a3 :a11 :a23 :a5 :arra", $arr);
+        $this->assertEquals("'[A1]' '[A2]' '[A3]' '[A11]' '[A23]' '[a5]' 1,2,3,4 FORMAT JSON",$a->sql());
+
+        $a=$this->client->selectAsync("{a1} {a2} {a3} {a11} {a23} {a5} {arra}", $arr);
+        $this->assertEquals("[A1] [A2] [A3] [A11] [A23] [a5] 1, 2, 3, 4 FORMAT JSON",$a->sql());
+
         $keys=[
             'key1'=>1,
             'key111'=>111,
