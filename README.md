@@ -303,7 +303,17 @@ $Bindings = [
   'from_table' => 'table'
 ];
 
-$statement = $db->selectAsync($select, $Bindings);
+$statement = $db->selectAsync("SELECT FROM {table} WHERE datetime=:datetime limit {limit}", $Bindings);
+
+// Double bind in {KEY}
+$keys=[
+            'A'=>'{B}',
+            'B'=>':C',
+            'C'=>123,
+            'Z'=>[':C',':B',':C']
+        ];
+$this->client->selectAsync('{A} :Z', $keys)->sql() // ==   "123 ':C',':B',':C' FORMAT JSON",
+
 
 ```
 
