@@ -131,6 +131,17 @@ final class BindingsTest extends TestCase
             '123=123 , 11=11, 111=111, 1=1, 1= 1, 123=123 FORMAT JSON',
             $this->client->selectAsync('123=:key123 , 11={key11}, 111={key111}, 1={key1}, 1= :key1, 123=:key123', $keys)->sql()
         );
+
+        $keys=[
+            'A'=>'{B}',
+            'B'=>':C',
+            'C'=>123,
+            'Z'=>[':C',':B',':C']
+        ];
+        $this->assertEquals(
+            '123 \':C\',\':B\',\':C\' FORMAT JSON',
+            $this->client->selectAsync('{A} :Z', $keys)->sql()
+        );
     }
 
 

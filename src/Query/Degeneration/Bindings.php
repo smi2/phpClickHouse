@@ -159,10 +159,10 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
         for ($loop=0;$loop<2;$loop++)
         {
             // dipping in binds
-            // example [{A} => ':B' , ':B'=>'{C}']
-            $sql=$this->compile_binds($sql,$bindFormatted,'#:([\w+]+)#');
+            // example ['A' => '{B}' , 'B'=>':C','C'=>123]
             $sql=$this->compile_binds($sql,$bindRaw,'#{([\w+]+)}#');
         }
+        $sql=$this->compile_binds($sql,$bindFormatted,'#:([\w+]+)#');
 
         return $sql;
     }
