@@ -873,6 +873,11 @@ MIT
 
 ChangeLog
 ---------
+
+### 2018-07-02 [Release 1.1.1]
+* #47 Bindings wrong work - fix
+
+
 ### 2018-07-02 [Release 1.1.0]
 
 
