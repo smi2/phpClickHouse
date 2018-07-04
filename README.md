@@ -10,7 +10,7 @@ PHP ClickHouse wrapper
 
 ## Features
 
-- No dependency, only Curl (support php 5.6, but recommended 7.2 )
+- No dependency, only Curl (support php `>=7.2` )
 - Select parallel queries (asynchronous)
 - Asynchronous bulk inserts from CSV file
 - Http compression (Gzip), for bulk inserts
@@ -42,6 +42,8 @@ $db = new ClickHouseDB\Client(['config_array']);
 $db->ping();
 ```
 
+
+Last stable version for php 5.6 = `1.1.2`
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
