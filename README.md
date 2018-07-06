@@ -885,6 +885,11 @@ MIT
 
 ChangeLog
 ---------
+### 2018-07-06 [Release 1.2.0]
+* Fix `SelectAsync() & executeAsync()`, some task freeze
+
+### 2018-07-04 [Release 1.1.2]
+* Republic 1.1.1
 
 ### 2018-07-02 [Release 1.1.1]
 * #47 Bindings wrong work - fix
