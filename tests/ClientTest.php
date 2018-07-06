@@ -860,7 +860,7 @@ class ClientTest extends TestCase
         ];
 
         foreach ($file_data_names as $file_name) {
-            $this->create_fake_csv_file($file_name, 5);
+            $this->create_fake_csv_file($file_name, 10);
         }
 
         $this->create_table_summing_url_views();
