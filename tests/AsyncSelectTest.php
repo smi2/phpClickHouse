@@ -6,15 +6,15 @@ use ClickHouseDB\Exception\QueryException;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class SelectAsyncTest
- * @group SelectAsync
+ * Class AsyncSelectTest
+ * @group AsyncSelect
  * @package ClickHouseDB\Tests
  */
-final class SelectAsyncTest extends TestCase
+final class AsyncSelectTest extends TestCase
 {
     use WithClient;
 
-    public function testPrepareManyRowFail()
+    public function testselectAsyncFail()
     {
         $counter=rand(150,400);
         $list=[];

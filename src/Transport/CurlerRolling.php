@@ -144,19 +144,22 @@ class CurlerRolling
     public function execLoopWait()
     {
         $c = 0;
+        $count=0;
         // add all tasks
         do {
             $this->exec();
 
             $loop = $this->countActive();
             $pend = $this->countPending();
+
+            $count=$loop+$pend;
             $c++;
 
             if ($c > 20000) {
                 break;
             }
             usleep(500);
-        } while ($pend);
+        } while ($count);
 
         return true;
     }
