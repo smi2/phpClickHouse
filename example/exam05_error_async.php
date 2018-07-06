@@ -9,6 +9,35 @@ $config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
+
+
+for ($f=0;$f<1000;$f++)
+{
+    $list[$f]=$db->selectAsync('SELECT {num} as num',['num'=>$f]);
+}
+$db->executeAsync();
+for ($f=0;$f<1000;$f++)
+{
+    $c=$list[$f];
+
+    echo $f."\t";
+    $ret='-';
+    try{
+        $ret=$c->fetchOne('num');
+    }catch (Exception $e)
+    {
+
+    }
+
+
+    echo "$ret\n";
+}
+
+// -------------------------------- ------- ----------------------------------------------------------------
+
+
+
+
 $db->write("DROP TABLE IF EXISTS summing_url_views");
 $db->write('
     CREATE TABLE IF NOT EXISTS summing_url_views (
