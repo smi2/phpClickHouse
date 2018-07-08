@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Exception;
 
-class DatabaseException extends QueryException {}
+final class DatabaseException extends QueryException implements ClickHouseException
+{
+}
