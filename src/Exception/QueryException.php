@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Exception;
 
-class QueryException extends \LogicException {}
+use LogicException;
+
+class QueryException extends LogicException implements ClickHouseException
+{
+}

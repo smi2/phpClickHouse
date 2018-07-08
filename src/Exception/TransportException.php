@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Exception;
 
-class TransportException extends \Exception {}
+use LogicException;
+
+final class TransportException extends LogicException implements ClickHouseException
+{
+}
