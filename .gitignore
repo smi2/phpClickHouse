@@ -1,5 +1,6 @@
-.phpcs-cache
-phpcs.xml
-phpunit.xml
+/.phpcs-cache
+/phpcs.xml
+/phpunit.xml
 composer.lock
 vendor/
+var/
