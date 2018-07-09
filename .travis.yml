@@ -1,9 +1,6 @@
 dist: trusty
 language: php
-sudo: required
-
-services:
-  - docker
+sudo: false
 
 cache:
   directories:
@@ -14,15 +11,18 @@ php:
   - 7.2
   - nightly
 
+services:
+  - docker
+
 before_install:
   - docker pull yandex/clickhouse-server
   - docker run -d -p 8123:8123 --name clickhouse --ulimit nofile=262144:262144 yandex/clickhouse-server
-  - docker ps -a
+  - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
 
 install:
   - travis_retry composer update -n --prefer-dist
 
-script: ./vendor/bin/phpunit --debug
+script: ./vendor/bin/phpunit
 
 jobs:
   allow_failures:
@@ -54,6 +54,18 @@ jobs:
         - composer config minimum-stability dev
         - travis_retry composer update -n --prefer-dist
 
+    - stage: Test
+      env: COVERAGE
+      php: 7.1
+      before_script:
+        - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
+        - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
+      script:
+        - ./vendor/bin/phpunit --coverage-clover ./build/logs/clover.xml
+      after_script:
+        - wget https://github.com/scrutinizer-ci/ocular/releases/download/1.5.2/ocular.phar
+        - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
+
     - stage: Pull request coding standard
       if: type = pull_request
       php: 7.1
@@ -75,12 +87,5 @@ jobs:
 #      script:
 #        - ./vendor/bin/phpcs
 
-    - stage: Code Quality
-      install: travis_retry composer install --prefer-dist
-      script: vendor/bin/phpstan analyse -c phpstan.neon src
-
-after_script:
-  # upload clover.xml file to Scrutinizer to analyze it
-  - |
-    if [ "$TRAVIS_PHP_VERSION" == "7.1" ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
-    if [ "$TRAVIS_PHP_VERSION" == "7.1" ]; then php ocular.phar code-coverage:upload --format=php-clover temp/clover.xml; fi
+    - stage: Static Analysis
+      script: vendor/bin/phpstan analyse -c phpstan.neon src tests
