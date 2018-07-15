@@ -995,6 +995,12 @@ class ClientTest extends TestCase
         $this->assertGreaterThan(1,$up);
     }
 
+    public function testVersion()
+    {
+        $version = $this->client->getServerVersion();
+        $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.[0-9]$)/mi', $version);
+    }
+
     public function testServerSystemSettings()
     {
         $up = $this->client->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read');

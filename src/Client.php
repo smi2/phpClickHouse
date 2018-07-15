@@ -758,16 +758,14 @@ class Client
     }
 
     /**
-     * ping & check
+     * Ping server
      *
      * @return bool
      * @throws Exception\TransportException
-     * @throws \Exception
      */
     public function ping()
     {
-        $result = $this->select('SELECT 1 as ping')->fetchOne('ping');
-        return ($result == 1);
+        return $this->transport()->ping();
     }
 
     /**
@@ -900,6 +898,17 @@ class Client
     public function getServerUptime()
     {
         return $this->select('SELECT uptime() as uptime')->fetchOne('uptime');
+    }
+
+    /**
+     * Returns string with the server version.
+     *
+     * @return string
+     * @throws Exception\TransportException
+     */
+    public function getServerVersion()
+    {
+        return $this->select('SELECT version() as version')->fetchOne('version');
     }
 
 
