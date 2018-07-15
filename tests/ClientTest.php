@@ -992,9 +992,6 @@ class ClientTest extends TestCase
         $this->assertGreaterThan(1,$up);
     }
 
-    /**
-     * @return void
-     */
     public function testVersion() : void
     {
         $version = $this->client->getServerVersion();

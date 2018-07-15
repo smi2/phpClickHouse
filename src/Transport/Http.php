@@ -464,7 +464,6 @@ class Http
     }
 
     /**
-     * @return bool
      * @throws TransportException
      */
     public function ping() : bool

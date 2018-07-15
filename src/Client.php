@@ -903,12 +903,11 @@ class Client
     /**
      * Returns string with the server version.
      *
-     * @return string
      * @throws Exception\TransportException
      */
     public function getServerVersion() : string
     {
-        return (string)$this->select('SELECT version() as version')->fetchOne('version');
+        return (string) $this->select('SELECT version() as version')->fetchOne('version');
     }
 
 
