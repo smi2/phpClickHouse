@@ -462,6 +462,20 @@ class Http
     }
 
     /**
+     * @return bool
+     *
+     * @throws \ClickHouseDB\Exception\TransportException
+     */
+    public function ping()
+    {
+        $request = new CurlerRequest();
+        $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
+        $this->_curler->execOne($request);
+
+        return $request->response()->body() === 'Ok.' . PHP_EOL;
+    }
+
+    /**
      * @param string $sql
      * @param array $bindings
      * @return Query
