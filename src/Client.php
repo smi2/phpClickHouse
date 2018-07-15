@@ -908,7 +908,7 @@ class Client
      */
     public function getServerVersion() : string
     {
-        return $this->select('SELECT version() as version')->fetchOne('version');
+        return (string)$this->select('SELECT version() as version')->fetchOne('version');
     }
 
 
