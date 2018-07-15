@@ -906,7 +906,7 @@ class Client
      * @return string
      * @throws Exception\TransportException
      */
-    public function getServerVersion()
+    public function getServerVersion() : string
     {
         return $this->select('SELECT version() as version')->fetchOne('version');
     }
