@@ -4,7 +4,7 @@ include_once __DIR__ . '/src/Quote/StrictQuoteLine.php';
 include_once __DIR__ . '/src/Quote/FormatLine.php';
 include_once __DIR__ . '/src/Quote/CSV.php';
 // Exception
-
+include_once __DIR__ . '/src/Exception/ClickHouseException.php';
 include_once __DIR__ . '/src/Exception/QueryException.php';
 include_once __DIR__ . '/src/Exception/DatabaseException.php';
 include_once __DIR__ . '/src/Exception/TransportException.php';
