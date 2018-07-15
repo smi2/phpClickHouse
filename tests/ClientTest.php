@@ -741,9 +741,6 @@ class ClientTest extends TestCase
 
     public function testExceptionConnects()
     {
-        $this->expectException(QueryException::class);
-        $this->expectExceptionCode(6);
-
         $config = [
             'host'     => 'x',
             'port'     => '8123',
@@ -753,7 +750,7 @@ class ClientTest extends TestCase
         ];
 
         $db = new Client($config);
-        $db->ping();
+        $this->assertFalse($db->ping());
     }
 
     /**
