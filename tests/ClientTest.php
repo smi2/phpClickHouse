@@ -741,9 +741,6 @@ class ClientTest extends TestCase
 
     public function testExceptionConnects()
     {
-        $this->expectException(QueryException::class);
-        $this->expectExceptionCode(6);
-
         $config = [
             'host'     => 'x',
             'port'     => '8123',
@@ -753,7 +750,7 @@ class ClientTest extends TestCase
         ];
 
         $db = new Client($config);
-        $db->ping();
+        $this->assertFalse($db->ping());
     }
 
     /**
@@ -993,6 +990,12 @@ class ClientTest extends TestCase
     {
         $up = $this->client->getServerUptime();
         $this->assertGreaterThan(1,$up);
+    }
+
+    public function testVersion() : void
+    {
+        $version = $this->client->getServerVersion();
+        $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.[0-9]$)/mi', $version);
     }
 
     public function testServerSystemSettings()

@@ -2,12 +2,14 @@
 
 namespace ClickHouseDB\Transport;
 
+use ClickHouseDB\Exception\TransportException;
 use ClickHouseDB\Query\Degeneration;
 use ClickHouseDB\Query\Query;
 use ClickHouseDB\Query\WhereInFile;
 use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Settings;
 use ClickHouseDB\Statement;
+use const PHP_EOL;
 
 class Http
 {
@@ -459,6 +461,18 @@ class Http
     {
         $urlParams = ['readonly' => 0];
         return $this->makeRequest($query, $urlParams);
+    }
+
+    /**
+     * @throws TransportException
+     */
+    public function ping() : bool
+    {
+        $request = new CurlerRequest();
+        $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
+        $this->_curler->execOne($request);
+
+        return $request->response()->body() === 'Ok.' . PHP_EOL;
     }
 
     /**
