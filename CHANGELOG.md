@@ -1,6 +1,11 @@
 PHP ClickHouse wrapper - Changelog
 ======================
-
+### 2018-07-16 [Release 1.2.1]
+* New `$client->getServerVersion()`
+* Rewrite method `$client->ping()`
+* Fix `include.php` - ClickHouseException before exceptions
+* Add CHANGELOG.md
+* New `interface ClickHouseException`
 
 ### 2018-07-06 [Release 1.2.0]
 * Fix `SelectAsync() & executeAsync()`, some task freeze
