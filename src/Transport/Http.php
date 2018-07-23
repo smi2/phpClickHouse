@@ -120,7 +120,8 @@ class Http
             $proto = 'https';
         }
 
-        return $proto . '://' . $this->_host . ':' . $this->_port;
+        $uri = $proto . '://' . $this->_host;
+        return $this->_port ? $uri . ':' . $this->_port : $uri;
     }
 
     /**
