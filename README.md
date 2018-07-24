@@ -10,7 +10,7 @@ PHP ClickHouse wrapper
 
 ## Features
 
-- No dependency, only Curl (support php `>=7.2` )
+- No dependency, only Curl (support php `>=7.0` )
 - Select parallel queries (asynchronous)
 - Asynchronous bulk inserts from CSV file
 - Http compression (Gzip), for bulk inserts
