@@ -1,5 +1,9 @@
 PHP ClickHouse wrapper - Changelog
 ======================
+### 2018-07-24 [Release 1.2.2]
+* Connection without port  
+
+
 ### 2018-07-16 [Release 1.2.1]
 * New `$client->getServerVersion()`
 * Rewrite method `$client->ping()`

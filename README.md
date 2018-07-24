@@ -186,28 +186,6 @@ $db->write('DROP TABLE IF EXISTS summing_url_views');
 ```
 
 
-Connection: 
-
-
-```php 
-$config['host']='blabla.com';
-$config['port']=0;
-// getUri() === 'http://blabla.com'
-
-
-$config['host']='blabla.com/urls';
-$config['port']=8765;
-// getUri() === 'http://blabla.com/urls'
-
-$config['host']='blabla.com:2224';
-$config['port']=1234;
-// getUri() === 'http://blabla.com:2224'
-
-
-
-
-
-``` 
 
 Features
 --------
@@ -275,6 +253,32 @@ see speed test `example/exam08_http_gzip_batch_insert.php`
 ```php
 $db->settings()->max_execution_time(200); // second
 ```
+
+
+
+
+### Connection without port 
+
+```php 
+$config['host']='blabla.com';
+$config['port']=0;
+// getUri() === 'http://blabla.com'
+
+
+$config['host']='blabla.com/urls';
+$config['port']=8765;
+// getUri() === 'http://blabla.com/urls'
+
+$config['host']='blabla.com:2224';
+$config['port']=1234;
+// getUri() === 'http://blabla.com:2224'
+
+
+
+
+
+``` 
+
 
 ### tablesSize & databaseSize
 
