@@ -914,4 +914,4 @@ MIT
 ChangeLog
 ---------
 
-see [changeLog.md](CHANGELOG.md)
+See [changeLog.md](CHANGELOG.md)
