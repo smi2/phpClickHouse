@@ -1,7 +1,7 @@
 PHP ClickHouse wrapper - Changelog
 ======================
 ### 2018-07-24 [Release 1.2.2]
-* Connection without port  
+* Connection without port [[https://github.com/smi2/phpClickHouse#connection-without-port]] 
 
 
 ### 2018-07-16 [Release 1.2.1]
