@@ -119,9 +119,14 @@ class Http
         if ($this->settings()->isHttps()) {
             $proto = 'https';
         }
-
         $uri = $proto . '://' . $this->_host;
-        return $this->_port ? $uri . ':' . $this->_port : $uri;
+        if (stripos($this->_host,'/')!==false || stripos($this->_host,':')!==false) {
+            return $uri;
+        }
+        if (intval($this->_port)>0) {
+            return $uri . ':' . $this->_port;
+        }
+        return $uri;
     }
 
     /**
