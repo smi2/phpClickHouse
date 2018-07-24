@@ -67,6 +67,12 @@ final class UriTest extends TestCase
         $this->assertEquals('http://blabla.com:8222/path1/path' , $cli->transport()->getUri());
 
 
+        $config['host']='blabla.com:1234/path1/path';
+        $config['port']=3344;
+        $cli = new \ClickHouseDB\Client($config);
+        $this->assertEquals('http://blabla.com:1234/path1/path' , $cli->transport()->getUri());
+
+
         // exit resetup
         $this->restartClickHouseClient();
     }
