@@ -995,7 +995,7 @@ class ClientTest extends TestCase
     public function testVersion() : void
     {
         $version = $this->client->getServerVersion();
-        $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.[0-9]$)/mi', $version);
+        $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.*$)/mi', $version);
     }
 
     public function testServerSystemSettings()
