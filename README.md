@@ -37,7 +37,7 @@ composer require smi2/phpclickhouse
 
 In php
 ```php
-include_once __DIR__ . '/phpClickHouse/include.php';
+// vendor autoload 
 $db = new ClickHouseDB\Client(['config_array']);
 $db->ping();
 ```
@@ -184,6 +184,30 @@ Drop table:
 ```php
 $db->write('DROP TABLE IF EXISTS summing_url_views');
 ```
+
+
+Connection: 
+
+
+```php 
+$config['host']='blabla.com';
+$config['port']=0;
+// getUri() === 'http://blabla.com'
+
+
+$config['host']='blabla.com/urls';
+$config['port']=8765;
+// getUri() === 'http://blabla.com/urls'
+
+$config['host']='blabla.com:2224';
+$config['port']=1234;
+// getUri() === 'http://blabla.com:2224'
+
+
+
+
+
+``` 
 
 Features
 --------
