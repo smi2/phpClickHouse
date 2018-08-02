@@ -1,0 +1,13 @@
+version: '3'
+services:
+    clickhouse-server:
+        image: yandex/clickhouse-server
+        hostname: clickhouse
+        container_name: clickhouse
+        ports:
+        - 9000:9000
+        - 8123:8123
+        ulimits:
+            nofile:
+                soft: 262144
+                hard: 262144

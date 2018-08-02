@@ -15,8 +15,7 @@ services:
   - docker
 
 before_install:
-  - docker pull yandex/clickhouse-server
-  - docker run -d -p 8123:8123 --name clickhouse --ulimit nofile=262144:262144 yandex/clickhouse-server
+  - docker-compose -f tests/docker-compose.yaml up -d
   - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
 
 install:
