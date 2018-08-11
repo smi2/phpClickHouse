@@ -523,10 +523,10 @@ class Client
      */
     public function insert($table, $values, $columns = [])
     {
-        $sql = 'INSERT INTO ' . $table;
+        $sql = 'INSERT INTO `' . $table . "`";
 
         if (0 !== count($columns)) {
-            $sql .= ' (' . implode(',', $columns) . ') ';
+            $sql .= ' (`' . implode('`,`', $columns) . '`) ';
         }
 
         $sql .= ' VALUES ';
