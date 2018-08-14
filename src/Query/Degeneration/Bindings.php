@@ -1,24 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Query\Degeneration;
 
+use ClickHouseDB\Exception\UnsupportedParameterType;
+use ClickHouseDB\Query\Degeneration;
 use DateTimeInterface;
 use function array_map;
 use function implode;
 use function is_array;
+use function is_bool;
+use function is_callable;
 use function is_float;
 use function is_int;
+use function is_object;
 use function is_string;
 use function sprintf;
-use function str_ireplace;
 
-class Bindings implements \ClickHouseDB\Query\Degeneration
+class Bindings implements Degeneration
 {
     /**
      * @var array
      */
     protected $bindings = [];
-
 
     /**
      * @param array $bindings
@@ -37,10 +42,6 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function bindParam($column, $value)
     {
-        if ($value instanceof DateTimeInterface) {
-            $value = $value->format('Y-m-d H:i:s');
-        }
-
         $this->bindings[$column] = $value;
     }
 
@@ -52,30 +53,7 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     private function escapeString($value)
     {
-        // return str_replace("'", "''", remove_invisible_characters($str, FALSE));
         return addslashes($value);
-    }
-
-    /**
-     * Escape an array
-     *
-     * @param array $values
-     * @return array
-     */
-    private function escapeArray($values)
-    {
-        $escapedValues = [];
-        foreach ($values as $value) {
-            if (is_numeric($value)) {
-                $escapedValues[] = $value;
-            } elseif (is_string($value)) {
-                $escapedValues[] = $this->escapeString($value);
-            } elseif (is_array($value)) {
-                $escapedValues[] = $this->escapeArray($value);
-            }
-        }
-
-        return $escapedValues;
     }
 
     /**
@@ -92,12 +70,11 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
         return preg_replace_callback($pattern, function($m) use ($binds){
             if(isset($binds[$m[1]])){ // If it exists in our array
                 return $binds[$m[1]]; // Then replace it from our array
-            }else{
-                return $m[0]; // Otherwise return the whole match (basically we won't change it)
             }
+
+            return $m[0]; // Otherwise return the whole match (basically we won't change it)
         }, $sql);
     }
-
 
     /**
      * Compile Bindings
@@ -107,44 +84,23 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
      */
     public function process($sql)
     {
-        arsort($this->bindings);
-
         $bindFormatted=[];
         $bindRaw=[];
         foreach ($this->bindings as $key => $value) {
-            $valueSet           = null;
-            $formattedParameter = null;
-
-            if ($value === null || $value === false) {
-                $formattedParameter = '';
-            }
-
             if (is_array($value)) {
-                $escapedValues = $this->escapeArray($value);
+                $valueSet = implode(', ', $value);
 
-                $escapedValues = array_map(
-                    function ($escapedValue) {
-                        if (is_string($escapedValue)) {
-                            return $this->formatStringParameter($escapedValue);
-                        }
-
-                        return $escapedValue;
+                $values = array_map(
+                    function ($value) {
+                        return $this->formatParameter($value);
                     },
-                    $escapedValues
+                    $value
                 );
 
-                $formattedParameter = implode(',', $escapedValues);
-                $valueSet           = implode(', ', $escapedValues);
-            }
-
-            if (is_float($value) || is_int($value)) {
-                $formattedParameter = $value;
+                $formattedParameter = implode(',', $values);
+            } else {
                 $valueSet           = $value;
-            }
-
-            if (is_string($value)) {
-                $valueSet           = $value;
-                $formattedParameter = $this->formatStringParameter($this->escapeString($value));
+                $formattedParameter = $this->formatParameter($value);
             }
 
             if ($formattedParameter !== null) {
@@ -165,6 +121,31 @@ class Bindings implements \ClickHouseDB\Query\Degeneration
         $sql=$this->compile_binds($sql,$bindFormatted,'#:([\w+]+)#');
 
         return $sql;
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    private function formatParameter($value)
+    {
+        if ($value instanceof DateTimeInterface) {
+            $value = $value->format('Y-m-d H:i:s');
+        }
+
+        if (is_float($value) || is_int($value) || is_bool($value) || $value === null) {
+            return $value;
+        }
+
+        if (is_object($value) && is_callable([$value, '__toString'])) {
+            $value = (string) $value;
+        }
+
+        if (is_string($value)) {
+            return $this->formatStringParameter($this->escapeString($value));
+        }
+
+        throw UnsupportedParameterType::new($value);
     }
 
     /**

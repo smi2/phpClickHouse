@@ -504,11 +504,10 @@ class ClientTest extends TestCase
         fclose($handle);
     }
 
-    /**
-     *
-     */
     public function testSelectWhereIn()
     {
+        $this->create_table_summing_url_views();
+
         $file_data_names = [
             $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data'
         ];
