@@ -2,8 +2,11 @@
 
 namespace ClickHouseDB\Tests;
 
+use ClickHouseDB\Exception\UnsupportedParameterType;
 use ClickHouseDB\Query\Degeneration\Bindings;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use function curl_init;
 
 /**
  * Class BindingsTest
@@ -29,6 +32,26 @@ final class BindingsTest extends TestCase
                 'select * from test. WHERE id = :id',
                 ['id' => '1'],
                 "select * from test. WHERE id = '1'",
+            ],
+            [
+                'select * from test. WHERE date_column = :dateParam',
+                ['dateParam' => new DateTimeImmutable('2018-08-31 23:54:02')],
+                "select * from test. WHERE date_column = '2018-08-31 23:54:02'",
+            ],
+            [
+                'select * from test. WHERE a_column = :objectWithToString',
+                [
+                    'objectWithToString' => new class() {
+                        /**
+                         * @return string
+                         */
+                        public function __toString()
+                        {
+                            return 'expectedValue';
+                        }
+                    },
+                ],
+                "select * from test. WHERE a_column = 'expectedValue'",
             ],
             [
                 'select * from test. WHERE id IN (:id)',
@@ -153,11 +176,22 @@ final class BindingsTest extends TestCase
      */
     public function testEscape($sql, $params, $expectedSql)
     {
-
         $bindings = new Bindings();
         $bindings->bindParams($params);
         $sql = $bindings->process($sql);
         $this->assertSame($expectedSql, $sql);
+    }
+
+    /**
+     * @return void
+     */
+    public function testEscapeFail()
+    {
+        $this->expectException(UnsupportedParameterType::class);
+
+        $bindings = new Bindings();
+        $bindings->bindParams(['unsupportedParam' => curl_init()]);
+        $bindings->process('SELECT * FROM test WHERE id = :unsupportedParam');
     }
 
     public function testSelectAsKeys()

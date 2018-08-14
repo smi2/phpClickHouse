@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
+use function getenv;
+use function sprintf;
 
 trait WithClient
 {
@@ -30,5 +34,9 @@ trait WithClient
 
         ];
         $this->client = new Client($config);
+        $databaseName = getenv('CLICKHOUSE_DATABASE');
+        $this->client->write(sprintf('DROP DATABASE IF EXISTS "%s"', $databaseName));
+        $this->client->write(sprintf('CREATE DATABASE "%s"', $databaseName));
+        $this->client->database($databaseName);
     }
 }
