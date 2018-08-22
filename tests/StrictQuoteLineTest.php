@@ -1,14 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Quote\StrictQuoteLine;
 use PHPUnit\Framework\TestCase;
+use function array_diff;
+use function array_map;
+use function file_put_contents;
+use function unlink;
+use const FILE_APPEND;
 
 class StrictQuoteLineTest extends TestCase
 {
     use WithClient;
 
+    /**
+     * @return void
+     */
     public function setUp()
     {
         $this->client->write('DROP TABLE IF EXISTS cities');
@@ -25,6 +35,8 @@ class StrictQuoteLineTest extends TestCase
 
     /**
      * @group test
+     *
+     * @return void
      */
     public function testQuoteValueCSV()
     {
@@ -35,6 +47,7 @@ class StrictQuoteLineTest extends TestCase
             ['2018-04-02', 'That works', ['\""That does not\""', '"\'\""That works"""\"'], [1, 0]],
             ['2018-04-03', 'That works', ['\"\"That does not"\'""', '""""That works""""'], [9, 121]],
         ];
+
         $fileName = $this->tmpPath . '__test_quote_value.csv';
 
         @unlink($fileName);

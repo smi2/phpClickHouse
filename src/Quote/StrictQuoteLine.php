@@ -2,6 +2,10 @@
 namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\QueryException;
+use function array_map;
+use function is_string;
+use function preg_replace;
+use function str_replace;
 
 class StrictQuoteLine
 {
@@ -79,7 +83,7 @@ class StrictQuoteLine
                 }
 
                 $value = strval($value);
-                $value = preg_replace('/(' . $enclosure_esc . '|' . $encode_esc . ')/', $encode_esc . '\1', $value);
+                $value = $this->encodeString($value, $enclosure_esc, $encode_esc);
                 return $enclosure . $value . $enclosure;
             }
 
@@ -88,7 +92,12 @@ class StrictQuoteLine
                 // Elements of the array - the numbers are formatted as usual, and the dates, dates-with-time, and lines are in
                 // single quotation marks with the same screening rules as above.
                 // as in the TabSeparated format, and then the resulting string is output in InsertRow in double quotes.
-                $value = $this->escapeDoubleQoutes($value);
+                $value = array_map(
+                    function ($v) use ($enclosure_esc, $encode_esc) {
+                        return is_string($v) ? $this->encodeString($v, $enclosure_esc, $encode_esc) : $v;
+                    },
+                    $value
+                );
                 $result_array = FormatLine::Insert($value);
 
                 return $encodeArray . '[' . $result_array . ']' . $encodeArray;
@@ -104,11 +113,11 @@ class StrictQuoteLine
         return array_map($quote, $row);
     }
 
-    public function escapeDoubleQoutes(array $arr)
+    /**
+     * @return string
+     */
+    public function encodeString(string $value, string $enclosureEsc, string $encodeEsc)
     {
-        return array_map(function($v) {
-            return is_string($v) ? str_replace('"', '""', $v) : $v;
-        }, $arr);
+        return preg_replace('/(' . $enclosureEsc . '|' . $encodeEsc . ')/', $encodeEsc . '\1', $value);
     }
-
 }
