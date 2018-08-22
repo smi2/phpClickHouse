@@ -88,6 +88,7 @@ class StrictQuoteLine
                 // Elements of the array - the numbers are formatted as usual, and the dates, dates-with-time, and lines are in
                 // single quotation marks with the same screening rules as above.
                 // as in the TabSeparated format, and then the resulting string is output in InsertRow in double quotes.
+                $value = $this->escapeDoubleQoutes($value);
                 $result_array = FormatLine::Insert($value);
 
                 return $encodeArray . '[' . $result_array . ']' . $encodeArray;
@@ -103,5 +104,11 @@ class StrictQuoteLine
         return array_map($quote, $row);
     }
 
+    public function escapeDoubleQoutes(array $arr)
+    {
+        return array_map(function($v) {
+            return is_string($v) ? str_replace('"', '""', $v) : $v;
+        }, $arr);
+    }
 
 }
