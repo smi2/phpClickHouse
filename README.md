@@ -873,6 +873,7 @@ Edit in phpunit.xml constants:
     <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
     <env name="CLICKHOUSE_PORT" value="8123" />
     <env name="CLICKHOUSE_USER" value="default" />
+    <env name="CLICKHOUSE_DATABASE" value="phpChTestDefault" />
     <env name="CLICKHOUSE_PASSWORD" value="" />
     <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
 </php>

@@ -33,10 +33,18 @@ trait WithClient
             'password' => getenv('CLICKHOUSE_PASSWORD'),
 
         ];
+
         $this->client = new Client($config);
         $databaseName = getenv('CLICKHOUSE_DATABASE');
-        $this->client->write(sprintf('DROP DATABASE IF EXISTS "%s"', $databaseName));
-        $this->client->write(sprintf('CREATE DATABASE "%s"', $databaseName));
+        if (!$databaseName || $databaseName==='default') {
+            throw new \Exception('Change CLICKHOUSE_DATABASE, not use default');
+        }
+        if (empty($GLOBALS['phpCH_needFirstCreateDB'])) { // hack use Global VAR, for once create DB
+            $GLOBALS['phpCH_needFirstCreateDB']=true;
+            $this->client->write(sprintf('DROP DATABASE IF EXISTS "%s"', $databaseName));
+            $this->client->write(sprintf('CREATE DATABASE "%s"', $databaseName));
+        }
+        // Change Database
         $this->client->database($databaseName);
     }
 }
