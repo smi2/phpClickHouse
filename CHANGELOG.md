@@ -1,5 +1,13 @@
 PHP ClickHouse wrapper - Changelog
 ======================
+
+### 2018-08-30 [Release 1.2.3]
+* Escape values in arrays, pull request #87 from simPod/fix-escape
+* fix-bindings: pull request #84 from simPod/fix-bindings
+* Added quotes arount table and column names in the insert wrapper.
+* Docker Compose in tests
+
+
 ### 2018-07-24 [Release 1.2.2]
 * Connection without [port](https://github.com/smi2/phpClickHouse#connection-without-port) 
 
