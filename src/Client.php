@@ -524,7 +524,10 @@ class Client
      */
     public function insert($table, $values, $columns = [])
     {
-        $sql = 'INSERT INTO `' . $table . "`";
+        if (stripos($table,'`')===false &&  stripos($table,'.')===false) {
+            $table = '`' . $table . "`"; //quote table name for dot names
+        }
+        $sql = 'INSERT INTO ' . $table;
 
         if (0 !== count($columns)) {
             $sql .= ' (`' . implode('`,`', $columns) . '`) ';

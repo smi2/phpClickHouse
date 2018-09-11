@@ -44,8 +44,10 @@ class ClientTest extends TestCase
      */
     private function insert_data_table_summing_url_views()
     {
+        $databaseName = getenv('CLICKHOUSE_DATABASE');
         return $this->client->insert(
-            'summing_url_views',
+
+            $databaseName.'.summing_url_views',
             [
                 [strtotime('2010-10-10 00:00:00'), 'HASH1', 2345, 22, 20, 2],
                 [strtotime('2010-10-11 01:00:00'), 'HASH2', 2345, 12, 9, 3],
@@ -226,6 +228,41 @@ class ClientTest extends TestCase
 
 
 
+    public function testInsertDotTable()
+    {
+        $databaseName = getenv('CLICKHOUSE_DATABASE');
+
+        $this->client->write("DROP TABLE IF EXISTS `tsts.test`");
+        $this->client->write('CREATE TABLE `tsts.test` (
+                event_date Date DEFAULT toDate(event_time),
+                event_time DateTime,
+                url_hash String,
+                site_id Int32,
+                views Int32,
+                v_00 Int32,
+                v_55 Int32
+        ) ENGINE = TinyLog()');
+        $this->client->insert(
+            '`tsts.test`',
+            [
+                [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
+            ],
+            ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
+        );
+
+        $this->client->insert(
+            $databaseName.'.`tsts.test`',
+            [
+                [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
+            ],
+            ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
+        );
+
+//        $this->client->verbose();
+        $st=$this->client->select('SELECT  url_hash FROM `tsts.test` WHERE like(url_hash,\'%Хеш%\') ');
+        $this->assertEquals('Хеш', $st->fetchOne('url_hash'));
+
+    }
     public function testSearchWithCyrillic()
     {
         $this->create_table_summing_url_views();
