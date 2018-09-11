@@ -1,7 +1,7 @@
 PHP ClickHouse wrapper - Changelog
 ======================
 
-### 2018-08-30 [Release 1.2.4]
+### 2018-09-11 [Release 1.2.4]
 * Fix #91 ,Does not work inserting with the database name in the table
 * pull request #90 from simPod: Refactor partitions()
 
