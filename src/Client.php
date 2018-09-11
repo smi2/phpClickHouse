@@ -9,6 +9,7 @@ use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Quote\FormatLine;
 use ClickHouseDB\Transport\Http;
 use ClickHouseDB\Transport\Stream;
+use function sprintf;
 
 class Client
 {
@@ -833,19 +834,20 @@ class Client
     /**
      * List of partitions
      *
-     * @param string $table
-     * @param int $limit
-     * @return array
-     * @throws Exception\TransportException
-     * @throws \Exception
+     * @return mixed[][]
      */
-    public function partitions($table, $limit = -1)
+    public function partitions(string $table, int $limit = null, bool $active = null)
     {
-        return $this->select('
-            SELECT *
-            FROM system.parts 
-            WHERE like(table,\'%' . $table . '%\') AND database=\'' . $this->settings()->getDatabase() . '\' 
-            ORDER BY max_date ' . ($limit > 0 ? ' LIMIT ' . intval($limit) : '')
+        $database          = $this->settings()->getDatabase();
+        $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int) $active);
+        $limitClause       = $limit !== null ? ' LIMIT ' . $limit : '';
+
+        return $this->select(<<<CLICKHOUSE
+SELECT *
+FROM system.parts 
+WHERE like(table,'%$table%') AND database='$database'$whereActiveClause
+ORDER BY max_date $limitClause
+CLICKHOUSE
         )->rowsAsTree('name');
     }
 
