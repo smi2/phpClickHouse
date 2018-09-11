@@ -789,9 +789,6 @@ class ClientTest extends TestCase
         $this->assertFalse($db->ping());
     }
 
-    /**
-     *
-     */
     public function testSettings()
     {
         $config = [
@@ -799,25 +796,14 @@ class ClientTest extends TestCase
             'port'     => '8123',
             'username' => 'x',
             'password' => 'x',
-            'settings' => ['max_execution_time' => 100]
         ];
 
-        $db = new Client($config);
+        $settings = ['max_execution_time' => 100];
+
+        $db = new Client($config, $settings);
         $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
 
 
-        // settings via constructor
-        $config = [
-            'host' => 'x',
-            'port' => '8123',
-            'username' => 'x',
-            'password' => 'x'
-        ];
-        $db = new Client($config, ['max_execution_time' => 100]);
-        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
-
-
-        //
         $config = [
             'host' => 'x',
             'port' => '8123',
@@ -1024,11 +1010,11 @@ class ClientTest extends TestCase
 
     public function testUptime()
     {
-        $up = $this->client->getServerUptime();
-        $this->assertGreaterThan(1,$up);
+        $uptime = $this->client->getServerUptime();
+        $this->assertGreaterThan(1,$uptime);
     }
 
-    public function testVersion() : void
+    public function testVersion()
     {
         $version = $this->client->getServerVersion();
         $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.*$)/mi', $version);
