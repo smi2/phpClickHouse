@@ -1,6 +1,10 @@
 PHP ClickHouse wrapper - Changelog
 ======================
 
+### 2018-08-30 [Release 1.2.4]
+* Fix #91 ,Does not work inserting with the database name in the table
+* pull request #90 from simPod: Refactor partitions()
+
 ### 2018-08-30 [Release 1.2.3]
 * Escape values in arrays, pull request #87 from simPod/fix-escape
 * fix-bindings: pull request #84 from simPod/fix-bindings
