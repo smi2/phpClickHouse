@@ -55,11 +55,11 @@ final class FormatQueryTest extends TestCase
         $this->client->setTimeout($timeout);      // 1500 ms
         $this->assertSame($timeout, $this->client->getTimeout());
 
-        $timeout = 10;
+        $timeout = 10.0;
         $this->client->setTimeout($timeout);      // 10 seconds
         $this->assertSame($timeout, $this->client->getTimeout());
 
-        $timeout = 5;
+        $timeout = 5.0;
         $this->client->setConnectTimeOut($timeout);      // 5 seconds
         $this->assertSame($timeout, $this->client->getConnectTimeOut());
     }
