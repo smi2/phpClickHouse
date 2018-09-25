@@ -1,5 +1,8 @@
 PHP ClickHouse wrapper - Changelog
 ======================
+### 2018-09-25 [Release 1.3.1]
+* Pull request #94 from simPod: Uint64 values
+* Pull request #95 from simPod: Bump to php 7.1
 
 ### 2018-09-11 [Release 1.2.4]
 * Fix #91 ,Does not work inserting with the database name in the table
