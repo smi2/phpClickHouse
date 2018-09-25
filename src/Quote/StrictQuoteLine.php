@@ -2,6 +2,7 @@
 namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Type\NumericType;
 use function array_map;
 use function is_array;
 use function is_float;
@@ -69,6 +70,11 @@ class StrictQuoteLine
 
             $encode_esc = preg_quote($encode, '/');
 
+            $encode = true;
+            if ($value instanceof NumericType) {
+                $encode = false;
+            }
+
             if (is_array($value)) {
                 // Arrays are formatted as a list of values separated by commas in square brackets.
                 // Elements of the array - the numbers are formatted as usual, and the dates, dates-with-time, and lines are in
@@ -91,7 +97,7 @@ class StrictQuoteLine
                 return (string) $value;
             }
 
-            if (is_string($value)) {
+            if (is_string($value) && $encode) {
                 if ($tabEncode) {
                     return str_replace(["\t", "\n"], ['\\t', '\\n'], $value);
                 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\UnsupportedValueType;
+use ClickHouseDB\Type\Type;
 use DateTimeInterface;
 use function addslashes;
 use function is_bool;
@@ -29,6 +30,10 @@ class ValueFormatter
 
         if (is_float($value) || is_int($value) || is_bool($value) || $value === null) {
             return $value;
+        }
+
+        if ($value instanceof Type) {
+            return $value->getValue();
         }
 
         if (is_object($value) && is_callable([$value, '__toString'])) {
