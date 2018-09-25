@@ -2,15 +2,13 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\UnsupportedParameterType;
+use ClickHouseDB\Exception\UnsupportedValueType;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use function curl_init;
 
 /**
- * Class BindingsTest
- * @package ClickHouseDB\Tests
  * @group BindingsTest
  */
 final class BindingsTest extends TestCase
@@ -187,7 +185,7 @@ final class BindingsTest extends TestCase
      */
     public function testEscapeFail()
     {
-        $this->expectException(UnsupportedParameterType::class);
+        $this->expectException(UnsupportedValueType::class);
 
         $bindings = new Bindings();
         $bindings->bindParams(['unsupportedParam' => curl_init()]);

@@ -102,6 +102,18 @@ $stat = $db->insert('summing_url_views',
 );
 ```
 
+If you need to insert UInt64 value, you can wrap the value in `ClickHouseDB\Type\UInt64` DTO.
+
+```php
+$statement = $db->insert('table_name',
+    [
+        [time(), UInt64::fromString('18446744073709551615')],
+    ],
+    ['event_time', 'uint64_type_column']
+);
+UInt64::fromString('18446744073709551615')
+```
+
 Select:
 ```php
 $statement = $db->select('SELECT * FROM summing_url_views LIMIT 2');

@@ -16,7 +16,7 @@ class FormatLine
      * @param string $format
      * @return StrictQuoteLine
      */
-    private static function strictQuote($format)
+    public static function strictQuote($format)
     {
         if (empty(self::$strict[$format]))
         {
@@ -28,10 +28,10 @@ class FormatLine
     /**
      * Array in a string for a query Insert
      *
-     * @param array $row
+     * @param mixed[] $row
      * @return string
      */
-    public static function Insert(Array $row)
+    public static function Insert(array $row)
     {
         return self::strictQuote('Insert')->quoteRow($row);
     }
