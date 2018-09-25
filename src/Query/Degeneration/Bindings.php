@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Query\Degeneration;
 
-use ClickHouseDB\Exception\UnsupportedParameterType;
 use ClickHouseDB\Query\Degeneration;
-use DateTimeInterface;
+use ClickHouseDB\Quote\ValueFormatter;
 use function array_map;
 use function implode;
 use function is_array;
-use function is_bool;
-use function is_callable;
-use function is_float;
-use function is_int;
-use function is_object;
-use function is_string;
-use function sprintf;
 
 class Bindings implements Degeneration
 {
@@ -43,17 +35,6 @@ class Bindings implements Degeneration
     public function bindParam($column, $value)
     {
         $this->bindings[$column] = $value;
-    }
-
-    /**
-     * Escape an string
-     *
-     * @param string $value
-     * @return string
-     */
-    private function escapeString($value)
-    {
-        return addslashes($value);
     }
 
     /**
@@ -92,7 +73,7 @@ class Bindings implements Degeneration
 
                 $values = array_map(
                     function ($value) {
-                        return $this->formatParameter($value);
+                        return ValueFormatter::formatValue($value);
                     },
                     $value
                 );
@@ -100,7 +81,7 @@ class Bindings implements Degeneration
                 $formattedParameter = implode(',', $values);
             } else {
                 $valueSet           = $value;
-                $formattedParameter = $this->formatParameter($value);
+                $formattedParameter = ValueFormatter::formatValue($value);
             }
 
             if ($formattedParameter !== null) {
@@ -121,38 +102,5 @@ class Bindings implements Degeneration
         $sql=$this->compile_binds($sql,$bindFormatted,'#:([\w+]+)#');
 
         return $sql;
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    private function formatParameter($value)
-    {
-        if ($value instanceof DateTimeInterface) {
-            $value = $value->format('Y-m-d H:i:s');
-        }
-
-        if (is_float($value) || is_int($value) || is_bool($value) || $value === null) {
-            return $value;
-        }
-
-        if (is_object($value) && is_callable([$value, '__toString'])) {
-            $value = (string) $value;
-        }
-
-        if (is_string($value)) {
-            return $this->formatStringParameter($this->escapeString($value));
-        }
-
-        throw UnsupportedParameterType::new($value);
-    }
-
-    /**
-     * @return string
-     */
-    private function formatStringParameter($value)
-    {
-        return sprintf("'%s'", $value);
     }
 }

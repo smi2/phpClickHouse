@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use function gettype;
 use function sprintf;
 
-final class UnsupportedParameterType extends InvalidArgumentException implements ClickHouseException
+final class UnsupportedValueType extends InvalidArgumentException implements ClickHouseException
 {
     /**
      * @param mixed $parameter
