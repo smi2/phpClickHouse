@@ -483,7 +483,7 @@ class Http
 
     /**
      * @param string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @return Query
      */
     private function prepareQuery($sql, $bindings)
@@ -500,7 +500,7 @@ class Http
 
     /**
      * @param Query|string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return CurlerRequest
@@ -521,7 +521,7 @@ class Http
 
     /**
      * @param Query|string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -546,7 +546,7 @@ class Http
 
     /**
      * @param Query|string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return Statement
@@ -562,7 +562,7 @@ class Http
 
     /**
      * @param Query|string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return Statement
@@ -586,7 +586,7 @@ class Http
 
     /**
      * @param string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @param bool $exception
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
@@ -681,7 +681,7 @@ class Http
     /**
      * @param Stream $streamRead
      * @param string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -696,7 +696,7 @@ class Http
     /**
      * @param Stream $streamWrite
      * @param string $sql
-     * @param array $bindings
+     * @param mixed[] $bindings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */

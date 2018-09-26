@@ -288,7 +288,7 @@ class Client
     /**
      * Query CREATE/DROP
      *
-     * @param string[] $bindings
+     * @param mixed[] $bindings
      * @return Statement
      */
     public function write(string $sql, array $bindings = [], bool $exception = true)
@@ -356,7 +356,7 @@ class Client
     }
 
     /**
-     * @param string[] $bindings
+     * @param mixed[] $bindings
      * @return Statement
      */
     public function select(
@@ -398,7 +398,7 @@ class Client
     /**
      * prepare select
      *
-     * @param string[] $bindings
+     * @param mixed[] $bindings
      * @return Statement
      */
     public function selectAsync(
