@@ -61,9 +61,9 @@ class Http
     private $_connectTimeOut = 5;
 
     /**
-     * @var callable
+     * @var callable|null
      */
-    private $xClickHouseProgress = null;
+    private $xClickHouseProgress;
 
     /**
      * Http constructor.
@@ -337,7 +337,7 @@ class Http
     }
 
 
-    public function __findXClickHouseProgress($handle)
+    private function findXClickHouseProgress($handle)
     {
         $code = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 
@@ -362,15 +362,8 @@ class Http
             $last = substr($header, $pos);
             $data = @json_decode(str_ireplace('X-ClickHouse-Progress:', '', $last), true);
 
-            if ($data && is_callable($this->xClickHouseProgress)) {
-
-                if (is_array($this->xClickHouseProgress)) {
-                    call_user_func_array($this->xClickHouseProgress, [$data]);
-                } else {
-                    call_user_func($this->xClickHouseProgress, $data);
-                }
-
-
+            if ($data && $this->xClickHouseProgress !== null) {
+                ($this->xClickHouseProgress)($data);
             }
 
         }
@@ -437,9 +430,11 @@ class Http
                 });
             }
         }
-        if ($this->xClickHouseProgress)
+        if ($this->xClickHouseProgress !== null)
         {
-            $request->setFunctionProgress([$this, '__findXClickHouseProgress']);
+            $request->setFunctionProgress(function($x){
+                return $this->findXClickHouseProgress($x);
+            });
         }
         // ---------------------------------------------------------------------------------
         return $request;
@@ -576,10 +571,7 @@ class Http
         return new Statement($request);
     }
 
-    /**
-     * @param callable $callback
-     */
-    public function setProgressFunction(callable $callback)
+    public function setProgressFunction(callable $callback) : void
     {
         $this->xClickHouseProgress = $callback;
     }
