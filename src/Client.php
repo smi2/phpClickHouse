@@ -461,15 +461,15 @@ class Client
     }
 
     /**
-     * Insert Array
-     *
      * @param mixed[][] $values
      * @param string[]  $columns
-     * @return Statement
-     * @throws Exception\TransportException
      */
-    public function insert(string $table, $values, $columns = [])
+    public function insert(string $table, array $values, array $columns = []) : Statement
     {
+        if (empty($values)) {
+            throw QueryException::cannotInsertEmptyValues();
+        }
+
         if (stripos($table, '`') === false && stripos($table, '.') === false) {
             $table = '`' . $table . '`'; //quote table name for dot names
         }
