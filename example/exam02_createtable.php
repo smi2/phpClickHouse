@@ -10,7 +10,7 @@ $db = new ClickHouseDB\Client($config);
 
 // ---------------------------- Write ----------------------------
 echo "\n-----\ntry write:create_table\n";
-$db->database('default');
+$db->setDatabase('default');
 //------------------------------------------------------------------------------
 
 echo 'Tables EXISTS: ' . json_encode($db->showTables()) . PHP_EOL;

@@ -43,7 +43,7 @@ if ($create) {
     echo "--------------------------------------- insert -------------------------------------------------------------\n";
     echo "insert ALL file async + GZIP:\n";
 
-    $db->enableHttpCompression(true);
+    $db->setHttpCompression(true);
     $time_start = microtime(true);
 
     $result_insert = $db->insertBatchFiles('summing_partions_views', $file_data_names, [

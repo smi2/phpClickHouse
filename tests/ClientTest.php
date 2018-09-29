@@ -27,7 +27,7 @@ class ClientTest extends TestCase
     {
         date_default_timezone_set('Europe/Moscow');
 
-        $this->client->enableHttpCompression(true);
+        $this->client->setHttpCompression(true);
         $this->client->ping();
     }
 
@@ -44,10 +44,9 @@ class ClientTest extends TestCase
      */
     private function insert_data_table_summing_url_views()
     {
-        $databaseName = getenv('CLICKHOUSE_DATABASE');
         return $this->client->insert(
 
-            $databaseName.'.summing_url_views',
+            $this->currentDbName . '.summing_url_views',
             [
                 [strtotime('2010-10-10 00:00:00'), 'HASH1', 2345, 22, 20, 2],
                 [strtotime('2010-10-11 01:00:00'), 'HASH2', 2345, 12, 9, 3],
@@ -250,8 +249,6 @@ class ClientTest extends TestCase
 
     public function testInsertDotTable()
     {
-        $databaseName = getenv('CLICKHOUSE_DATABASE');
-
         $this->client->write("DROP TABLE IF EXISTS `tsts.test`");
         $this->client->write('CREATE TABLE `tsts.test` (
                 event_date Date DEFAULT toDate(event_time),
@@ -271,7 +268,7 @@ class ClientTest extends TestCase
         );
 
         $this->client->insert(
-            $databaseName.'.`tsts.test`',
+            $this->currentDbName . '.`tsts.test`',
             [
                 [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
             ],
@@ -433,7 +430,7 @@ class ClientTest extends TestCase
 
         try {
             $db = new Client($config);
-            $db->setConnectTimeOut(1);
+            $db->setConnectTimeout(1);
             $db->ping();
         } catch (\Exception $e) {
         }
@@ -532,7 +529,7 @@ class ClientTest extends TestCase
         }
 
         $this->create_table_summing_url_views();
-        $this->client->enableHttpCompression(true);
+        $this->client->setHttpCompression(true);
 
         $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'site_id', 'views', 'v_00', 'v_55'
@@ -808,10 +805,9 @@ class ClientTest extends TestCase
     {
         $config = [
             'host'     => 'x',
-            'port'     => '8123',
+            'port'     => 8123,
             'username' => 'x',
             'password' => 'x',
-            'settings' => ['max_execution_time' => 100]
         ];
 
         $db = new Client($config);
@@ -822,42 +818,40 @@ class ClientTest extends TestCase
     {
         $config = [
             'host'     => 'x',
-            'port'     => '8123',
+            'port'     => 8123,
             'username' => 'x',
             'password' => 'x',
         ];
 
-        $settings = ['max_execution_time' => 100];
+        $settings = ['max_block_size' => 1234];
 
         $db = new Client($config, $settings);
-        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
+        $this->assertEquals(1234, $db->getSettings()->getSetting('max_block_size'));
 
 
         $config = [
             'host' => 'x',
-            'port' => '8123',
+            'port' => 8123,
             'username' => 'x',
             'password' => 'x'
         ];
         $db = new Client($config);
-        $db->settings()->set('max_execution_time', 100);
-        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
+        $db->getSettings()->set('max_block_size', 100);
+        $this->assertEquals(100, $db->getSettings()->getSetting('max_block_size'));
 
 
         $config = [
             'host' => 'x',
-            'port' => '8123',
+            'port' => 8123,
             'username' => 'x',
             'password' => 'x'
         ];
         $db = new Client($config);
-        $db->settings()->apply([
-            'max_execution_time' => 100,
+        $db->getSettings()->apply([
             'max_block_size' => 12345
         ]);
 
-        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
-        $this->assertEquals(12345, $db->settings()->getSetting('max_block_size'));
+        $this->assertEquals(12345, $db->getSettings()->getSetting('max_block_size'));
     }
 
     public function testWriteEmpty()
@@ -913,9 +907,7 @@ class ClientTest extends TestCase
 
         $this->create_table_summing_url_views();
 
-
         $this->client->setTimeout(0.01);
-
 
         $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'

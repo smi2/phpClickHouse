@@ -33,25 +33,30 @@ use function trim;
 
 class Client
 {
-    const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
+    private const DEFAULT_USERNAME  = 'default';
+    private const DEFAULT_PASSWORD  = '';
+    private const DEFAULT_PORT      = 8123;
+    private const DEFAULT_HOST      = '127.0.0.1';
+    private const DEFAULT_DATABASE  = 'default';
+    private const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
 
     /** @var Http */
     private $transport;
 
     /** @var string */
-    private $connectUsername;
+    private $username;
 
     /** @var string */
-    private $connectPassword;
+    private $password;
 
     /** @var string */
-    private $connectHost;
+    private $host;
+
+    /** @var int */
+    private $port;
 
     /** @var string */
-    private $connectPort;
-
-    /** @var bool */
-    private $connectUserReadonly = false;
+    private $database;
 
     /**
      * @param mixed[] $connectParams
@@ -59,184 +64,106 @@ class Client
      */
     public function __construct(array $connectParams, array $settings = [])
     {
-        if (! isset($connectParams['username'])) {
-            throw  new \InvalidArgumentException('not set username');
-        }
+        $this->username = $connectParams['username'] ?? self::DEFAULT_USERNAME;
+        $this->password = $connectParams['password'] ?? self::DEFAULT_PASSWORD;
+        $this->port     = (int) ($connectParams['port'] ?? self::DEFAULT_PORT);
+        $this->host     = $connectParams['host'] ?? self::DEFAULT_HOST;
+        $this->database = $connectParams['database'] ?? self::DEFAULT_DATABASE;
 
-        if (! isset($connectParams['password'])) {
-            throw  new \InvalidArgumentException('not set password');
-        }
-
-        if (! isset($connectParams['port'])) {
-            throw  new \InvalidArgumentException('not set port');
-        }
-
-        if (! isset($connectParams['host'])) {
-            throw  new \InvalidArgumentException('not set host');
-        }
-
-        $this->connectUsername = $connectParams['username'];
-        $this->connectPassword = $connectParams['password'];
-        $this->connectPort     = $connectParams['port'];
-        $this->connectHost     = $connectParams['host'];
-
-        // init transport class
         $this->transport = new Http(
-            $this->connectHost,
-            $this->connectPort,
-            $this->connectUsername,
-            $this->connectPassword
+            $this->host,
+            $this->port,
+            $this->username,
+            $this->password,
+            $this->database
         );
 
         $this->transport->addQueryDegeneration(new Bindings());
 
         // apply settings to transport class
-        $this->settings()->database('default');
         if (! empty($settings)) {
-            $this->settings()->apply($settings);
-        }
-
-        if (isset($connectParams['readonly'])) {
-            $this->setReadOnlyUser($connectParams['readonly']);
+            $this->getSettings()->apply($settings);
         }
 
         if (isset($connectParams['https'])) {
-            $this->https($connectParams['https']);
+            $this->setHttps($connectParams['https']);
         }
 
-        $this->enableHttpCompression();
-    }
-
-    /**
-     * if the user has only read in the config file
-     */
-    public function setReadOnlyUser(bool $flag)
-    {
-        $this->connectUserReadonly = $flag;
-        $this->settings()->setReadOnlyUser($this->connectUserReadonly);
+        $this->setHttpCompression(true);
     }
 
     /**
      * Clear Degeneration processing request [template ]
-     *
-     * @return bool
      */
-    public function cleanQueryDegeneration()
+    public function cleanQueryDegeneration() : void
     {
-        return $this->transport->cleanQueryDegeneration();
+        $this->transport->cleanQueryDegeneration();
     }
 
     /**
-     * add Degeneration processing
-     *
-     * @return bool
+     * Degeneration processing
      */
-    public function addQueryDegeneration(Degeneration $degeneration)
+    public function addQueryDegeneration(Degeneration $degeneration) : void
     {
-        return $this->transport->addQueryDegeneration($degeneration);
+        $this->transport->addQueryDegeneration($degeneration);
     }
 
     /**
-     * add Conditions in query
-     *
-     * @return bool
+     * Add Conditions Degeneration to query processing
      */
-    public function enableQueryConditions()
+    public function enableQueryConditions() : void
     {
-        return $this->transport->addQueryDegeneration(new Conditions());
+        $this->transport->addQueryDegeneration(new Conditions());
+    }
+
+    public function setTimeout(float $seconds) : void
+    {
+        $this->transport->setTimeout($seconds);
+    }
+
+    public function setConnectTimeout(float $seconds) : void
+    {
+        $this->transport->setConnectTimeout($seconds);
+    }
+
+    public function getHost() : string
+    {
+        return $this->host;
     }
 
     /**
      * Set connection host
-     *
-     * @param string $host
      */
-    public function setHost($host)
+    public function setHost(string $host) : void
     {
-        $this->connectHost = $host;
-        $this->transport()->setHost($host);
+        $this->host = $host;
+        $this->transport->setHost($host);
     }
 
-    /**
-     * @return Settings
-     */
-    public function setTimeout(float $timeout)
+    public function getPassword() : string
     {
-        return $this->settings()->max_execution_time($timeout);
+        return $this->password;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getTimeout()
+    public function getPort() : int
     {
-        return $this->settings()->getTimeOut();
+        return $this->port;
     }
 
-    /**
-     * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
-     */
-    public function setConnectTimeOut(float $connectTimeOut)
+    public function getUsername() : string
     {
-        $this->transport()->setConnectTimeOut($connectTimeOut);
+        return $this->username;
     }
 
-    /**
-     * @return int
-     */
-    public function getConnectTimeOut()
+    public function setDatabase(string $database) : self
     {
-        return $this->transport()->getConnectTimeOut();
+        $this->database = $database;
+        $this->transport->setDatabase($database);
+
+        return $this;
     }
 
-    /**
-     * @return Http
-     */
-    public function transport()
-    {
-        if (! $this->transport) {
-            throw  new \InvalidArgumentException('Empty transport class');
-        }
-
-        return $this->transport;
-    }
-
-    /**
-     * @return string
-     */
-    public function getConnectHost()
-    {
-        return $this->connectHost;
-    }
-
-    /**
-     * @return string
-     */
-    public function getConnectPassword()
-    {
-        return $this->connectPassword;
-    }
-
-    /**
-     * @return string
-     */
-    public function getConnectPort()
-    {
-        return $this->connectPort;
-    }
-
-    /**
-     * @return string
-     */
-    public function getConnectUsername()
-    {
-        return $this->connectUsername;
-    }
-
-    /**
-     * @return Http
-     */
-    public function getTransport()
+    public function getTransport() : Http
     {
         return $this->transport;
     }
@@ -246,15 +173,12 @@ class Client
      */
     public function verbose()
     {
-        return $this->transport()->verbose(true);
+        return $this->transport->setVerbose();
     }
 
-    /**
-     * @return Settings
-     */
-    public function settings()
+    public function getSettings() : Settings
     {
-        return $this->transport()->settings();
+        return $this->transport->getSettings();
     }
 
     /**
@@ -262,11 +186,11 @@ class Client
      */
     public function useSession(bool $useSessionId = false)
     {
-        if (! $this->settings()->getSessionId()) {
+        if (! $this->getSettings()->getSessionId()) {
             if (! $useSessionId) {
-                $this->settings()->makeSessionId();
+                $this->getSettings()->makeSessionId();
             } else {
-                $this->settings()->session_id($useSessionId);
+                $this->getSettings()->session_id($useSessionId);
             }
         }
 
@@ -278,7 +202,7 @@ class Client
      */
     public function getSession()
     {
-        return $this->settings()->getSessionId();
+        return $this->getSettings()->getSessionId();
     }
 
     /**
@@ -289,18 +213,7 @@ class Client
      */
     public function write(string $sql, array $bindings = [], bool $exception = true)
     {
-        return $this->transport()->write($sql, $bindings, $exception);
-    }
-
-    /**
-     * set db name
-     * @return static
-     */
-    public function database(string $db)
-    {
-        $this->settings()->database($db);
-
-        return $this;
+        return $this->transport->write($sql, $bindings, $exception);
     }
 
     /**
@@ -310,19 +223,17 @@ class Client
      */
     public function enableLogQueries(bool $flag = true)
     {
-        $this->settings()->set('log_queries', (int) $flag);
+        $this->getSettings()->set('log_queries', (int) $flag);
 
         return $this;
     }
 
     /**
      * Compress the result if the HTTP client said that it understands data compressed with gzip or deflate
-     *
-     * @return static
      */
-    public function enableHttpCompression(bool $flag = true)
+    public function setHttpCompression(bool $enable) : self
     {
-        $this->settings()->enableHttpCompression($flag);
+        $this->getSettings()->setHttpCompression($enable);
 
         return $this;
     }
@@ -332,9 +243,9 @@ class Client
      *
      * @return static
      */
-    public function https(bool $flag = true)
+    public function setHttps(bool $flag)
     {
-        $this->settings()->https($flag);
+        $this->transport->setHttps($flag);
 
         return $this;
     }
@@ -346,9 +257,19 @@ class Client
      */
     public function enableExtremes(bool $flag = true)
     {
-        $this->settings()->set('extremes', (int) $flag);
+        $this->getSettings()->set('extremes', (int) $flag);
 
         return $this;
+    }
+
+    /**
+     * Ping server
+     *
+     * @return bool
+     */
+    public function ping()
+    {
+        return $this->transport->ping();
     }
 
     /**
@@ -361,34 +282,7 @@ class Client
         WhereInFile $whereInFile = null,
         WriteToFile $writeToFile = null
     ) {
-        return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
-    }
-
-    /**
-     * @return bool
-     */
-    public function executeAsync()
-    {
-        return $this->transport()->executeAsync();
-    }
-
-    /**
-     * set progressFunction
-     */
-    public function progressFunction(callable $callback)
-    {
-        if (! is_callable($callback)) {
-            throw new \InvalidArgumentException('Not is_callable progressFunction');
-        }
-
-        if (! $this->settings()->is('send_progress_in_http_headers')) {
-            $this->settings()->set('send_progress_in_http_headers', 1);
-        }
-        if (! $this->settings()->is('http_headers_progress_interval_ms')) {
-            $this->settings()->set('http_headers_progress_interval_ms', 100);
-        }
-
-        $this->transport()->setProgressFunction($callback);
+        return $this->transport->select($sql, $bindings, $whereInFile, $writeToFile);
     }
 
     /**
@@ -403,7 +297,34 @@ class Client
         WhereInFile $whereInFile = null,
         WriteToFile $writeToFile = null
     ) {
-        return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
+        return $this->transport->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
+    }
+
+    /**
+     * @return bool
+     */
+    public function executeAsync()
+    {
+        return $this->transport->executeAsync();
+    }
+
+    /**
+     * set progressFunction
+     */
+    public function progressFunction(callable $callback)
+    {
+        if (! is_callable($callback)) {
+            throw new \InvalidArgumentException('Not is_callable progressFunction');
+        }
+
+        if (! $this->getSettings()->isSet('send_progress_in_http_headers')) {
+            $this->getSettings()->set('send_progress_in_http_headers', 1);
+        }
+        if (! $this->getSettings()->isSet('http_headers_progress_interval_ms')) {
+            $this->getSettings()->set('http_headers_progress_interval_ms', 100);
+        }
+
+        $this->transport->setProgressFunction($callback);
     }
 
     /**
@@ -417,43 +338,13 @@ class Client
     }
 
     /**
-     * show databases
-     *
-     * @return array
-     */
-    public function showDatabases()
-    {
-        return $this->select('show databases')->rows();
-    }
-
-    /**
-     * statement = SHOW CREATE TABLE
-     *
-     * @return mixed
-     */
-    public function showCreateTable(string $table)
-    {
-        return $this->select('SHOW CREATE TABLE ' . $table)->fetchOne('statement');
-    }
-
-    /**
-     * SHOW TABLES
-     *
-     * @return mixed[]
-     */
-    public function showTables()
-    {
-        return $this->select('SHOW TABLES')->rowsAsTree('name');
-    }
-
-    /**
      * Get the number of simultaneous/Pending requests
      *
      * @return int
      */
     public function getCountPendingQueue()
     {
-        return $this->transport()->getCountPendingQueue();
+        return $this->transport->getCountPendingQueue();
     }
 
     /**
@@ -484,7 +375,7 @@ class Client
         }
         $sql = trim($sql, ', ');
 
-        return $this->transport()->write($sql);
+        return $this->transport->write($sql);
     }
 
     /**
@@ -581,7 +472,7 @@ class Client
             } else {
                 $sql = 'INSERT INTO ' . $tableName . ' ( ' . implode(',', $columns) . ' ) FORMAT ' . $format;
             }
-            $result[$fileName] = $this->transport()->writeAsyncCSV($sql, $fileName);
+            $result[$fileName] = $this->transport->writeAsyncCSV($sql, $fileName);
         }
 
         // exec
@@ -622,7 +513,7 @@ class Client
             $sql = 'INSERT INTO ' . $tableName . ' ( ' . implode(',', $columns) . ' ) FORMAT ' . $format;
         }
 
-        return $this->transport()->writeStreamData($sql);
+        return $this->transport->writeStreamData($sql);
     }
 
     /**
@@ -638,7 +529,7 @@ class Client
             throw new QueryException('Queue must be empty, before streamWrite');
         }
 
-        return $this->transport()->streamWrite($stream, $sql, $bind);
+        return $this->transport->streamWrite($stream, $sql, $bind);
     }
 
     /**
@@ -653,7 +544,17 @@ class Client
             throw new QueryException('Queue must be empty, before streamWrite');
         }
 
-        return $this->transport()->streamRead($streamRead, $sql, $bind);
+        return $this->transport->streamRead($streamRead, $sql, $bind);
+    }
+
+    /**
+     * show databases
+     *
+     * @return array
+     */
+    public function showDatabases()
+    {
+        return $this->select('show databases')->rows();
     }
 
     /**
@@ -663,7 +564,7 @@ class Client
      */
     public function databaseSize()
     {
-        $b = $this->settings()->getDatabase();
+        $database = $this->getSettings()->get('database');
 
         return $this->select(
             '
@@ -672,8 +573,28 @@ class Client
             WHERE active AND database=:database
             GROUP BY database
             ',
-            ['database' => $b]
+            ['database' => $database]
         )->fetchOne();
+    }
+
+    /**
+     * SHOW TABLES
+     *
+     * @return mixed[]
+     */
+    public function showTables()
+    {
+        return $this->select('SHOW TABLES')->rowsAsTree('name');
+    }
+
+    /**
+     * statement = SHOW CREATE TABLE
+     *
+     * @return mixed
+     */
+    public function showCreateTable(string $table)
+    {
+        return $this->select('SHOW CREATE TABLE ' . $table)->fetchOne('statement');
     }
 
     /**
@@ -690,16 +611,6 @@ class Client
         }
 
         return null;
-    }
-
-    /**
-     * Ping server
-     *
-     * @return bool
-     */
-    public function ping()
-    {
-        return $this->transport()->ping();
     }
 
     /**
@@ -731,7 +642,7 @@ class Client
             WHERE database=:database
             GROUP BY table,database
         ',
-            ['database' => $this->settings()->getDatabase()]);
+            ['database' => $this->database]);
 
         if ($flatList) {
             return $result->rows();
@@ -745,7 +656,7 @@ class Client
      *
      * @return array
      */
-    public function isExists(string $database, string $table)
+    public function tableExists(string $database, string $table)
     {
         return $this->select(
             '
@@ -762,7 +673,7 @@ class Client
      */
     public function partitions(string $table, int $limit = null, bool $active = null)
     {
-        $database          = $this->settings()->getDatabase();
+        $database          = $this->database;
         $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int) $active);
         $limitClause       = $limit !== null ? ' LIMIT ' . $limit : '';
 
@@ -784,7 +695,7 @@ CLICKHOUSE
     {
 
         $partition_id = trim($partition_id, '\'');
-        $this->settings()->set('replication_alter_partitions_sync', 2);
+        $this->getSettings()->set('replication_alter_partitions_sync', 2);
         $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id',
             [
                 'dataBaseTableName' => $dataBaseTableName,
@@ -792,6 +703,42 @@ CLICKHOUSE
             ]);
 
         return $state;
+    }
+
+    /**
+     * dropOldPartitions by day_ago
+     * @deprecated
+     *
+     * @return array
+     * @throws Exception\TransportException
+     * @throws \Exception
+     */
+    public function dropOldPartitions(string $table_name, int $days_ago, int $count_partitons_per_one = 100)
+    {
+        $days_ago = strtotime(date('Y-m-d 00:00:00', strtotime('-' . $days_ago . ' day')));
+
+        $drop           = [];
+        $list_patitions = $this->partitions($table_name, $count_partitons_per_one);
+
+        foreach ($list_patitions as $partion_id => $partition) {
+            if (stripos($partition['engine'], 'mergetree') === false) {
+                continue;
+            }
+
+            // $min_date = strtotime($partition['min_date']);
+            $max_date = strtotime($partition['max_date']);
+
+            if ($max_date < $days_ago) {
+                $drop[] = $partition['partition'];
+            }
+        }
+
+        $result = [];
+        foreach ($drop as $partition_id) {
+            $result[$partition_id] = $this->dropPartition($table_name, $partition_id);
+        }
+
+        return $result;
     }
 
     /**
@@ -849,41 +796,5 @@ CLICKHOUSE
         }
 
         return $l;
-    }
-
-    /**
-     * dropOldPartitions by day_ago
-     * @deprecated
-     *
-     * @return array
-     * @throws Exception\TransportException
-     * @throws \Exception
-     */
-    public function dropOldPartitions(string $table_name, int $days_ago, int $count_partitons_per_one = 100)
-    {
-        $days_ago = strtotime(date('Y-m-d 00:00:00', strtotime('-' . $days_ago . ' day')));
-
-        $drop           = [];
-        $list_patitions = $this->partitions($table_name, $count_partitons_per_one);
-
-        foreach ($list_patitions as $partion_id => $partition) {
-            if (stripos($partition['engine'], 'mergetree') === false) {
-                continue;
-            }
-
-            // $min_date = strtotime($partition['min_date']);
-            $max_date = strtotime($partition['max_date']);
-
-            if ($max_date < $days_ago) {
-                $drop[] = $partition['partition'];
-            }
-        }
-
-        $result = [];
-        foreach ($drop as $partition_id) {
-            $result[$partition_id] = $this->dropPartition($table_name, $partition_id);
-        }
-
-        return $result;
     }
 }

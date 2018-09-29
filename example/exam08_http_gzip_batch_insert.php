@@ -48,7 +48,7 @@ echo "--------------------------------------------------------------------------
 echo "insert ALL file async NO gzip:\n";
 
 
-$db->settings()->max_execution_time(200);
+$db->setTimeout(200);
 $time_start = microtime(true);
 
 $result_insert = $db->insertBatchFiles('summing_url_views', $file_data_names, [
@@ -67,7 +67,7 @@ print_r($db->select('select sum(views) from summing_url_views')->rows());
 echo "--------------------------------------- enableHttpCompression -------------------------------------------------------------\n";
 echo "insert ALL file async + GZIP:\n";
 
-$db->enableHttpCompression(true);
+$db->setHttpCompression(true);
 $time_start = microtime(true);
 
 $result_insert = $db->insertBatchFiles('summing_url_views', $file_data_names, [

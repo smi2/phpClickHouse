@@ -9,34 +9,43 @@ use ClickHouseDB\Query\WhereInFile;
 use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Settings;
 use ClickHouseDB\Statement;
+use function array_merge;
+use function fclose;
+use function http_build_query;
+use function is_callable;
+use function is_resource;
 use const PHP_EOL;
+use function stripos;
 
 class Http
 {
     /**
      * @var string
      */
-    private $_username = null;
+    private $username;
 
     /**
      * @var string
      */
-    private $_password = null;
+    private $password;
 
     /**
      * @var string
      */
-    private $_host = '';
+    private $host;
 
     /**
      * @var int
      */
-    private $_port = 0;
+    private $port;
+
+    /** @var bool */
+    private $https;
 
     /**
      * @var bool|int
      */
-    private $_verbose = false;
+    private $verbose = false;
 
     /**
      * @var CurlerRolling
@@ -46,7 +55,7 @@ class Http
     /**
      * @var Settings
      */
-    private $_settings = null;
+    private $settings;
 
     /**
      * @var array
@@ -54,35 +63,50 @@ class Http
     private $_query_degenerations = [];
 
     /**
-     * Count seconds (int)
+     * Count seconds (float)
      *
-     * @var int
+     * @var float
      */
-    private $_connectTimeOut = 5;
+    private $timeout = 20;
+
+    /**
+     * Count seconds (float)
+     *
+     * @var float
+     */
+    private $connectTimeout = 5;
 
     /**
      * @var callable|null
      */
     private $xClickHouseProgress;
 
-    /**
-     * Http constructor.
-     * @param string $host
-     * @param int $port
-     * @param string $username
-     * @param string $password
-     */
-    public function __construct($host, $port, $username, $password)
-    {
-        $this->setHost($host, $port);
+    /** @var string */
+    private $database;
 
-        $this->_username = $username;
-        $this->_password = $password;
-        $this->_settings = new Settings($this);
+    public function __construct(
+        string $host,
+        int $port,
+        string $username,
+        string $password,
+        string $database,
+        bool $https = false
+    ) {
+        $this->host     = $host;
+        $this->port     = $port;
+        $this->username = $username;
+        $this->password = $password;
+        $this->setDatabase($database);
+        $this->setHttps($https);
+        $this->settings = new Settings();
 
         $this->setCurler();
     }
 
+    public function setHttps(bool $https) : void
+    {
+        $this->https = $https;
+    }
 
     public function setCurler()
     {
@@ -97,17 +121,14 @@ class Http
         return $this->_curler;
     }
 
-    /**
-     * @param string $host
-     * @param int $port
-     */
-    public function setHost($host, $port = -1)
+    public function setDatabase(string $database) : void
     {
-        if ($port > 0) {
-            $this->_port = $port;
-        }
+        $this->database = $database;
+    }
 
-        $this->_host = $host;
+    public function setHost(string $host) : void
+    {
+        $this->host = $host;
     }
 
     /**
@@ -116,63 +137,38 @@ class Http
     public function getUri()
     {
         $proto = 'http';
-        if ($this->settings()->isHttps()) {
+        if ($this->https) {
             $proto = 'https';
         }
-        $uri = $proto . '://' . $this->_host;
-        if (stripos($this->_host,'/')!==false || stripos($this->_host,':')!==false) {
+        $uri = $proto . '://' . $this->host;
+        if (stripos($this->host, '/') !== false || stripos($this->host, ':') !== false) {
             return $uri;
         }
-        if (intval($this->_port)>0) {
-            return $uri . ':' . $this->_port;
+        if ($this->port > 0) {
+            return $uri . ':' . $this->port;
         }
+
         return $uri;
     }
 
-    /**
-     * @return Settings
-     */
-    public function settings()
+    public function getSettings() : Settings
     {
-        return $this->_settings;
+        return $this->settings;
+    }
+
+    public function setVerbose(bool $flag) : void
+    {
+        $this->verbose = $flag;
     }
 
     /**
-     * @param bool|int $flag
-     * @return mixed
+     * @param mixed[] $params
      */
-    public function verbose($flag)
+    private function getUrl(array $params = []) : string
     {
-        $this->_verbose = $flag;
-        return $flag;
-    }
+        $settings = $this->getSettings()->getQueryableSettings($params);
 
-    /**
-     * @param array $params
-     * @return string
-     */
-    private function getUrl($params = [])
-    {
-        $settings = $this->settings()->getSettings();
-
-        if (is_array($params) && sizeof($params)) {
-            $settings = array_merge($settings, $params);
-        }
-
-
-        if ($this->settings()->isReadOnlyUser())
-        {
-            unset($settings['extremes']);
-            unset($settings['readonly']);
-            unset($settings['enable_http_compression']);
-            unset($settings['max_execution_time']);
-
-        }
-
-        unset($settings['https']);
-
-
-        return $this->getUri() . '?' . http_build_query($settings);
+        return $this->getUri() . '?' . http_build_query(array_merge(['database' => $this->database], $settings));
     }
 
     /**
@@ -182,33 +178,33 @@ class Http
     private function newRequest($extendinfo)
     {
         $new = new CurlerRequest();
-        $new->auth($this->_username, $this->_password)
+        $new->auth($this->username, $this->password)
             ->POST()
             ->setRequestExtendedInfo($extendinfo);
 
-        if ($this->settings()->isEnableHttpCompression()) {
+        if ($this->getSettings()->isHttpCompressionEnabled()) {
             $new->httpCompression(true);
         }
-        if ($this->settings()->getSessionId())
-        {
+
+        if ($this->getSettings()->getSessionId()) {
             $new->persistent();
         }
 
-        $new->timeOut($this->settings()->getTimeOut());
-        $new->connectTimeOut($this->_connectTimeOut)->keepAlive(); // one sec
-        $new->verbose(boolval($this->_verbose));
+        $new->setTimeout($this->timeout);
+        $new->setConnectTimeout($this->connectTimeout); // one sec
+        $new->keepAlive(); // one sec
+        $new->verbose((bool) $this->verbose);
 
         return $new;
     }
 
     /**
-     * @param Query $query
      * @param array $urlParams
-     * @param bool $query_as_string
+     * @param bool  $query_as_string
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function makeRequest(Query $query, $urlParams = [], $query_as_string = false)
+    private function makeRequest(Query $query, array $urlParams = [], $query_as_string = false)
     {
         $sql = $query->toSql();
 
@@ -219,21 +215,18 @@ class Http
         $url = $this->getUrl($urlParams);
 
         $extendinfo = [
-            'sql' => $sql,
-            'query' => $query,
-            'format'=> $query->getFormat()
+            'sql'    => $sql,
+            'query'  => $query,
+            'format' => $query->getFormat(),
         ];
 
         $new = $this->newRequest($extendinfo);
         $new->url($url);
 
-
-
-
-        if (!$query_as_string) {
+        if (! $query_as_string) {
             $new->parameters_json($sql);
         }
-        if ($this->settings()->isEnableHttpCompression()) {
+        if ($this->getSettings()->isHttpCompressionEnabled()) {
             $new->httpCompression(true);
         }
 
@@ -248,26 +241,25 @@ class Http
     {
 
         if ($sql instanceof Query) {
-            $query=$sql;
+            $query = $sql;
         } else {
             $query = new Query($sql);
         }
 
-        $url = $this->getUrl([
-            'readonly' => 0,
-            'query' => $query->toSql()
+        $url        = $this->getUrl([
+            'query' => $query->toSql(),
         ]);
         $extendinfo = [
-            'sql' => $sql,
-            'query' => $query,
-            'format'=> $query->getFormat()
+            'sql'    => $sql,
+            'query'  => $query,
+            'format' => $query->getFormat(),
         ];
 
         $request = $this->newRequest($extendinfo);
         $request->url($url);
+
         return $request;
     }
-
 
     /**
      * @param string $sql
@@ -280,20 +272,19 @@ class Http
         $query = new Query($sql);
 
         $url = $this->getUrl([
-            'readonly' => 0,
-            'query' => $query->toSql()
+            'query' => $query->toSql(),
         ]);
 
         $extendinfo = [
-            'sql' => $sql,
-            'query' => $query,
-            'format'=> $query->getFormat()
+            'sql'    => $sql,
+            'query'  => $query,
+            'format' => $query->getFormat(),
         ];
 
         $request = $this->newRequest($extendinfo);
         $request->url($url);
 
-        $request->setCallbackFunction(function(CurlerRequest $request) {
+        $request->setCallbackFunction(function (CurlerRequest $request) {
             $handle = $request->getInfileHandle();
             if (is_resource($handle)) {
                 fclose($handle);
@@ -316,26 +307,31 @@ class Http
         return $this->_curler->countPending();
     }
 
-    /**
-     * set Connect TimeOut in seconds [CURLOPT_CONNECTTIMEOUT] ( int )
-     *
-     * @param int $connectTimeOut
-     */
-    public function setConnectTimeOut($connectTimeOut)
+    public function getTimeout() : float
     {
-        $this->_connectTimeOut = $connectTimeOut;
+        return $this->timeout;
+    }
+
+    public function setTimeout(float $timeout) : void
+    {
+        $this->timeout = $timeout;
     }
 
     /**
-     * get ConnectTimeOut in seconds
-     *
-     * @return int
+     * Get ConnectTimeout in seconds
      */
-    public function getConnectTimeOut()
+    public function getConnectTimeout() : float
     {
-        return $this->_connectTimeOut;
+        return $this->connectTimeout;
     }
 
+    /**
+     * Set Connect Timeout in seconds
+     */
+    public function setConnectTimeout(float $connectTimeOut) : void
+    {
+        $this->connectTimeout = $connectTimeOut;
+    }
 
     private function findXClickHouseProgress($handle)
     {
@@ -343,19 +339,19 @@ class Http
 
         // Search X-ClickHouse-Progress
         if ($code == 200) {
-            $response = curl_multi_getcontent($handle);
+            $response    = curl_multi_getcontent($handle);
             $header_size = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
-            if (!$header_size) {
+            if (! $header_size) {
                 return false;
             }
 
             $header = substr($response, 0, $header_size);
-            if (!$header_size) {
+            if (! $header_size) {
                 return false;
             }
             $pos = strrpos($header, 'X-ClickHouse-Progress');
 
-            if (!$pos) {
+            if (! $pos) {
                 return false;
             }
 
@@ -365,13 +361,11 @@ class Http
             if ($data && $this->xClickHouseProgress !== null) {
                 ($this->xClickHouseProgress)($data);
             }
-
         }
-
     }
 
     /**
-     * @param Query $query
+     * @param Query            $query
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return CurlerRequest
@@ -379,14 +373,13 @@ class Http
      */
     public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
     {
-        $urlParams = ['readonly' => 1];
         $query_as_string = false;
+        $urlParams       = [];
         // ---------------------------------------------------------------------------------
         if ($whereInFile instanceof WhereInFile && $whereInFile->size()) {
             // $request = $this->prepareSelectWhereIn($request, $whereInFile);
-            $structure = $whereInFile->fetchUrlParams();
-            // $structure = [];
-            $urlParams = array_merge($urlParams, $structure);
+            $structure       = $whereInFile->fetchUrlParams();
+            $urlParams       = $structure;
             $query_as_string = true;
         }
         // ---------------------------------------------------------------------------------
@@ -421,36 +414,31 @@ class Http
                     // fwrite($fout, $oname."\0", 1+strlen($oname));
 
                     fwrite($fout, "\x1f\x8b\x08\x00\x00\x00\x00\x00");
-
                 }
 
-
-                $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function(CurlerRequest $request) {
+                $request->setResultFileHandle($fout, $isGz)->setCallbackFunction(function (CurlerRequest $request) {
                     fclose($request->getResultFileHandle());
                 });
             }
         }
-        if ($this->xClickHouseProgress !== null)
-        {
-            $request->setFunctionProgress(function($x){
+        if ($this->xClickHouseProgress !== null) {
+            $request->setFunctionProgress(function ($x) {
                 return $this->findXClickHouseProgress($x);
             });
         }
+
         // ---------------------------------------------------------------------------------
         return $request;
-
     }
 
-    public function cleanQueryDegeneration()
+    public function cleanQueryDegeneration() : void
     {
         $this->_query_degenerations = [];
-        return true;
     }
 
-    public function addQueryDegeneration(Degeneration $degeneration)
+    public function addQueryDegeneration(Degeneration $degeneration) : void
     {
         $this->_query_degenerations[] = $degeneration;
-        return true;
     }
 
     /**
@@ -460,8 +448,7 @@ class Http
      */
     public function getRequestWrite(Query $query)
     {
-        $urlParams = ['readonly' => 0];
-        return $this->makeRequest($query, $urlParams);
+        return $this->makeRequest($query);
     }
 
     /**
@@ -470,14 +457,14 @@ class Http
     public function ping() : bool
     {
         $request = new CurlerRequest();
-        $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
+        $request->url($this->getUri())->verbose(false)->GET()->setConnectTimeout($this->getConnectTimeout());
         $this->_curler->execOne($request);
 
         return $request->response()->body() === 'Ok.' . PHP_EOL;
     }
 
     /**
-     * @param string $sql
+     * @param string  $sql
      * @param mixed[] $bindings
      * @return Query
      */
@@ -492,10 +479,9 @@ class Http
         return new Query($sql, $this->_query_degenerations);
     }
 
-
     /**
-     * @param Query|string $sql
-     * @param mixed[] $bindings
+     * @param Query|string     $sql
+     * @param mixed[]          $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return CurlerRequest
@@ -508,15 +494,13 @@ class Http
         }
         $query = $this->prepareQuery($sql, $bindings);
         $query->setFormat('JSON');
+
         return $this->getRequestRead($query, $whereInFile, $writeToFile);
     }
 
-
-
-
     /**
      * @param Query|string $sql
-     * @param mixed[] $bindings
+     * @param mixed[]      $bindings
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -527,6 +511,7 @@ class Http
         }
 
         $query = $this->prepareQuery($sql, $bindings);
+
         return $this->getRequestWrite($query);
     }
 
@@ -540,8 +525,8 @@ class Http
     }
 
     /**
-     * @param Query|string $sql
-     * @param mixed[] $bindings
+     * @param Query|string     $sql
+     * @param mixed[]          $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return Statement
@@ -552,12 +537,13 @@ class Http
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
         $this->_curler->execOne($request);
+
         return new Statement($request);
     }
 
     /**
-     * @param Query|string $sql
-     * @param mixed[] $bindings
+     * @param Query|string     $sql
+     * @param mixed[]          $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
      * @return Statement
@@ -568,6 +554,7 @@ class Http
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
         $this->_curler->addQueLoop($request);
+
         return new Statement($request);
     }
 
@@ -577,9 +564,9 @@ class Http
     }
 
     /**
-     * @param string $sql
+     * @param string  $sql
      * @param mixed[] $bindings
-     * @param bool $exception
+     * @param bool    $exception
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -593,28 +580,25 @@ class Http
                 $response->error();
             }
         }
+
         return $response;
     }
 
     /**
-     * @param Stream $streamRW
+     * @param Stream        $streamRW
      * @param CurlerRequest $request
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function streaming(Stream $streamRW,CurlerRequest $request)
+    private function streaming(Stream $streamRW, CurlerRequest $request)
     {
-        $callable=$streamRW->getClosure();
-        $stream=$streamRW->getStream();
-
-
+        $callable = $streamRW->getClosure();
+        $stream   = $streamRW->getStream();
 
         try {
 
-
-            if (!is_callable($callable)) {
-                if ($streamRW->isWrite())
-                {
+            if (! is_callable($callable)) {
+                if ($streamRW->isWrite()) {
 
                     $callable = function ($ch, $fd, $length) use ($stream) {
                         return ($line = fread($stream, $length)) ? $line : '';
@@ -628,74 +612,63 @@ class Http
 
             if ($streamRW->isGzipHeader()) {
 
-                if ($streamRW->isWrite())
-                {
+                if ($streamRW->isWrite()) {
                     $request->header('Content-Encoding', 'gzip');
                     $request->header('Content-Type', 'application/x-www-form-urlencoded');
                 } else {
                     $request->header('Accept-Encoding', 'gzip');
                 }
-
             }
-
-
 
             $request->header('Transfer-Encoding', 'chunked');
 
-
-            if ($streamRW->isWrite())
-            {
+            if ($streamRW->isWrite()) {
                 $request->setReadFunction($callable);
             } else {
                 $request->setWriteFunction($callable);
-
-
-
 //                $request->setHeaderFunction($callableHead);
             }
 
-
-            $this->_curler->execOne($request,true);
+            $this->_curler->execOne($request, true);
             $response = new Statement($request);
             if ($response->isError()) {
                 $response->error();
             }
+
             return $response;
         } finally {
             if ($streamRW->isWrite())
-            fclose($stream);
+                fclose($stream);
         }
-
-
     }
 
-
     /**
-     * @param Stream $streamRead
-     * @param string $sql
+     * @param Stream  $streamRead
+     * @param string  $sql
      * @param mixed[] $bindings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamRead(Stream $streamRead,$sql,$bindings=[])
+    public function streamRead(Stream $streamRead, $sql, $bindings = [])
     {
-        $sql=$this->prepareQuery($sql,$bindings);
-        $request=$this->getRequestRead($sql);
-        return $this->streaming($streamRead,$request);
+        $sql     = $this->prepareQuery($sql, $bindings);
+        $request = $this->getRequestRead($sql);
 
+        return $this->streaming($streamRead, $request);
     }
 
     /**
-     * @param Stream $streamWrite
-     * @param string $sql
+     * @param Stream  $streamWrite
+     * @param string  $sql
      * @param mixed[] $bindings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamWrite(Stream $streamWrite,$sql,$bindings=[])
+    public function streamWrite(Stream $streamWrite, $sql, $bindings = [])
     {
-        $sql=$this->prepareQuery($sql,$bindings);
+        $sql     = $this->prepareQuery($sql, $bindings);
         $request = $this->writeStreamData($sql);
-        return $this->streaming($streamWrite,$request);
+
+        return $this->streaming($streamWrite, $request);
     }
 }

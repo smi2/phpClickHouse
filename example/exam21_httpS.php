@@ -13,27 +13,16 @@ $db->select('SELECT 11');
 
 
 // ---------------------------------------- ADD HTTPS ----------------------------------------
-$db->https();
+$db->setHttps(true);
 
 $db->select('SELECT 11');
 
 
 
 
-// --------------------- $db->settings()->https(); --------------------------------
+// --------------------- $db->setHtps(); --------------------------------
 
 $db = new ClickHouseDB\Client($config);
 $db->verbose();
-$db->settings()->https();
-$db->select('SELECT 11');
-
-
-
-
-// --------------------- $config['https']=true; --------------------------------
-
-$config['https']=true;
-
-$db = new ClickHouseDB\Client($config);
-$db->verbose();
+$db->setHttps(true);
 $db->select('SELECT 11');

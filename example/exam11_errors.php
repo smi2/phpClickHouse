@@ -25,7 +25,7 @@ $db = new ClickHouseDB\Client([
     'username' => 'x',
     'password' => 'x'
 ]);
-$db->setConnectTimeOut(1);
+$db->setConnectTimeout(1);
 try {
     $db->ping();
 }

@@ -88,7 +88,7 @@ class Cluster
     public function __construct($connect_params, $settings = [])
     {
         $this->defaultClient = new Client($connect_params, $settings);
-        $this->defaultHostName = $this->defaultClient->getConnectHost();
+        $this->defaultHostName = $this->defaultClient->getHost();
         $this->setNodes(gethostbynamel($this->defaultHostName));
     }
 
@@ -549,11 +549,9 @@ class Cluster
     /**
      * Truncate on all nodes
      * @deprecated
-     * @param string $database_table
-     * @return array
-     * @throws Exception\TransportException
+     * @return mixed[]
      */
-    public function truncateTable($database_table, $timeOut = 2000)
+    public function truncateTable( string $database_table, float $timeout = 2000)  : array
     {
         $out = [];
         list($db, $table) = explode('.', $database_table);
@@ -561,8 +559,8 @@ class Cluster
         // scan need node`s
         foreach ($nodes as $node)
         {
-            $def = $this->client($node)->getTimeout();
-            $this->client($node)->database($db)->setTimeout($timeOut);
+            $def = $this->client($node)->getTransport()->getTimeout();
+            $this->client($node)->setDatabase($db)->setTimeout($timeout);
             $out[$node] = $this->client($node)->truncateTable($table);
             $this->client($node)->setTimeout($def);
         }

@@ -9,7 +9,7 @@ $config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
-$db->enableHttpCompression(true);
+$db->setHttpCompression(true);
 
 $db->write("DROP TABLE IF EXISTS summing_url_views");
 $db->write('

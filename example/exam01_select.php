@@ -7,7 +7,7 @@ $config = include_once __DIR__ . '/00_config_connect.php';
 
 $db = new ClickHouseDB\Client($config);
 //$db->verbose();
-$db->settings()->readonly(false);
+$db->getSettings()->readonly(false);
 
 
 $result = $db->select(

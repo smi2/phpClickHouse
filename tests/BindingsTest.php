@@ -195,7 +195,7 @@ final class BindingsTest extends TestCase
     public function testSelectAsKeys()
     {
         // chr(0....255);
-        $this->client->settings()->set('max_block_size', 100);
+        $this->client->getSettings()->set('max_block_size', 100);
 
         $bind['k1']=1;
         $bind['k2']=2;

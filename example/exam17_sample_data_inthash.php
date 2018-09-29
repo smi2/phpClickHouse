@@ -61,7 +61,7 @@ if ($_flag_create_table) {
     echo "----------------------------------------------------------------------------------------------------\n";
     echo "insert ALL file async + GZIP:\n";
 
-    $db->enableHttpCompression(true);
+    $db->setHttpCompression(true);
     $time_start = microtime(true);
 
     $result_insert = $db->insertBatchFiles('summing_url_views_intHash32_site_id', $file_data_names, [

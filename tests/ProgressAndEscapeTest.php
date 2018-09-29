@@ -27,7 +27,7 @@ final class ProgressAndEscapeTest extends TestCase
     {
         global $resultTest;
 
-        $this->client->settings()->set('max_block_size', 1);
+        $this->client->getSettings()->set('max_block_size', 1);
 
         $this->client->progressFunction(function ($data) {
             global $resultTest;

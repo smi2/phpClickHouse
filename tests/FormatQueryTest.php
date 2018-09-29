@@ -1,7 +1,7 @@
 <?php
 
 namespace ClickHouseDB\Tests;
- 
+
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -49,18 +49,16 @@ final class FormatQueryTest extends TestCase
 
     public function testClientTimeoutSettings()
     {
-        $this->client->database('default');
-
         $timeout = 1.5;
         $this->client->setTimeout($timeout);      // 1500 ms
-        $this->assertSame($timeout, $this->client->getTimeout());
+        $this->assertSame($timeout, $this->client->getTransport()->getTimeout());
 
         $timeout = 10.0;
         $this->client->setTimeout($timeout);      // 10 seconds
-        $this->assertSame($timeout, $this->client->getTimeout());
+        $this->assertSame($timeout, $this->client->getTransport()->getTimeout());
 
         $timeout = 5.0;
-        $this->client->setConnectTimeOut($timeout);      // 5 seconds
-        $this->assertSame($timeout, $this->client->getConnectTimeOut());
+        $this->client->setConnectTimeout($timeout);      // 5 seconds
+        $this->assertSame($timeout, $this->client->getTransport()->getConnectTimeout());
     }
 }

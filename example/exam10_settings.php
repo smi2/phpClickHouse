@@ -7,9 +7,9 @@ $config = include_once __DIR__ . '/00_config_connect.php';
 
 
 
-$db = new ClickHouseDB\Client($config, ['max_execution_time' => 100]);
+$db = new ClickHouseDB\Client($config, ['readonly' => 100]);
 
-if ($db->settings()->getSetting('max_execution_time') !== 100) {
+if ($db->getSettings()->getSetting('readonly') !== 2) {
     throw new Exception("Bad work settings");
 }
 
@@ -23,9 +23,9 @@ $config = [
 ];
 
 $db = new ClickHouseDB\Client($config);
-$db->settings()->set('max_execution_time', 100);
+$db->getSettings()->set('readonly', 2);
 
-if ($db->settings()->getSetting('max_execution_time') !== 100) {
+if ($db->getSettings()->getSetting('readonly') !== 2) {
     throw new Exception("Bad work settings");
 }
 
@@ -39,17 +39,16 @@ $config = [
 ];
 
 $db = new ClickHouseDB\Client($config);
-$db->settings()->apply([
-    'max_execution_time' => 100,
+$db->getSettings()->apply([
     'max_block_size' => 12345
 ]);
 
 
-if ($db->settings()->getSetting('max_execution_time') !== 100) {
+if ($db->getSettings()->getSetting('readonly') !== 2) {
     throw new Exception("Bad work settings");
 }
 
-if ($db->settings()->getSetting('max_block_size') !== 12345) {
+if ($db->getSettings()->getSetting('max_block_size') !== 12345) {
     throw new Exception("Bad work settings");
 }
 

@@ -9,8 +9,8 @@ $config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
-$db->settings()->set('replication_alter_partitions_sync',2);
-$db->settings()->set('experimental_allow_extended_storage_definition_syntax',1);
+$db->getSettings()->set('replication_alter_partitions_sync', 2);
+$db->getSettings()->set('experimental_allow_extended_storage_definition_syntax', 1);
 
 
 for ( $looop=1;$looop<100;$looop++)

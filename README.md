@@ -54,13 +54,13 @@ Last stable version for:
 Connect and select database:
 ```php
 $config = [
-    'host' => '192.168.1.1',
+    'host' => '127.0.0.1',
     'port' => '8123',
     'username' => 'default',
     'password' => ''
+    'database' => 'default',
 ];
 $db = new ClickHouseDB\Client($config);
-$db->database('default');
 $db->setTimeout(1.5);      // 1500 ms
 $db->setTimeout(10);       // 10 seconds
 $db->setConnectTimeOut(5); // 5 seconds
@@ -249,7 +249,7 @@ see example/exam5_error_async.php
 On fly read CSV file and compress zlib.deflate.
 
 ```php
-$db->settings()->max_execution_time(200);
+$db->setTimeout(200);
 $db->enableHttpCompression(true);
 
 $result_insert = $db->insertBatchFiles('summing_url_views', $file_data_names, [...]);
@@ -262,37 +262,11 @@ foreach ($result_insert as $fileName => $state) {
 
 see speed test `example/exam08_http_gzip_batch_insert.php`
 
-### Max execution time
+### Timeout
 
 ```php
-$db->settings()->max_execution_time(200); // second
+$db->setTimeout200); // second
 ```
-
-
-
-
-### Connection without port 
-
-```php 
-$config['host']='blabla.com';
-$config['port']=0;
-// getUri() === 'http://blabla.com'
-
-
-$config['host']='blabla.com/urls';
-$config['port']=8765;
-// getUri() === 'http://blabla.com/urls'
-
-$config['host']='blabla.com:2224';
-$config['port']=1234;
-// getUri() === 'http://blabla.com:2224'
-
-
-
-
-
-``` 
-
 
 ### tablesSize & databaseSize
 
@@ -432,28 +406,23 @@ SELECT {ifint VAR} result_if_intval_NON_ZERO {else} BLA BLA{/if}
 
 ### Settings
 
-3 way set any settings
+Settings documentation can be found at https://clickhouse.yandex/docs/en/operations/settings/.
+Default values can be found in ClickHouse [source code](https://github.com/yandex/ClickHouse/blob/master/dbms/src/Interpreters/Settings.h)
+
+Initial settings can be passed as a second argument to Client:
 ```php
-// in array config
-$config = [
-    'host' => 'x',
-    'port' => '8123',
-    'username' => 'x',
-    'password' => 'x',
-    'settings' => ['max_execution_time' => 100]
-];
-$db = new ClickHouseDB\Client($config);
-
-// settings via constructor
 $config = [
     'host' => 'x',
     'port' => '8123',
     'username' => 'x',
     'password' => 'x'
+    'database' => 'db_name',
 ];
-$db = new ClickHouseDB\Client($config, ['max_execution_time' => 100]);
+$db = new ClickHouseDB\Client($config, ['readonly' => 2]);
+```
 
-// set method
+Single settings can be set via set method:
+```
 $config = [
     'host' => 'x',
     'port' => '8123',
@@ -461,21 +430,25 @@ $config = [
     'password' => 'x'
 ];
 $db = new ClickHouseDB\Client($config);
-$db->settings()->set('max_execution_time', 100);
+$db->settings()->set('readonly', 2);
+```
 
-// apply array method
+Or apply multiple settings at once:
+```
 $db->settings()->apply([
-    'max_execution_time' => 100,
     'max_block_size' => 12345
 ]);
+```
 
-// check
-if ($db->settings()->getSetting('max_execution_time') !== 100) {
+To get value if set:
+```
+if ($db->settings()->get('readonly') !== 2) {
     throw new Exception('Bad work settings');
 }
-
-// see example/exam10_settings.php
 ```
+
+See example/exam10_settings.php
+
 ### Use session_id with ClickHouse
 
 
@@ -603,7 +576,7 @@ class my
 
 ```php
 $db = new ClickHouseDB\Client($config);
-$db->settings()->https();
+$db->setHttps(true);
 ```
 
 
@@ -618,19 +591,6 @@ print_r($db->getServerSystemSettings());
 print_r($db->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read'));
 
 ```
-
-### ReadOnly ClickHouse user
-
-```php
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'ro',
-    'password' => 'ro',
-    'readonly' => true
-];
-```
-
 
 ### Direct write to file
 

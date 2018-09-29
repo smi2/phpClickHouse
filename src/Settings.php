@@ -2,142 +2,61 @@
 
 namespace ClickHouseDB;
 
-use ClickHouseDB\Transport\Http;
-
+/**
+ * @see https://clickhouse.yandex/docs/en/operations/settings/
+ */
 class Settings
 {
-    /**
-     * @var Http
-     */
-    private $client = null;
-
-    /**
-     * @var array
-     */
+    /** @var mixed[] */
     private $settings = [];
 
-    private $_ReadOnlyUser = false;
+    /** @var bool */
+    private $httpCompressionEnabled = false;
 
     /**
-     * @var bool
+     * @return mixed|null
      */
-    private $_isHttps = false;
-
-    /**
-     * Settings constructor.
-     * @param Http $client
-     */
-    public function __construct(Http $client)
+    public function get(string $key)
     {
-        $default = [
-            'extremes'                => false,
-            'readonly'                => true,
-            'max_execution_time'      => 20,
-            'enable_http_compression' => 0,
-            'https'                   => false
-        ];
-
-        $this->settings = $default;
-        $this->client = $client;
-    }
-
-    /**
-     * @param string|int $key
-     * @return mixed
-     */
-    public function get($key)
-    {
-        if (!$this->is($key)) {
+        if (! $this->isSet($key)) {
             return null;
         }
+
         return $this->settings[$key];
     }
 
-    /**
-     * @param string|int $key
-     * @return bool
-     */
-    public function is($key)
+    public function isSet(string $key) : bool
     {
         return isset($this->settings[$key]);
     }
 
-
     /**
-     * @param string|int $key
      * @param mixed $value
-     * @return $this
      */
-    public function set($key, $value)
+    public function set(string $key, $value) : void
     {
         $this->settings[$key] = $value;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDatabase()
-    {
-        return $this->get('database');
-    }
-
-    /**
-     * @param string $db
-     * @return $this
-     */
-    public function database($db)
-    {
-        $this->set('database', $db);
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTimeOut()
-    {
-        return $this->get('max_execution_time');
     }
 
     /**
      * @return mixed|null
      */
-    public function isEnableHttpCompression()
+    public function isHttpCompressionEnabled()
     {
-        return $this->getSetting('enable_http_compression');
+        return $this->httpCompressionEnabled;
     }
 
-    /**
-     * @param bool|int $flag
-     * @return $this
-     */
-    public function enableHttpCompression($flag)
+    public function setHttpCompression(bool $enable) : self
     {
-        $this->set('enable_http_compression', intval($flag));
+        $this->httpCompressionEnabled = $enable;
+
         return $this;
     }
 
-
-    public function https($flag = true)
-    {
-        $this->set('https', $flag);
-        return $this;
-    }
-
-    public function isHttps()
-    {
-        return $this->get('https');
-    }
-
-
-    /**
-     * @param int|bool $flag
-     * @return $this
-     */
-    public function readonly($flag)
+    public function readonly(int $flag) : self
     {
         $this->set('readonly', $flag);
+
         return $this;
     }
 
@@ -148,8 +67,10 @@ class Settings
     public function session_id($session_id)
     {
         $this->set('session_id', $session_id);
+
         return $this;
     }
+
     /**
      * @return mixed|bool
      */
@@ -158,6 +79,7 @@ class Settings
         if (empty($this->settings['session_id'])) {
             return false;
         }
+
         return $this->get('session_id');
     }
 
@@ -167,25 +89,23 @@ class Settings
     public function makeSessionId()
     {
         $this->session_id(sha1(uniqid('', true)));
+
         return $this->getSessionId();
     }
 
     /**
-     * @param int $time
-     * @return $this
+     * @param mixed[] $forcedSettings
+     *
+     * @return mixed[]
      */
-    public function max_execution_time($time)
+    public function getQueryableSettings(array $forcedSettings) : array
     {
-        $this->set('max_execution_time', $time);
-        return $this;
-    }
+        $settings = $this->settings;
+        if (! empty($forcedSettings)) {
+            $settings = $forcedSettings + $this->settings;
+        }
 
-    /**
-     * @return array
-     */
-    public function getSettings()
-    {
-        return $this->settings;
+        return $settings;
     }
 
     /**
@@ -202,28 +122,12 @@ class Settings
     }
 
     /**
-     * @param int|bool $flag
-     */
-    public function setReadOnlyUser($flag)
-    {
-        $this->_ReadOnlyUser = $flag;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isReadOnlyUser()
-    {
-        return $this->_ReadOnlyUser;
-    }
-
-    /**
      * @param string $name
      * @return mixed|null
      */
     public function getSetting($name)
     {
-        if (!isset($this->settings[$name])) {
+        if (! isset($this->settings[$name])) {
             return null;
         }
 

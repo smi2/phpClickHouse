@@ -8,7 +8,7 @@ $config = include_once __DIR__ . '/00_config_connect.php';
 $db = new ClickHouseDB\Client($config);
 
 
-$db->enableExtremes(true)->enableHttpCompression();
+$db->enableExtremes(true)->setHttpCompression();
 
 $db->write("DROP TABLE IF EXISTS xxxx");
 $db->write('

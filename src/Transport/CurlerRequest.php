@@ -2,8 +2,10 @@
 
 namespace ClickHouseDB\Transport;
 
+use const CURLOPT_CONNECTTIMEOUT_MS;
 use const CURLOPT_HTTPGET;
 use const CURLOPT_POST;
+use const CURLOPT_TIMEOUT_MS;
 
 class CurlerRequest
 {
@@ -412,16 +414,12 @@ class CurlerRequest
         return $id . '.' . microtime() . mt_rand(0, 1000000);
     }
 
-    /**
-     * @param bool $flag
-     */
-    public function httpCompression($flag)
+    public function httpCompression(bool $flag) : void
     {
         if ($flag) {
             $this->_httpCompression = $flag;
             $this->options[CURLOPT_ENCODING] = 'gzip';
-        } else
-        {
+        } else {
             $this->_httpCompression = false;
             unset($this->options[CURLOPT_ENCODING]);
         }
@@ -449,40 +447,27 @@ class CurlerRequest
     }
 
     /**
-     * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
-     *
-     * @param int $seconds
-     * @return $this
-     */
-    public function connectTimeOut($seconds = 1)
-    {
-        $this->options[CURLOPT_CONNECTTIMEOUT] = $seconds;
-        return $this;
-    }
-
-    /**
      * The maximum number of seconds (float) allowed to execute cURL functions.
      *
      * @param float $seconds
      * @return $this
      */
-    public function timeOut($seconds = 10)
+    public function setTimeout(float $seconds = 10) : self
     {
-        return $this->timeOutMs(intval($seconds * 1000));
-    }
+        $this->options[CURLOPT_TIMEOUT_MS] = (int) ($seconds * 1000);
 
-    /**
-     * The maximum allowed number of milliseconds to perform cURL functions.
-     *
-     * @param int $ms millisecond
-     * @return $this
-     */
-    protected function timeOutMs($ms = 10000)
-    {
-        $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;
     }
 
+    /**
+     * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
+     */
+    public function setConnectTimeout(float $seconds = 1) : self
+    {
+        $this->options[CURLOPT_CONNECTTIMEOUT_MS] = (int) ($seconds * 1000);
+
+        return $this;
+    }
 
     /**
      * @param array|mixed $data
