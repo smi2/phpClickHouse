@@ -65,8 +65,9 @@ jobs:
         - wget https://github.com/scrutinizer-ci/ocular/releases/download/1.5.2/ocular.phar
         - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
 
-    - stage: Pull request coding standard
+    - stage: Code Quality
       if: type = pull_request
+      env: PULL_REQUEST_CODING_STANDARD
       php: 7.1
       install: travis_retry composer install --prefer-dist
       script:
@@ -79,12 +80,14 @@ jobs:
         - wget https://github.com/diff-sniffer/git/releases/download/0.1.0/git-phpcs.phar
         - php git-phpcs.phar origin/$TRAVIS_BRANCH...$TRAVIS_PULL_REQUEST_SHA
 
-#    - stage: Coding standard
+#    - stage: Code Quality
 #      if: NOT type = pull_request
+#      env: CODING_STANDARD
 #      php: 7.1
 #      install: travis_retry composer install --prefer-dist
 #      script:
 #        - ./vendor/bin/phpcs
 
-    - stage: Static Analysis
-      script: vendor/bin/phpstan analyse -c phpstan.neon src tests
+    - stage: Code Quality
+      env: STATIC_ANALYSIS
+      script: ./vendor/bin/phpstan analyse

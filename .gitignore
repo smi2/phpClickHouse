@@ -1,5 +1,6 @@
 /.phpcs-cache
 /phpcs.xml
+/phpstan.neon
 /phpunit.xml
 composer.lock
 vendor/
