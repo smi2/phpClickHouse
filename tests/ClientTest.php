@@ -788,6 +788,14 @@ class ClientTest extends TestCase
         ], ['s_key', 's_arr']);
     }
 
+    public function testExceptionInsertNoData() : void
+    {
+        $this->expectException(QueryException::class);
+        $this->expectExceptionMessage('Inserting empty values array is not supported in ClickHouse');
+
+        $this->client->insert('bla_bla', []);
+    }
+
     public function testExceptionSelect()
     {
         $this->expectException(DatabaseException::class);
