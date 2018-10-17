@@ -1,0 +1,3 @@
+includes:
+    # Enable Level 1
+    - vendor/phpstan/phpstan/conf/config.level1.neon

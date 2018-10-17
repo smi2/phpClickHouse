@@ -2,12 +2,11 @@
 
 namespace ClickHouseDB\Transport;
 
-use Curler\Request;
-use Curler\CurlerRolling;
 use ClickHouseDB\Statement;
 
 /**
  * Class StreamInsert
+ * @deprecated
  * @package ClickHouseDB\Transport
  */
 class StreamInsert
@@ -18,7 +17,7 @@ class StreamInsert
     private $source;
 
     /**
-     * @var Request
+     * @var CurlerRequest
      */
     private $request;
 
@@ -28,19 +27,23 @@ class StreamInsert
     private $curlerRolling;
 
     /**
-     * StreamInsert constructor.
      * @param resource $source
-     * @param Request $request
-     * @param \Curler\CurlerRolling $curlerRolling
+     * @param CurlerRequest $request
+     * @param CurlerRolling|null $curlerRolling
      */
-    public function __construct($source, Request $request, CurlerRolling $curlerRolling)
+    public function __construct($source, CurlerRequest $request, $curlerRolling=null)
     {
         if (!is_resource($source)) {
             throw new \InvalidArgumentException('Argument $source must be resource');
         }
+        if ($curlerRolling instanceof CurlerRolling)
+        {
+            $this->curlerRolling = $curlerRolling;
+        } else {
+            $this->curlerRolling = new CurlerRolling();
+        }
         $this->source = $source;
         $this->request = $request;
-        $this->curlerRolling = $curlerRolling;
     }
 
     /**
@@ -55,6 +58,7 @@ class StreamInsert
                 throw new \InvalidArgumentException('Argument $callback can not be called as a function');
             }
 
+            //
             $this->request->header('Transfer-Encoding', 'chunked');
             $this->request->setReadFunction($callback);
             $this->curlerRolling->execOne($this->request, true);

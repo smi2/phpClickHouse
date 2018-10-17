@@ -1,11 +1,10 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Query;
 
-/**
- * Class Query
- * @package ClickHouseDB
- */
+use ClickHouseDB\Exception\QueryException;
+use function sizeof;
+
 class Query
 {
     /**
@@ -14,32 +13,32 @@ class Query
     protected $sql;
 
     /**
-     * @var null
+     * @var string|null
      */
     protected $format = null;
 
     /**
      * @var array
      */
-    private $degenerations=[];
+    private $degenerations = [];
 
     /**
      * Query constructor.
-     * @param $sql
-     * @param array $bindings
+     * @param string $sql
+     * @param array $degenerations
      */
-    public function __construct($sql,$degenerations=[])
+    public function __construct($sql, $degenerations = [])
     {
         if (!trim($sql))
         {
             throw new QueryException('Empty Query');
         }
         $this->sql = $sql;
-        $this->degenerations=$degenerations;
+        $this->degenerations = $degenerations;
     }
 
     /**
-     * @param $format
+     * @param string|null $format
      */
     public function setFormat($format)
     {
@@ -50,22 +49,23 @@ class Query
     private function applyFormatQuery()
     {
         // FORMAT\s(\w)*$
-        if (null === $this->format) return false;
-        $supportFormats=
+        if (null === $this->format) {
+            return false;
+        }
+        $supportFormats =
             "FORMAT\\s+TSV|FORMAT\\s+TSVRaw|FORMAT\\s+TSVWithNames|FORMAT\\s+TSVWithNamesAndTypes|FORMAT\\s+Vertical|FORMAT\\s+JSONCompact|FORMAT\\s+JSONEachRow|FORMAT\\s+TSKV|FORMAT\\s+TabSeparatedWithNames|FORMAT\\s+TabSeparatedWithNamesAndTypes|FORMAT\\s+TabSeparatedRaw|FORMAT\\s+BlockTabSeparated|FORMAT\\s+CSVWithNames|FORMAT\\s+CSV|FORMAT\\s+JSON|FORMAT\\s+TabSeparated";
 
-        $matches=[];
-        if (preg_match_all('%('.$supportFormats.')%ius',$this->sql,$matches)){
+        $matches = [];
+        if (preg_match_all('%(' . $supportFormats . ')%ius', $this->sql, $matches)) {
 
             // skip add "format json"
             if (isset($matches[0]))
             {
-                $format=trim(str_ireplace('format','',$matches[0][0]));
-                $this->format=$format;
+
+                $this->format = trim(str_ireplace('format', '', $matches[0][0]));
 
             }
-        }
-        else {
+        } else {
             $this->sql = $this->sql . ' FORMAT ' . $this->format;
         }
 
@@ -75,18 +75,19 @@ class Query
 
 
     }
+
+    /**
+     * @return null|string
+     */
     public function getFormat()
     {
 
         return $this->format;
     }
 
-    /**
-     * @return string
-     */
     public function toSql()
     {
-        if (null !== $this->format) {
+        if ($this->format !== null) {
             $this->applyFormatQuery();
         }
 
@@ -94,8 +95,9 @@ class Query
         {
             foreach ($this->degenerations as $degeneration)
             {
-                if ($degeneration instanceof \ClickHouseDB\Query\Degeneration)
-                $this->sql=$degeneration->process($this->sql);
+                if ($degeneration instanceof Degeneration) {
+                    $this->sql = $degeneration->process($this->sql);
+                }
             }
         }
 

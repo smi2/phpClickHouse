@@ -1,6 +1,6 @@
-composer.phar
+/.phpcs-cache
+/phpcs.xml
+/phpunit.xml
 composer.lock
-composer-test.lock
 vendor/
-.idea
-.DS_STORE
+var/

@@ -1,51 +1,34 @@
 <?php
 
+namespace ClickHouseDB\Tests;
+
+use ClickHouseDB\Client;
+use ClickHouseDB\Exception\DatabaseException;
+use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\WhereInFile;
+use ClickHouseDB\Query\WriteToFile;
+use ClickHouseDB\Quote\FormatLine;
+use ClickHouseDB\Transport\CurlerRequest;
+use ClickHouseDB\Transport\CurlerRolling;
+use ClickHouseDB\Transport\StreamInsert;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientTest
+ * @package ClickHouseDB\Tests
+ * @group ClientTest
  */
 class ClientTest extends TestCase
 {
-    /**
-     * @var \ClickHouseDB\Client
-     */
-    private $db;
+    use WithClient;
 
-    /**
-     * @var
-     */
-    private $tmp_path;
-
-    /**
-     * @throws Exception
-     */
     public function setUp()
     {
         date_default_timezone_set('Europe/Moscow');
 
-        if (!defined('phpunit_clickhouse_host')) {
-            throw new Exception("Not set phpunit_clickhouse_host in phpUnit.xml");
-        }
-
-        $tmp_path = rtrim(phpunit_clickhouse_tmp_path, '/') . '/';
-
-        if (!is_dir($tmp_path)) {
-            throw  new Exception("Not dir in phpunit_clickhouse_tmp_path");
-        }
-
-        $this->tmp_path = $tmp_path;
-
-        $config = [
-            'host'     => phpunit_clickhouse_host,
-            'port'     => phpunit_clickhouse_port,
-            'username' => phpunit_clickhouse_user,
-            'password' => phpunit_clickhouse_pass
-        ];
-
-        $this->db = new ClickHouseDB\Client($config);
-        $this->db->enableHttpCompression(true);
-        $this->db->ping();
+        $this->client->enableHttpCompression(true);
+        $this->client->ping();
     }
 
     /**
@@ -61,8 +44,10 @@ class ClientTest extends TestCase
      */
     private function insert_data_table_summing_url_views()
     {
-        return $this->db->insert(
-            'summing_url_views',
+        $databaseName = getenv('CLICKHOUSE_DATABASE');
+        return $this->client->insert(
+
+            $databaseName.'.summing_url_views',
             [
                 [strtotime('2010-10-10 00:00:00'), 'HASH1', 2345, 22, 20, 2],
                 [strtotime('2010-10-11 01:00:00'), 'HASH2', 2345, 12, 9, 3],
@@ -146,9 +131,9 @@ class ClientTest extends TestCase
      */
     private function create_table_summing_url_views()
     {
-        $this->db->write("DROP TABLE IF EXISTS summing_url_views");
+        $this->client->write("DROP TABLE IF EXISTS summing_url_views");
 
-        return $this->db->write('
+        return $this->client->write('
             CREATE TABLE IF NOT EXISTS summing_url_views (
                 event_date Date DEFAULT toDate(event_time),
                 event_time DateTime,
@@ -179,49 +164,36 @@ class ClientTest extends TestCase
 
         $this->assertEquals(
             'SELECT * FROM table_x_y FORMAT JSON',
-            $this->db->selectAsync('SELECT * FROM {from_table}', $input_params)->sql()
+            $this->client->selectAsync('SELECT * FROM {from_table}', $input_params)->sql()
         );
 
         $this->assertEquals(
             'SELECT * FROM table_x_y WHERE event_date IN (\'2000-10-10\',\'2000-10-11\',\'2000-10-12\') FORMAT JSON',
-            $this->db->selectAsync('SELECT * FROM {from_table} WHERE event_date IN (:select_date)', $input_params)->sql()
+            $this->client->selectAsync('SELECT * FROM {from_table} WHERE event_date IN (:select_date)', $input_params)->sql()
         );
 
-        $this->db->enableQueryConditions();
+        $this->client->enableQueryConditions();
 
         $this->assertEquals(
             'SELECT * FROM ZZZ LIMIT 5 FORMAT JSON',
-            $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', $input_params)->sql()
+            $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', $input_params)->sql()
         );
 
         $this->assertEquals(
             'SELECT * FROM ZZZ NOOPE FORMAT JSON',
-            $this->db->selectAsync('SELECT * FROM ZZZ {if nope}LIMIT {limit}{else}NOOPE{/if}', $input_params)->sql()
+            $this->client->selectAsync('SELECT * FROM ZZZ {if nope}LIMIT {limit}{else}NOOPE{/if}', $input_params)->sql()
         );
         $this->assertEquals(
             'SELECT * FROM 0 FORMAT JSON',
-            $this->db->selectAsync('SELECT * FROM :idid', $input_params)->sql()
+            $this->client->selectAsync('SELECT * FROM :idid', $input_params)->sql()
         );
 
 
         $this->assertEquals(
             'SELECT * FROM  FORMAT JSON',
-            $this->db->selectAsync('SELECT * FROM :false', $input_params)->sql()
+            $this->client->selectAsync('SELECT * FROM :false', $input_params)->sql()
         );
 
-
-        $keys=[
-            'key1'=>1,
-            'key111'=>111,
-            'key11'=>11,
-            'key123' => 123,
-        ];
-
-
-        $this->assertEquals(
-            '123=123 , 11=11, 111=111, 1=1, 1= 1, 123=123 FORMAT JSON',
-            $this->db->selectAsync('123=:key123 , 11={key11}, 111={key111}, 1={key1}, 1= :key1, 123=:key123', $keys)->sql()
-        );
 
 
         $isset=[
@@ -233,9 +205,8 @@ class ClientTest extends TestCase
 
         $this->assertEquals(
             '|ZERO||  FORMAT JSON',
-            $this->db->selectAsync('{if FALSE}FALSE{/if}|{if ZERO}ZERO{/if}|{if NULL}NULL{/if}| ' ,$isset)->sql()
+            $this->client->selectAsync('{if FALSE}FALSE{/if}|{if ZERO}ZERO{/if}|{if NULL}NULL{/if}| ' ,$isset)->sql()
         );
-
 
 
 
@@ -245,23 +216,78 @@ class ClientTest extends TestCase
 
     public function testSqlDisableConditions()
     {
-
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', [])->sql());
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
-        $this->db->cleanQueryDegeneration();
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
-        $this->setUp();
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->db->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', [])->sql());
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
+        $this->client->cleanQueryDegeneration();
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
+        $this->restartClickHouseClient();
+        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
 
 
     }
 
+    public function testInsertNullable()
+    {
+        $this->client->write('DROP TABLE IF EXISTS `test`');
+        $this->client->write('CREATE TABLE `test` (
+                event_date Date DEFAULT toDate(event_time),
+                event_time DateTime,
+                url_hash Nullable(String)
+        ) ENGINE = TinyLog()');
+        $this->client->insert(
+            'test',
+            [
+                [strtotime('2010-10-10 00:00:00'), null],
+            ],
+            ['event_time', 'url_hash']
+        );
 
+        $statement = $this->client->select('SELECT url_hash FROM `test`');
+        self::assertCount(1, $statement->rows());
+        self::assertNull($statement->fetchOne('url_hash'));
+
+    }
+
+    public function testInsertDotTable()
+    {
+        $databaseName = getenv('CLICKHOUSE_DATABASE');
+
+        $this->client->write("DROP TABLE IF EXISTS `tsts.test`");
+        $this->client->write('CREATE TABLE `tsts.test` (
+                event_date Date DEFAULT toDate(event_time),
+                event_time DateTime,
+                url_hash String,
+                site_id Int32,
+                views Int32,
+                v_00 Int32,
+                v_55 Int32
+        ) ENGINE = TinyLog()');
+        $this->client->insert(
+            '`tsts.test`',
+            [
+                [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
+            ],
+            ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
+        );
+
+        $this->client->insert(
+            $databaseName.'.`tsts.test`',
+            [
+                [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
+            ],
+            ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
+        );
+
+//        $this->client->verbose();
+        $st=$this->client->select('SELECT  url_hash FROM `tsts.test` WHERE like(url_hash,\'%Хеш%\') ');
+        $this->assertEquals('Хеш', $st->fetchOne('url_hash'));
+
+    }
 
     public function testSearchWithCyrillic()
     {
         $this->create_table_summing_url_views();
-        $this->db->insert(
+        $this->client->insert(
             'summing_url_views',
             [
                 [strtotime('2010-10-10 00:00:00'), 'Хеш', 2345, 22, 20, 2],
@@ -272,8 +298,8 @@ class ClientTest extends TestCase
             ['event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55']
         );
 
-//        $this->db->verbose();
-        $st=$this->db->select('SELECT  url_hash FROM summing_url_views WHERE like(url_hash,\'%Русский%\') ');
+//        $this->client->verbose();
+        $st=$this->client->select('SELECT  url_hash FROM summing_url_views WHERE like(url_hash,\'%Русский%\') ');
         $this->assertEquals('Русский язык', $st->fetchOne('url_hash'));
 
     }
@@ -283,12 +309,12 @@ class ClientTest extends TestCase
 
     public function testRFCCSVAndTSVWrite()
     {
-        $fileName=$this->tmp_path.'__testRFCCSVWrite';
+        $fileName=$this->tmpPath.'__testRFCCSVWrite';
 
         $array_value_test="\n1\n2's'";
 
-        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
-        $this->db->write('CREATE TABLE testRFCCSVWrite ( 
+        $this->client->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        $this->client->write('CREATE TABLE testRFCCSVWrite ( 
            event_date Date DEFAULT toDate(event_time),
            event_time DateTime,
            strs String,
@@ -312,10 +338,10 @@ class ClientTest extends TestCase
         //
         foreach ($data as $row)
         {
-            file_put_contents($fileName,\ClickHouseDB\FormatLine::CSV($row)."\n",FILE_APPEND);
+            file_put_contents($fileName,FormatLine::CSV($row)."\n",FILE_APPEND);
         }
 
-        $this->db->insertBatchFiles('testRFCCSVWrite', [$fileName], [
+        $this->client->insertBatchFiles('testRFCCSVWrite', [$fileName], [
             'event_time',
             'strs',
             'flos',
@@ -324,18 +350,18 @@ class ClientTest extends TestCase
             'arrs',
         ]);
 
-        $st=$this->db->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
+        $st=$this->client->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
 
 
         $this->assertEquals('5774439760453101066', $st->fetchOne('hash'));
 
-        $ID_ARRAY=$this->db->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
+        $ID_ARRAY=$this->client->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
 
         $this->assertEquals($array_value_test, $ID_ARRAY);
 
 
 
-        $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
+        $row=$this->client->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
 
         $this->assertEquals(3, $row['ints']);
         $this->assertEquals(3.4, $row['flos']);
@@ -344,8 +370,8 @@ class ClientTest extends TestCase
         unlink($fileName);
 
 
-        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
-        $this->db->write('CREATE TABLE testRFCCSVWrite ( 
+        $this->client->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        $this->client->write('CREATE TABLE testRFCCSVWrite ( 
            event_date Date DEFAULT toDate(event_time),
            event_time DateTime,
            strs String,
@@ -359,10 +385,10 @@ class ClientTest extends TestCase
 
         foreach ($data as $row)
         {
-            file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
+            file_put_contents($fileName,FormatLine::TSV($row)."\n",FILE_APPEND);
         }
 
-        $this->db->insertBatchTSVFiles('testRFCCSVWrite', [$fileName], [
+        $this->client->insertBatchTSVFiles('testRFCCSVWrite', [$fileName], [
             'event_time',
             'strs',
             'flos',
@@ -374,24 +400,24 @@ class ClientTest extends TestCase
 
 
 
-        $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
+        $row=$this->client->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
 
-        $st=$this->db->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
+        $st=$this->client->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
 
 
         $this->assertEquals('17721988568158798984', $st->fetchOne('hash'));
 
-        $ID_ARRAY=$this->db->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
+        $ID_ARRAY=$this->client->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
 
         $this->assertEquals($array_value_test, $ID_ARRAY);
 
 
 
-        $row=$this->db->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
+        $row=$this->client->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
 
         $this->assertEquals(3, $row['ints']);
         $this->assertEquals(3.4, $row['flos']);
-        $this->db->write("DROP TABLE IF EXISTS testRFCCSVWrite");
+        $this->client->write("DROP TABLE IF EXISTS testRFCCSVWrite");
         unlink($fileName);
         return true;
     }
@@ -399,22 +425,19 @@ class ClientTest extends TestCase
     {
         $config = [
             'host'     => '8.8.8.8', // fake ip , use googlde DNS )
-            'port'     => phpunit_clickhouse_port,
+            'port'     => 8123,
             'username' => '',
             'password' => ''
         ];
         $start_time=microtime(true);
 
-        try
-        {
-            $db = new ClickHouseDB\Client($config);
+        try {
+            $db = new Client($config);
             $db->setConnectTimeOut(1);
             $db->ping();
+        } catch (\Exception $e) {
         }
-        catch (Exception $E)
-        {
 
-        }
         $use_time=round(microtime(true)-$start_time);
         $this->assertEquals(1, $use_time);
 
@@ -425,10 +448,10 @@ class ClientTest extends TestCase
     public function testGzipInsert()
     {
         $file_data_names = [
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data',
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.2.data',
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.3.data',
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.4.data'
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.2.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.3.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.4.data'
         ];
 
         foreach ($file_data_names as $file_name) {
@@ -437,14 +460,14 @@ class ClientTest extends TestCase
 
         $this->create_table_summing_url_views();
 
-        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
 
-        $st = $this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
+        $st = $this->client->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
         $this->assertEquals(8544, $st->fetchOne('sum_x'));
 
-        $st = $this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
+        $st = $this->client->select('SELECT * FROM summing_url_views ORDER BY url_hash');
         $this->assertEquals(8544, $st->count());
 
         // --- drop
@@ -456,11 +479,11 @@ class ClientTest extends TestCase
 
     public function testWriteToFileSelect()
     {
-        $file=$this->tmp_path.'__chdrv_testWriteToFileSelect.csv';
+        $file=$this->tmpPath.'__chdrv_testWriteToFileSelect.csv';
 
 
         $file_data_names = [
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data',
         ];
 
         foreach ($file_data_names as $file_name) {
@@ -469,22 +492,22 @@ class ClientTest extends TestCase
 
         $this->create_table_summing_url_views();
 
-        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
-        $this->db->ping();
+        $this->client->ping();
 
-        $write=new ClickHouseDB\WriteToFile($file);
-        $this->db->select('select * from summing_url_views limit 4',[],null,$write);
+        $write=new WriteToFile($file);
+        $this->client->select('select * from summing_url_views limit 4',[],null,$write);
         $this->assertEquals(208,$write->size());
 
-        $write=new ClickHouseDB\WriteToFile($file,true,ClickHouseDB\WriteToFile::FORMAT_TabSeparated);
-        $this->db->select('select * from summing_url_views limit 4',[],null,$write);
+        $write=new WriteToFile($file,true,WriteToFile::FORMAT_TabSeparated);
+        $this->client->select('select * from summing_url_views limit 4',[],null,$write);
         $this->assertEquals(184,$write->size());
 
 
-        $write=new ClickHouseDB\WriteToFile($file,true,ClickHouseDB\WriteToFile::FORMAT_TabSeparatedWithNames);
-        $this->db->select('select * from summing_url_views limit 4',[],null,$write);
+        $write=new WriteToFile($file,true,WriteToFile::FORMAT_TabSeparatedWithNames);
+        $this->client->select('select * from summing_url_views limit 4',[],null,$write);
         $this->assertEquals(239,$write->size());
 
         unlink($file);
@@ -496,12 +519,12 @@ class ClientTest extends TestCase
     }
 
     /**
-     * @expectedException \ClickHouseDB\DatabaseException
+     * @expectedException \ClickHouseDB\Exception\DatabaseException
      */
     public function testInsertCSVError()
     {
         $file_data_names = [
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data'
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data'
         ];
 
         foreach ($file_data_names as $file_name) {
@@ -509,9 +532,9 @@ class ClientTest extends TestCase
         }
 
         $this->create_table_summing_url_views();
-        $this->db->enableHttpCompression(true);
+        $this->client->enableHttpCompression(true);
 
-        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'site_id', 'views', 'v_00', 'v_55'
         ]);
 
@@ -539,27 +562,26 @@ class ClientTest extends TestCase
         fclose($handle);
     }
 
-    /**
-     *
-     */
     public function testSelectWhereIn()
     {
+        $this->create_table_summing_url_views();
+
         $file_data_names = [
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data'
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data'
         ];
 
-        $file_name_where_in1 = $this->tmp_path . '_testSelectWhereIn.1.data';
-        $file_name_where_in2 = $this->tmp_path . '_testSelectWhereIn.2.data';
+        $file_name_where_in1 = $this->tmpPath . '_testSelectWhereIn.1.data';
+        $file_name_where_in2 = $this->tmpPath . '_testSelectWhereIn.2.data';
 
         foreach ($file_data_names as $file_name) {
             $this->create_fake_csv_file($file_name, 2);
         }
 
-        $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
 
-        $st = $this->db->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
+        $st = $this->client->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
         $this->assertEquals(2136, $st->fetchOne('sum_x'));
 
 
@@ -582,19 +604,19 @@ class ClientTest extends TestCase
         $this->make_csv_SelectWhereIn($file_name_where_in1, $whereIn_1);
         $this->make_csv_SelectWhereIn($file_name_where_in2, $whereIn_2);
 
-        $whereIn = new \ClickHouseDB\WhereInFile();
+        $whereIn = new WhereInFile();
 
         $whereIn->attachFile($file_name_where_in1, 'whin1', [
             'site_id'  => 'Int32',
             'url_hash' => 'String'
-        ], \ClickHouseDB\WhereInFile::FORMAT_CSV);
+        ], WhereInFile::FORMAT_CSV);
 
         $whereIn->attachFile($file_name_where_in2, 'whin2', [
             'site_id'  => 'Int32',
             'url_hash' => 'String'
-        ], \ClickHouseDB\WhereInFile::FORMAT_CSV);
+        ], WhereInFile::FORMAT_CSV);
 
-        $result = $this->db->select('
+        $result = $this->client->select('
         SELECT 
           url_hash,
           site_id,
@@ -629,9 +651,9 @@ class ClientTest extends TestCase
     public function testInsertCSV()
     {
         $file_data_names = [
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data',
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.2.data',
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.3.data'
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.2.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.3.data'
         ];
 
 
@@ -641,26 +663,26 @@ class ClientTest extends TestCase
         }
 
         $this->create_table_summing_url_views();
-        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
 
 
-        $st = $this->db->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
+        $st = $this->client->select('SELECT sum(views) as sum_x,min(v_00) as min_x FROM summing_url_views');
         $this->assertEquals(6408, $st->fetchOne('sum_x'));
 
-        $st = $this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
+        $st = $this->client->select('SELECT * FROM summing_url_views ORDER BY url_hash');
         $this->assertEquals(6408, $st->count());
 
-        $st = $this->db->select('SELECT * FROM summing_url_views LIMIT 4');
+        $st = $this->client->select('SELECT * FROM summing_url_views LIMIT 4');
         $this->assertEquals(4, $st->countAll());
 
 
-        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
 
-        $st = $this->db->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
+        $st = $this->client->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
         $this->assertEquals(2 * 6408, $st->fetchOne('sum_x'));
 
         // --- drop
@@ -674,7 +696,7 @@ class ClientTest extends TestCase
      */
     public function testPing()
     {
-        $result = $this->db->select('SELECT 12 as {key} WHERE {key} = :value', ['key' => 'ping', 'value' => 12]);
+        $result = $this->client->select('SELECT 12 as {key} WHERE {key} = :value', ['key' => 'ping', 'value' => 12]);
         $this->assertEquals(12, $result->fetchOne('ping'));
     }
 
@@ -683,10 +705,10 @@ class ClientTest extends TestCase
      */
     public function testSelectAsync()
     {
-        $state1 = $this->db->selectAsync('SELECT 1 as {key} WHERE {key} = :value', ['key' => 'ping', 'value' => 1]);
-        $state2 = $this->db->selectAsync('SELECT 2 as ping');
+        $state1 = $this->client->selectAsync('SELECT 1 as {key} WHERE {key} = :value', ['key' => 'ping', 'value' => 1]);
+        $state2 = $this->client->selectAsync('SELECT 2 as ping');
 
-        $this->db->executeAsync();
+        $this->client->executeAsync();
 
         $this->assertEquals(1, $state1->fetchOne('ping'));
         $this->assertEquals(2, $state2->fetchOne('ping'));
@@ -699,11 +721,11 @@ class ClientTest extends TestCase
     {
         $this->create_table_summing_url_views();
         $this->insert_data_table_summing_url_views();
-        $this->db->enableExtremes(true);
+        $this->client->enableExtremes(true);
 
-        $state = $this->db->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
+        $state = $this->client->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
 
-        $this->db->enableExtremes(false);
+        $this->client->enableExtremes(false);
 
         $this->assertFalse($state->isError());
 
@@ -739,51 +761,41 @@ class ClientTest extends TestCase
 
     }
 
-    /**
-     *
-     */
     public function testTableExists()
     {
         $this->create_table_summing_url_views();
 
-        $this->assertEquals('summing_url_views', $this->db->showTables()['summing_url_views']['name']);
+        $this->assertEquals('summing_url_views', $this->client->showTables()['summing_url_views']['name']);
 
-        $this->db->write("DROP TABLE IF EXISTS summing_url_views");
+        $this->client->write("DROP TABLE IF EXISTS summing_url_views");
     }
 
-    /**
-     * @expectedException \ClickHouseDB\DatabaseException
-     */
     public function testExceptionWrite()
     {
-        $this->db->write("DRAP TABLEX")->isError();
+        $this->expectException(DatabaseException::class);
+
+        $this->client->write("DRAP TABLEX")->isError();
     }
 
-    /**
-     * @expectedException \ClickHouseDB\DatabaseException
-     * @expectedExceptionCode 60
-     */
     public function testExceptionInsert()
     {
-        $this->db->insert('bla_bla', [
+        $this->expectException(DatabaseException::class);
+        $this->expectExceptionCode(60);
+
+        $this->client->insert('bla_bla', [
             ['HASH1', [11, 22, 33]],
             ['HASH1', [11, 22, 55]],
         ], ['s_key', 's_arr']);
     }
 
-    /**
-     * @expectedException \ClickHouseDB\DatabaseException
-     * @expectedExceptionCode 60
-     */
     public function testExceptionSelect()
     {
-        $this->db->select("SELECT * FROM XXXXX_SSS")->rows();
+        $this->expectException(DatabaseException::class);
+        $this->expectExceptionCode(60);
+
+        $this->client->select("SELECT * FROM XXXXX_SSS")->rows();
     }
 
-    /**
-     * @expectedException \ClickHouseDB\QueryException
-     * @expectedExceptionCode 6
-     */
     public function testExceptionConnects()
     {
         $config = [
@@ -794,13 +806,10 @@ class ClientTest extends TestCase
             'settings' => ['max_execution_time' => 100]
         ];
 
-        $db = new ClickHouseDB\Client($config);
-        $db->ping();
+        $db = new Client($config);
+        $this->assertFalse($db->ping());
     }
 
-    /**
-     *
-     */
     public function testSettings()
     {
         $config = [
@@ -808,32 +817,21 @@ class ClientTest extends TestCase
             'port'     => '8123',
             'username' => 'x',
             'password' => 'x',
-            'settings' => ['max_execution_time' => 100]
         ];
 
-        $db = new ClickHouseDB\Client($config);
+        $settings = ['max_execution_time' => 100];
+
+        $db = new Client($config, $settings);
         $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
 
 
-        // settings via constructor
         $config = [
             'host' => 'x',
             'port' => '8123',
             'username' => 'x',
             'password' => 'x'
         ];
-        $db = new ClickHouseDB\Client($config, ['max_execution_time' => 100]);
-        $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
-
-
-        //
-        $config = [
-            'host' => 'x',
-            'port' => '8123',
-            'username' => 'x',
-            'password' => 'x'
-        ];
-        $db = new ClickHouseDB\Client($config);
+        $db = new Client($config);
         $db->settings()->set('max_execution_time', 100);
         $this->assertEquals(100, $db->settings()->getSetting('max_execution_time'));
 
@@ -844,7 +842,7 @@ class ClientTest extends TestCase
             'username' => 'x',
             'password' => 'x'
         ];
-        $db = new ClickHouseDB\Client($config);
+        $db = new Client($config);
         $db->settings()->apply([
             'max_execution_time' => 100,
             'max_block_size' => 12345
@@ -854,20 +852,17 @@ class ClientTest extends TestCase
         $this->assertEquals(12345, $db->settings()->getSetting('max_block_size'));
     }
 
-    /**
-     * @expectedException \ClickHouseDB\QueryException
-     */
     public function testWriteEmpty()
     {
-        $this->db->write('');
+        $this->expectException(QueryException::class);
+
+        $this->client->write('');
     }
-    /**
-     *
-     */
+
     public function testInsertArrayTable()
     {
-        $this->db->write("DROP TABLE IF EXISTS arrays_test_ints");
-        $this->db->write('
+        $this->client->write("DROP TABLE IF EXISTS arrays_test_ints");
+        $this->client->write('
             CREATE TABLE IF NOT EXISTS arrays_test_ints
             (
                 s_key String,
@@ -877,44 +872,47 @@ class ClientTest extends TestCase
         ');
 
 
-        $state = $this->db->insert('arrays_test_ints', [
+        $state = $this->client->insert('arrays_test_ints', [
             ['HASH1', [11, 33]],
             ['HASH2', [11, 55]],
         ], ['s_key', 's_arr']);
 
         $this->assertGreaterThan(0, $state->totalTimeRequest());
 
-        $state = $this->db->select('SELECT s_key, s_arr FROM arrays_test_ints ARRAY JOIN s_arr');
+        $state = $this->client->select('SELECT s_arr,s_key FROM arrays_test_ints ARRAY JOIN s_arr ');
 
         $this->assertEquals(4, $state->count());
-        $this->assertArraySubset([['s_key' => 'HASH1', 's_arr' => 11]], $state->rows());
+
+        $state = $this->client->select('SELECT s_arr,s_key FROM arrays_test_ints ARRAY JOIN s_arr WHERE s_key=\'HASH1\' AND s_arr=33 ORDER BY s_arr,s_key');
+
+        $this->assertEquals(1, $state->count());
+        $this->assertEquals([['s_arr' => 33,'s_key' => 'HASH1']], $state->rows());
     }
 
-    /**
-     * @expectedException \ClickHouseDB\QueryException
-     */
     public function testInsertTableTimeout()
     {
+        $this->expectException(QueryException::class);
+
         $this->create_table_summing_url_views();
 
         $file_data_names = [
-            $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data',
+            $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data',
         ];
 
         foreach ($file_data_names as $file_name) {
-            $this->create_fake_csv_file($file_name, 5);
+            $this->create_fake_csv_file($file_name, 10);
         }
 
         $this->create_table_summing_url_views();
 
 
-        $this->db->setTimeout(0.01);
+        $this->client->setTimeout(0.01);
 
 
-        $stat = $this->db->insertBatchFiles('summing_url_views', $file_data_names, [
+        $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
-        $this->db->ping();
+        $this->client->ping();
     }
     /**
      *
@@ -928,24 +926,24 @@ class ClientTest extends TestCase
         $this->assertFalse($state->isError());
 
 
-        $st = $this->db->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
+        $st = $this->client->select('SELECT sum(views) as sum_x, min(v_00) as min_x FROM summing_url_views');
 
         $this->assertEquals(122, $st->fetchOne('sum_x'));
         $this->assertEquals(9, $st->fetchOne('min_x'));
-        $this->db->enableExtremes(true);
-        $st = $this->db->select('SELECT * FROM summing_url_views ORDER BY url_hash');
+        $this->client->enableExtremes(true);
+        $st = $this->client->select('SELECT * FROM summing_url_views ORDER BY url_hash');
 
-        $this->db->enableExtremes(false);
+        $this->client->enableExtremes(false);
 
 
         $this->assertEquals(4, $st->count());
         $this->assertEquals(0, $st->countAll());
-        $this->assertEquals(0, sizeof($st->totals()));
+        $this->assertNull($st->totals());
 
         $this->assertEquals('HASH1', $st->fetchOne()['url_hash']);
         $this->assertEquals(2345, $st->extremesMin()['site_id']);
 
-        $st = $this->db->select('
+        $st = $this->client->select('
             SELECT url_hash, sum(views) as vv, avg(views) as avgv 
             FROM summing_url_views 
             WHERE site_id < 3333 
@@ -964,7 +962,7 @@ class ClientTest extends TestCase
         $this->assertEquals(22, $st->rowsAsTree('url_hash')['HASH1']['vv']);
 
         // drop
-        $this->db->write("DROP TABLE IF EXISTS summing_url_views");
+        $this->client->write("DROP TABLE IF EXISTS summing_url_views");
     }
 
     /**
@@ -974,16 +972,16 @@ class ClientTest extends TestCase
     {
         $this->create_table_summing_url_views();
 
-        $file_name = $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data';
+        $file_name = $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data';
         $this->create_fake_csv_file($file_name, 1);
 
         $source = fopen($file_name, 'rb');
-        $request = $this->db->insertBatchStream('summing_url_views', [
+        $request = $this->client->insertBatchStream('summing_url_views', [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
 
-        $curlerRolling = new \Curler\CurlerRolling();
-        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, $request, $curlerRolling);
+        $curlerRolling = new CurlerRolling();
+        $streamInsert = new StreamInsert($source, $request, $curlerRolling);
 
         $callable = function ($ch, $fd, $length) use ($source) {
             return ($line = fread($source, $length)) ? $line : '';
@@ -993,7 +991,7 @@ class ClientTest extends TestCase
         // check the resource was close after insert method
         $this->assertEquals(false, is_resource($source));
 
-        $statement = $this->db->select('SELECT * FROM summing_url_views');
+        $statement = $this->client->select('SELECT * FROM summing_url_views');
         $this->assertEquals(count(file($file_name)), $statement->count());
     }
 
@@ -1002,12 +1000,12 @@ class ClientTest extends TestCase
      */
     public function testStreamInsertExeption()
     {
-        $file_name = $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data';
+        $file_name = $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data';
         $this->create_fake_csv_file($file_name, 1);
 
         $source = fopen($file_name, 'rb');
-        $curlerRolling = new \Curler\CurlerRolling();
-        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, new \Curler\Request(), $curlerRolling);
+        $curlerRolling = new CurlerRolling();
+        $streamInsert = new StreamInsert($source, new CurlerRequest(), $curlerRolling);
 
         $this->expectException(InvalidArgumentException::class);
         $streamInsert->insert([]);
@@ -1018,12 +1016,11 @@ class ClientTest extends TestCase
      */
     public function testStreamInsertExceptionResourceIsClose()
     {
-        $file_name = $this->tmp_path . '_testInsertCSV_clickHouseDB_test.1.data';
+        $file_name = $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data';
         $this->create_fake_csv_file($file_name, 1);
 
         $source = fopen($file_name, 'rb');
-        $curlerRolling = new \Curler\CurlerRolling();
-        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, new \Curler\Request(), $curlerRolling);
+        $streamInsert = new StreamInsert($source, new CurlerRequest());
         try {
             $streamInsert->insert([]);
         } catch (\Exception $e) {}
@@ -1032,30 +1029,48 @@ class ClientTest extends TestCase
         $this->assertEquals(false, is_resource($source));
     }
 
+    public function testUptime()
+    {
+        $uptime = $this->client->getServerUptime();
+        $this->assertGreaterThan(1,$uptime);
+    }
+
+    public function testVersion()
+    {
+        $version = $this->client->getServerVersion();
+        $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.*$)/mi', $version);
+    }
+
+    public function testServerSystemSettings()
+    {
+        $up = $this->client->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read');
+        $this->assertGreaterThan(1,$up['merge_tree_min_rows_for_concurrent_read']['value']);
+    }
+
     /**
      *
      */
     public function testStreamInsertFormatJSONEachRow()
     {
-        $file_name = $this->tmp_path . '_testStreamInsertJSON_clickHouseDB_test.data';
+        $file_name = $this->tmpPath . '_testStreamInsertJSON_clickHouseDB_test.data';
         $this->create_fake_json_file($file_name, 1);
 
         $this->create_table_summing_url_views();
 
         $source = fopen($file_name, 'rb');
-        $request = $this->db->insertBatchStream('summing_url_views', [
+        $request = $this->client->insertBatchStream('summing_url_views', [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ], 'JSONEachRow');
 
-        $curlerRolling = new \Curler\CurlerRolling();
-        $streamInsert = new ClickHouseDB\Transport\StreamInsert($source, $request, $curlerRolling);
+        $curlerRolling = new CurlerRolling();
+        $streamInsert = new StreamInsert($source, $request, $curlerRolling);
 
         $callable = function ($ch, $fd, $length) use ($source) {
             return ($line = fread($source, $length)) ? $line : '';
         };
         $streamInsert->insert($callable);
 
-        $statement = $this->db->select('SELECT * FROM summing_url_views');
+        $statement = $this->client->select('SELECT * FROM summing_url_views');
         $this->assertEquals(count(file($file_name)), $statement->count());
     }
 }

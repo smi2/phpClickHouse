@@ -1,0 +1,90 @@
+dist: trusty
+language: php
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+php:
+  - 7.1
+  - 7.2
+  - nightly
+
+services:
+  - docker
+
+before_install:
+  - docker-compose -f tests/docker-compose.yaml up -d
+  - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{,.disabled} || echo "xdebug not available"
+
+install:
+  - travis_retry composer update -n --prefer-dist
+
+script: ./vendor/bin/phpunit
+
+jobs:
+  allow_failures:
+    - php: nightly
+    - env: DEV_DEPENDENCIES
+
+  include:
+    - stage: Test
+      env: LOWEST_DEPENDENCIES
+      install:
+        - travis_retry composer update -n --prefer-dist --prefer-lowest
+
+    - stage: Test
+      env: LOWEST_DEPENDENCIES
+      php: 7.2
+      install:
+        - travis_retry composer update -n --prefer-dist --prefer-lowest
+
+    - stage: Test
+      env: LOWEST_DEPENDENCIES
+      php: nightly
+      install:
+        - travis_retry composer update -n --prefer-dist --prefer-lowest
+
+    - stage: Test
+      env: DEV_DEPENDENCIES
+      php: nightly
+      install:
+        - composer config minimum-stability dev
+        - travis_retry composer update -n --prefer-dist
+
+    - stage: Test
+      env: COVERAGE
+      php: 7.1
+      before_script:
+        - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
+        - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
+      script:
+        - ./vendor/bin/phpunit --coverage-clover ./build/logs/clover.xml
+      after_script:
+        - wget https://github.com/scrutinizer-ci/ocular/releases/download/1.5.2/ocular.phar
+        - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
+
+    - stage: Pull request coding standard
+      if: type = pull_request
+      php: 7.1
+      install: travis_retry composer install --prefer-dist
+      script:
+        - |
+          if [ $TRAVIS_BRANCH != "master" ]; then
+            git remote set-branches --add origin $TRAVIS_BRANCH;
+            git fetch origin $TRAVIS_BRANCH;
+          fi
+        - git merge-base origin/$TRAVIS_BRANCH $TRAVIS_PULL_REQUEST_SHA || git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge --unshallow
+        - wget https://github.com/diff-sniffer/git/releases/download/0.1.0/git-phpcs.phar
+        - php git-phpcs.phar origin/$TRAVIS_BRANCH...$TRAVIS_PULL_REQUEST_SHA
+
+#    - stage: Coding standard
+#      if: NOT type = pull_request
+#      php: 7.1
+#      install: travis_retry composer install --prefer-dist
+#      script:
+#        - ./vendor/bin/phpcs
+
+    - stage: Static Analysis
+      script: vendor/bin/phpstan analyse -c phpstan.neon src tests

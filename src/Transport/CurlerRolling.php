@@ -1,13 +1,9 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-use ClickHouseDB\TransportException;
+use ClickHouseDB\Exception\TransportException;
 
-/**
- * Class CurlerRolling
- * @package Curler
- */
 class CurlerRolling
 {
     /**
@@ -18,11 +14,11 @@ class CurlerRolling
     private $simultaneousLimit = 10;
 
     /**
-     * @var Request[]
+     * @var array
      *
      * Requests currently being processed by curl
      */
-    private $activeRequests = array();
+    private $activeRequests = [];
 
     /**
      * @var int
@@ -30,11 +26,11 @@ class CurlerRolling
     private $runningRequests = 0;
 
     /**
-     * @var Request[]
+     * @var CurlerRequest[]
      *
      * Requests queued to be processed
      */
-    private $pendingRequests = array();
+    private $pendingRequests = [];
 
     /**
      * @return int
@@ -42,7 +38,7 @@ class CurlerRolling
     private $completedRequestCount = 0;
 
     /**
-     * @var null
+     * @var null|resource
      */
     private $_pool_master = null;
 
@@ -54,18 +50,7 @@ class CurlerRolling
     /**
      * @var array
      */
-    private $handleMapTasks = array();
-
-    /**
-     * @var string
-     */
-    private $_lashmakeQue_state = '';
-
-
-    /**
-     * CurlerRolling constructor.
-     */
-    public function __construct() {}
+    private $handleMapTasks = [];
 
     /**
      *
@@ -104,13 +89,13 @@ class CurlerRolling
 
 
     /**
-     * @param Request $req
+     * @param CurlerRequest $req
      * @param bool $checkMultiAdd
      * @param bool $force
      * @return bool
      * @throws TransportException
      */
-    public function addQueLoop(Request $req, $checkMultiAdd = true, $force = false)
+    public function addQueLoop(CurlerRequest $req, $checkMultiAdd = true, $force = false)
     {
         $id = $req->getId();
 
@@ -131,8 +116,8 @@ class CurlerRolling
     }
 
     /**
-     * @param $oneHandle
-     * @return Response
+     * @param resource $oneHandle
+     * @return CurlerResponse
      */
     private function makeResponse($oneHandle)
     {
@@ -141,7 +126,7 @@ class CurlerRolling
         $header = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
-        $n = new Response();
+        $n = new CurlerResponse();
         $n->_headers = $this->parse_headers_from_curl_response($header);
         $n->_body = $body;
         $n->_info = curl_getinfo($oneHandle);
@@ -153,45 +138,45 @@ class CurlerRolling
     }
 
     /**
-     * @param int $usleep
      * @return bool
+     * @throws TransportException
      */
-    public function execLoopWait($usleep = 10000)
+    public function execLoopWait()
     {
-        // @todo rewrite wait
         $c = 0;
-
+        $count=0;
         // add all tasks
         do {
             $this->exec();
 
             $loop = $this->countActive();
+            $pend = $this->countPending();
+
+            $count=$loop+$pend;
             $c++;
 
-            if ($c > 100000) {
+            if ($c > 20000) {
                 break;
             }
-
-            usleep($usleep);
-        } while ($loop);
+            usleep(500);
+        } while ($count);
 
         return true;
     }
 
     /**
-     * @param $response
+     * @param string $response
      * @return array
      */
     private function parse_headers_from_curl_response($response)
     {
-        $headers = array();
+        $headers = [];
         $header_text = $response;
 
         foreach (explode("\r\n", $header_text) as $i => $line) {
             if ($i === 0) {
                 $headers['http_code'] = $line;
-            }
-            else {
+            } else {
                 $r = explode(': ', $line);
                 if (sizeof($r) == 2) {
                     $headers[$r[0]] = $r[1];
@@ -264,22 +249,23 @@ class CurlerRolling
     }
 
     /**
-     * @param Request $req
+     * @param CurlerRequest $request
      * @param bool $auto_close
      * @return mixed
+     * @throws TransportException
      */
-    public function execOne(Request $req, $auto_close = false)
+    public function execOne(CurlerRequest $request, $auto_close = false)
     {
-        $h = $req->handle();
+        $h = $request->handle();
         curl_exec($h);
 
-        $req->setResponse($this->makeResponse($h));
+        $request->setResponse($this->makeResponse($h));
 
         if ($auto_close) {
-            $req->close();
+            $request->close();
         }
 
-        return $req->response()->http_code();
+        return $request->response()->http_code();
     }
 
     /**
@@ -342,41 +328,32 @@ class CurlerRolling
         return $this->countActive();
     }
 
-    /**
-     *
-     */
     public function makePendingRequestsQue()
     {
-        $this->_lashmakeQue_state = "";
 
         $max = $this->getSimultaneousLimit();
         $active = $this->countActive();
 
-        $this->_lashmakeQue_state .= "Active=$active | Max=$max |";
 
         if ($active < $max) {
 
             $canAdd = $max - $active;
-            $pending = sizeof($this->pendingRequests);
+//            $pending = sizeof($this->pendingRequests);
 
-            $add = array();
+            $add = [];
 
-            $this->_lashmakeQue_state .= " canAdd:$canAdd | pending=$pending |";
 
             foreach ($this->pendingRequests as $task_id => $params) {
                 if (empty($this->activeRequests[$task_id])) {
                     $add[$task_id] = $task_id;
-                    $this->_lashmakeQue_state .= '{A}';
                 }
             }
 
-            $this->_lashmakeQue_state .= ' sizeAdd=' . sizeof($add);
 
             if (sizeof($add)) {
                 if ($canAdd >= sizeof($add)) {
                     $ll = $add;
-                }
-                else {
+                } else {
                     $ll = array_rand($add, $canAdd);
                     if (!is_array($ll)) {
                         $ll = array($ll => $ll);
@@ -392,14 +369,13 @@ class CurlerRolling
     }
 
     /**
-     * @param $task_id
+     * @param string $task_id
      */
     private function _prepareLoopQue($task_id)
     {
         $this->activeRequests[$task_id] = 1;
         $this->waitRequests++;
 
-        //
         $h = $this->pendingRequests[$task_id]->handle();
 
         // pool

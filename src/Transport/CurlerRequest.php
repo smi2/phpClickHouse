@@ -1,12 +1,8 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-/**
- * Class Request
- * @package Curler
- */
-class Request
+class CurlerRequest
 {
     /**
      * @var array
@@ -14,7 +10,7 @@ class Request
     public $extendinfo = array();
 
     /**
-     * @var string
+     * @var string|array
      */
     private $parameters = '';
 
@@ -24,17 +20,17 @@ class Request
     private $options;
 
     /**
-     * @var
+     * @var array
      */
     private $headers; // Parsed reponse header object.
 
     /**
-     * @var
+     * @var string
      */
     private $url;
 
     /**
-     * @var
+     * @var string
      */
     private $method;
 
@@ -44,14 +40,14 @@ class Request
     private $id;
 
     /**
-     * @var
+     * @var resource|null
      */
     private $handle;
 
     /**
-     * @var
+     * @var CurlerResponse
      */
-    private $resp;
+    private $resp = null;
 
     /**
      * @var bool
@@ -79,12 +75,12 @@ class Request
     private $_httpCompression = false;
 
     /**
-     * @var
+     * @var callable
      */
-    private $callback_function;
+    private $callback_function = null;
 
     /**
-     * @var bool
+     * @var bool|resource
      */
     private $infile_handle = false;
 
@@ -99,7 +95,6 @@ class Request
     private $resultFileHandle = null;
 
     /**
-     * Request constructor.
      * @param bool $id
      */
     public function __construct($id = false)
@@ -114,13 +109,13 @@ class Request
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_TIMEOUT => 10,
-            CURLOPT_CONNECTTIMEOUT => 5,    // Количество секунд ожидания при попытке соединения
+            CURLOPT_CONNECTTIMEOUT => 5, // Количество секунд ожидания при попытке соединения
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_HEADER => TRUE,
             CURLOPT_FOLLOWLOCATION => TRUE,
-            CURLOPT_AUTOREFERER => 1,       // при редиректе подставлять в «Referer:» значение из «Location:»
-            CURLOPT_BINARYTRANSFER => 1,    // передавать в binary-safe
+            CURLOPT_AUTOREFERER => 1, // при редиректе подставлять в «Referer:» значение из «Location:»
+            CURLOPT_BINARYTRANSFER => 1, // передавать в binary-safe
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_USERAGENT => 'smi2/PHPClickHouse/client',
         );
@@ -135,9 +130,6 @@ class Request
     }
 
 
-    /**
-     *
-     */
     public function close()
     {
         if ($this->handle)
@@ -148,7 +140,7 @@ class Request
     }
 
     /**
-     * @param $attachFiles
+     * @param array $attachFiles
      */
     public function attachFiles($attachFiles)
     {
@@ -178,7 +170,7 @@ class Request
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return $this
      */
     public function setRequestExtendedInfo($params)
@@ -188,7 +180,7 @@ class Request
     }
 
     /**
-     * @param null $key
+     * @param string|integer|null $key
      * @return mixed
      */
     public function getRequestExtendedInfo($key = null)
@@ -201,7 +193,7 @@ class Request
     }
 
     /**
-     * @return resource
+     * @return bool|resource
      */
     public function getInfileHandle()
     {
@@ -209,45 +201,64 @@ class Request
     }
 
     /**
-     * @param $file_name
-     * @return bool
+     * @param string $file_name
+     * @return bool|resource
      */
     public function setInfile($file_name)
     {
         $this->header('Expect', '');
         $this->infile_handle = fopen($file_name, 'r');
+        if (is_resource($this->infile_handle))
+        {
 
-        if ($this->_httpCompression) {
-            $this->header('Content-Encoding', 'gzip');
-            $this->header('Content-Type', 'application/x-www-form-urlencoded');
+            if ($this->_httpCompression) {
+                $this->header('Content-Encoding', 'gzip');
+                $this->header('Content-Type', 'application/x-www-form-urlencoded');
 
-            stream_filter_append($this->infile_handle, 'zlib.deflate', STREAM_FILTER_READ, ["window" => 30]);
+                stream_filter_append($this->infile_handle, 'zlib.deflate', STREAM_FILTER_READ, ["window" => 30]);
 
-            $this->options[CURLOPT_SAFE_UPLOAD] = 1;
-        } else {
-            $this->options[CURLOPT_INFILESIZE] = filesize($file_name);
+                $this->options[CURLOPT_SAFE_UPLOAD] = 1;
+            } else {
+                $this->options[CURLOPT_INFILESIZE] = filesize($file_name);
+            }
+
+            $this->options[CURLOPT_INFILE] = $this->infile_handle;
         }
-
-        $this->options[CURLOPT_INFILE] = $this->infile_handle;
 
         return $this->infile_handle;
     }
 
     /**
-     * @param $callback
+     * @param callable $callback
      */
     public function setCallbackFunction($callback)
     {
         $this->callback_function = $callback;
     }
+
+    /**
+     * @param callable $callback
+     */
+    public function setWriteFunction($callback)
+    {
+        $this->options[CURLOPT_WRITEFUNCTION]=$callback;
+    }
+    /**
+     * @param callable $callback
+     */
     public function setReadFunction($callback)
     {
-        $this->options[CURLOPT_READFUNCTION]=$callback;
+        $this->options[CURLOPT_READFUNCTION] = $callback;
+    }
+
+    public function setHeaderFunction($callback)
+    {
+        $this->options[CURLOPT_HEADERFUNCTION] = $callback;
     }
 
     /**
-     * @param $classCallBack
-     * @param $functionName
+     * @param string $classCallBack
+     * @param string $functionName
      */
     public function setCallback($classCallBack, $functionName)
     {
@@ -289,6 +300,7 @@ class Request
         }
 
         echo $message;
+        return '';
     }
 
     /**
@@ -300,8 +312,8 @@ class Request
     }
 
     /**
-     * @param $key
-     * @param $value
+     * @param integer $key
+     * @param mixed $value
      * @return $this
      */
     private function option($key, $value)
@@ -351,8 +363,8 @@ class Request
     }
 
     /**
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param string $value
      * @return $this
      */
     public function header($key, $value)
@@ -361,16 +373,20 @@ class Request
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getHeaders()
     {
-        $head=[];
-        foreach ($this->headers as $key=>$value)
-            $head[]= sprintf("%s: %s", $key, $value);
+        $head = [];
+        foreach ($this->headers as $key=>$value) {
+                    $head[] = sprintf("%s: %s", $key, $value);
+        }
         return $head;
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @return $this
      */
     public function url($url)
@@ -389,7 +405,7 @@ class Request
 
 
     /**
-     * @param $id
+     * @param string $id
      * @return string
      */
     public function getUniqHash($id)
@@ -398,15 +414,14 @@ class Request
     }
 
     /**
-     * @param $flag
+     * @param bool $flag
      */
     public function httpCompression($flag)
     {
         if ($flag) {
             $this->_httpCompression = $flag;
             $this->options[CURLOPT_ENCODING] = 'gzip';
-        }
-        else
+        } else
         {
             $this->_httpCompression = false;
             unset($this->options[CURLOPT_ENCODING]);
@@ -414,8 +429,8 @@ class Request
     }
 
     /**
-     * @param $username
-     * @param $password
+     * @param string $username
+     * @param string $password
      * @return $this
      */
     public function auth($username, $password)
@@ -425,7 +440,7 @@ class Request
     }
 
     /**
-     * @param $data
+     * @param array|string $data
      * @return $this
      */
     public function parameters($data)
@@ -435,7 +450,7 @@ class Request
     }
 
     /**
-     * Количество секунд ожидания при попытке соединения. Используйте 0 для бесконечного ожидания.
+     * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
      *
      * @param int $seconds
      * @return $this
@@ -447,23 +462,23 @@ class Request
     }
 
     /**
-     * Максимально позволенное количество секунд для выполнения cURL-функций.
+     * The maximum number of seconds (float) allowed to execute cURL functions.
      *
-     * @param int $seconds
+     * @param float $seconds
      * @return $this
      */
     public function timeOut($seconds = 10)
     {
-        return $this->timeOutMs($seconds * 1000);
+        return $this->timeOutMs(intval($seconds * 1000));
     }
 
     /**
-     * Максимально позволенное количество миллисекунд для выполнения cURL-функций.
+     * The maximum allowed number of milliseconds to perform cURL functions.
      *
-     * @param int $ms
+     * @param int $ms millisecond
      * @return $this
      */
-    protected function timeOutMs($ms = 10)
+    protected function timeOutMs($ms = 10000)
     {
         $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;
@@ -471,9 +486,9 @@ class Request
 
 
     /**
-     * @param $data
+     * @param array|mixed $data
      * @return $this
-     * @throws \ClickHouseDB\TransportException
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function parameters_json($data)
     {
@@ -494,7 +509,7 @@ class Request
         $this->parameters = json_encode($data);
 
         if (!$this->parameters && $data) {
-            throw new \ClickHouseDB\TransportException('Cant json_encode: ' . $data);
+            throw new \ClickHouseDB\Exception\TransportException('Cant json_encode: ' . strval($data));
         }
 
         return $this;
@@ -517,7 +532,8 @@ class Request
     }
 
     /**
-     * @param $h resource
+     * @param resource $h resource
+     * @param bool $zlib
      * @return $this
      */
     public function setResultFileHandle($h, $zlib = false)
@@ -531,7 +547,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function PUT()
     {
@@ -539,7 +555,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function POST()
     {
@@ -547,7 +563,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function OPTIONS()
     {
@@ -555,7 +571,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return CurlerRequest
      */
     public function GET()
     {
@@ -563,9 +579,9 @@ class Request
     }
 
     /**
-     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
-     * @param $set
+     * @param integer $set
      * @return $this
      */
     public function setDnsCache($set)
@@ -575,7 +591,7 @@ class Request
     }
 
     /**
-     * Количество секунд, в течение которых в памяти хранятся DNS-записи. По умолчанию этот параметр равен 120 (2 минуты).
+     * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
      * @return int
      */
@@ -585,7 +601,7 @@ class Request
     }
 
     /**
-     * @param $method
+     * @param string $method
      * @return $this
      */
     private function execute($method)
@@ -595,13 +611,13 @@ class Request
     }
 
     /**
-     * @return \Curler\Response
-     * @throws \ClickHouseDB\TransportException
+     * @return CurlerResponse
+     * @throws \ClickHouseDB\Exception\TransportException
      */
     public function response()
     {
         if (!$this->resp) {
-            throw new \ClickHouseDB\TransportException('Can`t fetch response - is empty');
+            throw new \ClickHouseDB\Exception\TransportException('Can`t fetch response - is empty');
         }
 
         return $this->resp;
@@ -615,12 +631,9 @@ class Request
         return ($this->resp ? true : false);
     }
 
-    /**
-     * @param Response $resp
-     */
-    public function setResponse(\Curler\Response $resp)
+    public function setResponse(CurlerResponse $response)
     {
-        $this->resp = $resp;
+        $this->resp = $response;
     }
 
     /**
@@ -642,8 +655,8 @@ class Request
             throw new \Exception('setFunctionProgress not is_callable');
         }
 
-        $this->option(CURLOPT_NOPROGRESS,false);
-        $this->option(CURLOPT_PROGRESSFUNCTION,$callback); // version 5.5.0
+        $this->option(CURLOPT_NOPROGRESS, false);
+        $this->option(CURLOPT_PROGRESSFUNCTION, $callback); // version 5.5.0
     }
 
 
@@ -687,7 +700,7 @@ class Request
         $curl_opt[CURLOPT_DNS_CACHE_TIMEOUT] = $this->getDnsCache();
         $curl_opt[CURLOPT_URL] = $this->url;
 
-        if ($this->headers && sizeof($this->headers)) {
+        if (!empty($this->headers) && sizeof($this->headers)) {
             $curl_opt[CURLOPT_HTTPHEADER] = array();
 
             foreach ($this->headers as $key => $value) {
@@ -700,13 +713,18 @@ class Request
             $curl_opt[CURLOPT_PUT] = true;
         }
 
+        if (!empty($curl_opt[CURLOPT_WRITEFUNCTION]))
+        {
+            $curl_opt[CURLOPT_HEADER]=false;
+        }
+
         if ($this->resultFileHandle) {
             $curl_opt[CURLOPT_FILE] = $this->resultFileHandle;
             $curl_opt[CURLOPT_HEADER] = false;
         }
 
         if ($this->options[CURLOPT_VERBOSE]) {
-            echo "\n-----------BODY REQUEST----------\n".$curl_opt[CURLOPT_POSTFIELDS]."\n------END--------\n";
+            echo "\n-----------BODY REQUEST----------\n" . $curl_opt[CURLOPT_POSTFIELDS] . "\n------END--------\n";
         }
         curl_setopt_array($this->handle, $curl_opt);
         return true;

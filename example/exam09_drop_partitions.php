@@ -1,18 +1,14 @@
 <?php
 
 include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/Helper.php';
+\ClickHouseDB\Example\Helper::init();
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
 
 
 $db = new ClickHouseDB\Client($config);
-$create = false;
+$create = true;
 
 if ($create) {
     $db->write("DROP TABLE IF EXISTS summing_partions_views");
@@ -40,7 +36,7 @@ if ($create) {
     $c = 0;
     foreach ($file_data_names as $file_name) {
         $c++;
-        makeSomeDataFileBigOldDates($file_name, $c);
+        \ClickHouseDB\Example\Helper::makeSomeDataFileBigOldDates($file_name, $c);
     }
 
 

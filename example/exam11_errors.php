@@ -3,19 +3,15 @@
 include_once __DIR__ . '/../include.php';
 
 
-$config = [
-    'host' => 'x',
-    'port' => '8123',
-    'username' => 'x',
-    'password' => 'x'
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
+
 
 $db = new ClickHouseDB\Client($config);
 
 try {
     $db->ping();
 }
-catch (ClickHouseDB\QueryException $E) {
+catch (ClickHouseDB\Exception\QueryException $E) {
     echo "ERROR:" . $E->getMessage() . "\nOK\n";
 }
 
@@ -23,19 +19,17 @@ catch (ClickHouseDB\QueryException $E) {
 // ------------------
 
 
-$config = [
-    'host' => '192.168.1.20',
+$db = new ClickHouseDB\Client([
+    'host' => 'NO_DB_HOST.COM',
     'port' => '8123',
     'username' => 'x',
     'password' => 'x'
-];
-
-$db = new ClickHouseDB\Client($config);
-
+]);
+$db->setConnectTimeOut(1);
 try {
     $db->ping();
 }
-catch (ClickHouseDB\QueryException $E) {
+catch (ClickHouseDB\Exception\QueryException $E) {
     echo "ERROR:" . $E->getMessage() . "\nOK\n";
 }
 
@@ -43,12 +37,6 @@ catch (ClickHouseDB\QueryException $E) {
 // ------------------
 
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
 
 $db = new ClickHouseDB\Client($config);
 
@@ -56,14 +44,14 @@ try {
     $db->ping();
     echo "PING : OK!\n";
 }
-catch (ClickHouseDB\QueryException $E) {
+catch (ClickHouseDB\Exception\QueryException $E) {
     echo "ERROR:" . $E->getMessage() . "\nOK\n";
 }
 
 try {
     $db->select("SELECT xxx as PPPP FROM ZZZZZ ")->rows();
 }
-catch (ClickHouseDB\DatabaseException $E) {
+catch (ClickHouseDB\Exception\DatabaseException $E) {
     echo "ERROR : DatabaseException : " . $E->getMessage() . "\n"; // Table default.ZZZZZ doesn't exist.
 }
 

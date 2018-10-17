@@ -4,28 +4,24 @@ namespace ClickHouseDB;
 
 use ClickHouseDB\Transport\Http;
 
-/**
- * Class Settings
- * @package ClickHouseDB
- */
 class Settings
 {
     /**
-     * @var Client
+     * @var Http
      */
-    private $client = false;
+    private $client = null;
 
     /**
      * @var array
      */
     private $settings = [];
 
-    private $_ReadOnlyUser=false;
+    private $_ReadOnlyUser = false;
 
     /**
      * @var bool
      */
-    private $_isHttps=false;
+    private $_isHttps = false;
 
     /**
      * Settings constructor.
@@ -46,16 +42,19 @@ class Settings
     }
 
     /**
-     * @param $key
+     * @param string|int $key
      * @return mixed
      */
     public function get($key)
     {
+        if (!$this->is($key)) {
+            return null;
+        }
         return $this->settings[$key];
     }
 
     /**
-     * @param $key
+     * @param string|int $key
      * @return bool
      */
     public function is($key)
@@ -65,8 +64,8 @@ class Settings
 
 
     /**
-     * @param $key
-     * @param $value
+     * @param string|int $key
+     * @param mixed $value
      * @return $this
      */
     public function set($key, $value)
@@ -84,7 +83,7 @@ class Settings
     }
 
     /**
-     * @param $db
+     * @param string $db
      * @return $this
      */
     public function database($db)
@@ -110,7 +109,7 @@ class Settings
     }
 
     /**
-     * @param $flag
+     * @param bool|int $flag
      * @return $this
      */
     public function enableHttpCompression($flag)
@@ -120,7 +119,7 @@ class Settings
     }
 
 
-    public function https($flag=true)
+    public function https($flag = true)
     {
         $this->set('https', $flag);
         return $this;
@@ -133,7 +132,7 @@ class Settings
 
 
     /**
-     * @param $flag
+     * @param int|bool $flag
      * @return $this
      */
     public function readonly($flag)
@@ -143,7 +142,7 @@ class Settings
     }
 
     /**
-     * @param $session_id
+     * @param string $session_id
      * @return $this
      */
     public function session_id($session_id)
@@ -152,16 +151,18 @@ class Settings
         return $this;
     }
     /**
-     * @return string
+     * @return mixed|bool
      */
     public function getSessionId()
     {
-        if (empty($this->settings['session_id'])) return false;
+        if (empty($this->settings['session_id'])) {
+            return false;
+        }
         return $this->get('session_id');
     }
 
     /**
-     * @return string
+     * @return string|bool
      */
     public function makeSessionId()
     {
@@ -170,7 +171,7 @@ class Settings
     }
 
     /**
-     * @param $time
+     * @param int $time
      * @return $this
      */
     public function max_execution_time($time)
@@ -188,7 +189,7 @@ class Settings
     }
 
     /**
-     * @param $settings_array
+     * @param array $settings_array
      * @return $this
      */
     public function apply($settings_array)
@@ -201,16 +202,15 @@ class Settings
     }
 
     /**
-     * @param $flag
+     * @param int|bool $flag
      */
     public function setReadOnlyUser($flag)
     {
-        $this->_ReadOnlyUser=$flag;
+        $this->_ReadOnlyUser = $flag;
     }
 
     /**
-     *
-     *
+     * @return bool
      */
     public function isReadOnlyUser()
     {
@@ -218,7 +218,7 @@ class Settings
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return mixed|null
      */
     public function getSetting($name)

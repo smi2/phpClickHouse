@@ -1,16 +1,43 @@
 <?php
 
 include_once __DIR__ . '/../include.php';
-include_once __DIR__ . '/lib_example.php';
+include_once __DIR__ . '/Helper.php';
+\ClickHouseDB\Example\Helper::init();
 
-$config = [
-    'host' => '192.168.1.20',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+
+$config = include_once __DIR__ . '/00_config_connect.php';
+
 
 $db = new ClickHouseDB\Client($config);
+
+
+for ($f=0;$f<1000;$f++)
+{
+    $list[$f]=$db->selectAsync('SELECT {num} as num',['num'=>$f]);
+}
+$db->executeAsync();
+for ($f=0;$f<1000;$f++)
+{
+    $c=$list[$f];
+
+    echo $f."\t";
+    $ret='-';
+    try{
+        $ret=$c->fetchOne('num');
+    }catch (Exception $e)
+    {
+
+    }
+
+
+    echo "$ret\n";
+}
+
+// -------------------------------- ------- ----------------------------------------------------------------
+
+
+
+
 $db->write("DROP TABLE IF EXISTS summing_url_views");
 $db->write('
     CREATE TABLE IF NOT EXISTS summing_url_views (
@@ -34,7 +61,7 @@ $file_data_names = [
 ];
 
 foreach ($file_data_names as $file_name) {
-    makeSomeDataFile($file_name, 1);
+    \ClickHouseDB\Example\Helper::makeSomeDataFile($file_name, 1);
 }
 // ----------------------------------------------------------------------------------------------------
 

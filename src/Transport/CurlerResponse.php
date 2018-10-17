@@ -1,25 +1,21 @@
 <?php
 
-namespace Curler;
+namespace ClickHouseDB\Transport;
 
-/**
- * Class Response
- * @package Curler
- */
-class Response
+class CurlerResponse
 {
     /**
-     * @var
+     * @var mixed
      */
     public $_headers;
 
     /**
-     * @var
+     * @var mixed
      */
     public $_info;
 
     /**
-     * @var
+     * @var mixed
      */
     public $_error;
 
@@ -29,12 +25,12 @@ class Response
     public $_errorNo = 0;
 
     /**
-     * @var
+     * @var float
      */
     public $_useTime;
 
     /**
-     * @var
+     * @var string
      */
     public $_body;
 
@@ -74,7 +70,7 @@ class Response
      */
     public function total_time()
     {
-        return round($this->_info['total_time'],3);
+        return round($this->_info['total_time'], 3);
     }
 
     /**
@@ -82,7 +78,7 @@ class Response
      */
     public function starttransfer_time()
     {
-        return round($this->_info['starttransfer_time'],3);
+        return round($this->_info['starttransfer_time'], 3);
     }
 
     /**
@@ -90,7 +86,7 @@ class Response
      */
     public function connect_time()
     {
-        return round($this->_info['connect_time'],3);
+        return round($this->_info['connect_time'], 3);
     }
 
     /**
@@ -98,7 +94,7 @@ class Response
      */
     public function pretransfer_time()
     {
-        return round($this->_info['pretransfer_time'],3);
+        return round($this->_info['pretransfer_time'], 3);
     }
 
     /**
@@ -118,8 +114,8 @@ class Response
     }
 
     /**
-     * @param $name
-     * @return null
+     * @param string $name
+     * @return null|string
      */
     public function headers($name)
     {
@@ -131,7 +127,7 @@ class Response
     }
 
     /**
-     * @return null
+     * @return null|string
      */
     public function connection()
     {
@@ -185,7 +181,7 @@ class Response
     }
 
     /**
-     * @param $size
+     * @param int $size
      * @param string $unit
      * @return string
      */
@@ -270,7 +266,7 @@ class Response
         return $this->_info;
     }
     /**
-     * @param null $key
+     * @param string|null $key
      * @return bool|mixed
      */
     public function json($key = null)
@@ -293,8 +289,11 @@ class Response
      */
     public function rawDataOrJson($format)
     {
-        if (stripos($format,'json')!==false)
+        // JSONCompact // JSONEachRow
+
+        if (stripos($format, 'json') !== false)
         {
+            if (stripos($format,'JSONEachRow')===false)
             return $this->json();
         }
         return $this->body();

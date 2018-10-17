@@ -1,9 +1,11 @@
 <?php
 
-namespace ClickHouseDB;
+declare(strict_types=1);
 
-/**
- * Class QueryException
- * @package ClickHouseDB
- */
-class QueryException extends \LogicException {}
+namespace ClickHouseDB\Exception;
+
+use LogicException;
+
+class QueryException extends LogicException implements ClickHouseException
+{
+}

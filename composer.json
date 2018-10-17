@@ -1,9 +1,8 @@
 {
   "name": "smi2/phpclickhouse",
   "type": "library",
-  "version" : "0.17.12.1",
-  "description": "php ClickHouse client library",
-  "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client"],
+  "description": "PHP ClickHouse Client",
+  "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client", "php"],
   "homepage": "https://github.com/smi2/phpClickHouse",
   "license": "MIT",
   "authors": [
@@ -14,17 +13,24 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0",
+    "php": "^7.1",
     "ext-curl": "*"
   },
   "require-dev": {
-    "ext-curl": "*",
-    "phpunit/phpunit": "5.5.*"
+    "doctrine/coding-standard": "^4.0",
+    "phpstan/phpstan": "^0.9.2",
+    "phpunit/phpunit": "^7",
+    "sebastian/comparator": "~3.0"
   },
   "autoload": {
-    "files": ["include.php"]
+    "psr-4": {
+      "ClickHouseDB\\": "src/"
+    }
   },
   "autoload-dev": {
-    "files": ["include.php"]
+    "psr-4": {
+      "ClickHouseDB\\Tests\\": "tests/",
+      "ClickHouseDB\\Example\\": "example/"
+    }
   }
 }

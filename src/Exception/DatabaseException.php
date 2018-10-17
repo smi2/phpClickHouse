@@ -1,9 +1,9 @@
 <?php
 
-namespace ClickHouseDB;
+declare(strict_types=1);
 
-/**
- * Class DatabaseException
- * @package ClickHouseDB
- */
-class DatabaseException extends QueryException {}
+namespace ClickHouseDB\Exception;
+
+final class DatabaseException extends QueryException implements ClickHouseException
+{
+}

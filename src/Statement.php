@@ -2,17 +2,16 @@
 
 namespace ClickHouseDB;
 
-use Curler\Request;
-use Curler\Response;
+use ClickHouseDB\Exception\DatabaseException;
+use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\Query;
+use ClickHouseDB\Transport\CurlerRequest;
+use ClickHouseDB\Transport\CurlerResponse;
 
-/**
- * Class Statement
- * @package ClickHouseDB
- */
 class Statement
 {
     /**
-     * @var
+     * @var string|mixed
      */
     private $_rawData;
 
@@ -22,7 +21,7 @@ class Statement
     private $_http_code = -1;
 
     /**
-     * @var Request|null
+     * @var CurlerRequest
      */
     private $_request = null;
 
@@ -37,19 +36,19 @@ class Statement
     private $query;
 
     /**
+     * @var mixed
+     */
+    private $format;
+
+    /**
      * @var string
      */
-    private $sql = false;
+    private $sql = '';
 
     /**
      * @var array
      */
     private $meta;
-
-    /**
-     * @var array
-     */
-    private $data;
 
     /**
      * @var array
@@ -67,7 +66,7 @@ class Statement
     private $rows;
 
     /**
-     * @var
+     * @var bool|integer
      */
     private $rows_before_limit_at_least = false;
 
@@ -77,16 +76,12 @@ class Statement
     private $array_data = [];
 
     /**
-     * @var array
+     * @var array|null
      */
-    private $statistics;
+    private $statistics = null;
 
 
-    /**
-     * Statement constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
+    public function __construct(CurlerRequest $request)
     {
         $this->_request = $request;
         $this->format = $this->_request->getRequestExtendedInfo('format');
@@ -95,20 +90,26 @@ class Statement
     }
 
     /**
-     * @return Request
+     * @return CurlerRequest
      */
     public function getRequest()
     {
         return $this->_request;
     }
+
     /**
-     * @return Response
+     * @return CurlerResponse
+     * @throws Exception\TransportException
      */
     private function response()
     {
         return $this->_request->response();
     }
 
+    /**
+     * @return mixed
+     * @throws Exception\TransportException
+     */
     public function responseInfo()
     {
         return $this->response()->info();
@@ -123,7 +124,7 @@ class Statement
     }
 
     /**
-     * @param $body
+     * @param string $body
      * @return array|bool
      */
     private function parseErrorClickHouse($body)
@@ -144,6 +145,7 @@ class Statement
 
     /**
      * @return bool
+     * @throws Exception\TransportException
      */
     public function error()
     {
@@ -153,20 +155,18 @@ class Statement
 
         $body = $this->response()->body();
         $error_no = $this->response()->error_no();
-        $error=$this->response()->error();
+        $error = $this->response()->error();
 
         if (!$error_no && !$error) {
             $parse = $this->parseErrorClickHouse($body);
 
             if ($parse) {
                 throw new DatabaseException($parse['message'] . "\nIN:" . $this->sql(), $parse['code']);
-            }
-            else {
+            } else {
                 $code = $this->response()->http_code();
-                $message = "HttpCode:" . $this->response()->http_code() . " ; ".$this->response()->error()." ;" . $body;
+                $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
             }
-        }
-        else {
+        } else {
             $code = $error_no;
             $message = $this->response()->error();
         }
@@ -176,6 +176,7 @@ class Statement
 
     /**
      * @return bool
+     * @throws Exception\TransportException
      */
     public function isError()
     {
@@ -183,8 +184,8 @@ class Statement
     }
 
     /**
-     *
      * @return bool
+     * @throws Exception\TransportException
      */
     private function check()
     {
@@ -198,8 +199,10 @@ class Statement
 
         return true;
     }
+
     /**
      * @return bool
+     * @throws Exception\TransportException
      */
     private function init()
     {
@@ -216,10 +219,18 @@ class Statement
             $this->_init = true;
             return false;
         }
+        $data=[];
+        foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least', 'statistics'] as $key) {
 
-        foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least','statistics'] as $key) {
             if (isset($this->_rawData[$key])) {
-                $this->{$key} = $this->_rawData[$key];
+                if ($key=='data')
+                {
+                    $data=$this->_rawData[$key];
+                }
+                else{
+                    $this->{$key} = $this->_rawData[$key];
+                }
+
             }
         }
 
@@ -227,12 +238,20 @@ class Statement
             throw  new QueryException('Can`t find meta');
         }
 
+        $isJSONCompact=(stripos($this->format,'JSONCompact')!==false?true:false);
         $this->array_data = [];
-        foreach ($this->data as $rows) {
+        foreach ($data as $rows) {
             $r = [];
 
-            foreach ($this->meta as $meta) {
-                $r[$meta['name']] = $rows[$meta['name']];
+
+            if ($isJSONCompact)
+            {
+                $r[]=$rows;
+            }
+            else {
+                foreach ($this->meta as $meta) {
+                    $r[$meta['name']] = $rows[$meta['name']];
+                }
             }
 
             $this->array_data[] = $r;
@@ -253,6 +272,7 @@ class Statement
 
     /**
      * @return mixed
+     * @throws Exception\TransportException
      */
     public function totalTimeRequest()
     {
@@ -292,7 +312,8 @@ class Statement
     }
 
     /**
-     * @return mixed
+     * @return array
+     * @throws Exception\TransportException
      */
     public function totals()
     {
@@ -318,7 +339,8 @@ class Statement
     }
 
     /**
-     * @return bool
+     * @return bool|int
+     * @throws Exception\TransportException
      */
     public function countAll()
     {
@@ -329,14 +351,19 @@ class Statement
     /**
      * @param bool $key
      * @return array|mixed|null
+     * @throws Exception\TransportException
      */
-    public function statistics($key=false)
+    public function statistics($key = false)
     {
         $this->init();
         if ($key)
         {
-            if (!is_array($this->statistics)) return null;
-            if (!isset($this->statistics[$key])) return null;
+            if (!is_array($this->statistics)) {
+                return null;
+            }
+            if (!isset($this->statistics[$key])) {
+                return null;
+            }
             return $this->statistics[$key];
         }
         return $this->statistics;
@@ -344,6 +371,7 @@ class Statement
 
     /**
      * @return int
+     * @throws Exception\TransportException
      */
     public function count()
     {
@@ -352,9 +380,8 @@ class Statement
     }
 
     /**
-     * get rawJson Answer
-     *
-     * @return mixed
+     * @return mixed|string
+     * @throws Exception\TransportException
      */
     public function rawData()
     {
@@ -366,11 +393,13 @@ class Statement
 
         return $this->response()->rawDataOrJson($this->format);
     }
+
     /**
-     * @param bool $key
+     * @param string $key
      * @return mixed|null
+     * @throws Exception\TransportException
      */
-    public function fetchOne($key = false)
+    public function fetchOne($key = '')
     {
         $this->init();
 
@@ -378,8 +407,7 @@ class Statement
             if ($key) {
                 if (isset($this->array_data[0][$key])) {
                     return $this->array_data[0][$key];
-                }
-                else {
+                } else {
                     return null;
                 }
             }
@@ -391,8 +419,9 @@ class Statement
     }
 
     /**
-     * @param $path
+     * @param string|null $path
      * @return array
+     * @throws Exception\TransportException
      */
     public function rowsAsTree($path)
     {
@@ -411,6 +440,7 @@ class Statement
      * Return size_upload,upload_content,speed_upload,time_request
      *
      * @return array
+     * @throws Exception\TransportException
      */
     public function info_upload()
     {
@@ -427,6 +457,7 @@ class Statement
      * Return size_upload,upload_content,speed_upload,time_request,starttransfer_time,size_download,speed_download
      *
      * @return array
+     * @throws Exception\TransportException
      */
     public function info()
     {
@@ -453,6 +484,7 @@ class Statement
 
     /**
      * @return array
+     * @throws Exception\TransportException
      */
     public function rows()
     {
@@ -461,24 +493,22 @@ class Statement
     }
 
     /**
-     * @param $arr
-     * @param null $path
+     * @param array|string $arr
+     * @param null|string|array $path
      * @return array
      */
     private function array_to_tree($arr, $path = null)
     {
         if (is_array($path)) {
             $keys = $path;
-        }
-        else {
+        } else {
             $args = func_get_args();
             array_shift($args);
 
             if (sizeof($args) < 2) {
                 $separator = '.';
                 $keys = explode($separator, $path);
-            }
-            else {
+            } else {
                 $keys = $args;
             }
         }
@@ -490,14 +520,15 @@ class Statement
 
             if (isset($arr[$key])) {
                 $val = $arr[$key];
-            }
-            else {
+            } else {
                 $val = $key;
             }
 
             $tree = array($val => $tree);
         }
-
+        if (!is_array($tree)) {
+            return [];
+        }
         return $tree;
     }
 }

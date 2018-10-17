@@ -1,12 +1,9 @@
 <?php
 include_once __DIR__ . '/../include.php';
 //
-$config = [
-    'host' => 'tabix.dev7',
-    'port' => '8123',
-    'username' => 'default',
-    'password' => ''
-];
+$config = include_once __DIR__ . '/00_config_connect.php';
+
+
 //
 
 class progress {

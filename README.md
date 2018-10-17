@@ -1,25 +1,32 @@
 PHP ClickHouse wrapper
-===================
+======================
+
+[![Build Status](https://travis-ci.org/smi2/phpClickHouse.svg)](https://travis-ci.org/smi2/phpClickHouse)
+[![Downloads](https://poser.pugx.org/smi2/phpClickHouse/d/total.svg)](https://packagist.org/packages/smi2/phpClickHouse)
+[![Packagist](https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg)](https://packagist.org/packages/smi2/phpClickHouse)
+[![Licence](https://poser.pugx.org/smi2/phpClickHouse/license.svg)](https://packagist.org/packages/smi2/phpClickHouse)
+[![Quality Score](https://scrutinizer-ci.com/g/smi2/phpClickHouse/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
+[![Code Coverage](https://scrutinizer-ci.com/g/smi2/phpClickHouse/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
+
 ## Features
 
-- No dependency, only curl
+- No dependency, only Curl (support php `>=7.0` )
 - Select parallel queries (asynchronous)
-- Parallelizing bulk inserts from CSV file
-- enable_http_compression, for bulk inserts
-- Find active host and check cluster
+- Asynchronous bulk inserts from CSV file
+- Http compression (Gzip), for bulk inserts
+- Find active host, check cluster
 - Select WHERE IN ( _local csv file_ )
 - SQL conditions & template
 - tablesSize & databaseSize
 - listPartitions
-- dropPartition & dropOldPartitions
 - truncateTable in cluster
 - Insert array as column
 - Get master node replica in cluster
 - Get tableSize in all nodes
-- Async get clickhouse progress
+- Async get ClickHouse progress function
+- streamRead/Write & Closure functions
 
-
-[Russian articles in repo](https://github.com/smi2/phpClickHouse/blob/master/doc/01_article.md), [on habr](https://habrahabr.ru/company/smi2/blog/317682/)
+[Russian articles habr.com 1](https://habrahabr.ru/company/smi2/blog/317682/) [on habr.com 2](https://habr.com/company/smi2/blog/314558/)
 
 ## Install composer
 
@@ -27,17 +34,16 @@ PHP ClickHouse wrapper
 composer require smi2/phpclickhouse
 ```
 
-### OR install submodule
 
-```bash
-git submodule add https://github.com/smi2/phpClickHouse.git
-git submodule init
-
-# update
-git submodule update --init --recursive
-git submodule update --remote
-
+In php
+```php
+// vendor autoload 
+$db = new ClickHouseDB\Client(['config_array']);
+$db->ping();
 ```
+
+
+Last stable version for php 5.6 = `1.1.2`
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
@@ -94,6 +100,18 @@ $stat = $db->insert('summing_url_views',
     ],
     ['event_time', 'site_key', 'site_id', 'views', 'v_00', 'v_55']
 );
+```
+
+If you need to insert UInt64 value, you can wrap the value in `ClickHouseDB\Type\UInt64` DTO.
+
+```php
+$statement = $db->insert('table_name',
+    [
+        [time(), UInt64::fromString('18446744073709551615')],
+    ],
+    ['event_time', 'uint64_type_column']
+);
+UInt64::fromString('18446744073709551615')
 ```
 
 Select:
@@ -179,6 +197,8 @@ Drop table:
 $db->write('DROP TABLE IF EXISTS summing_url_views');
 ```
 
+
+
 Features
 --------
 ### Select parallel queries (asynchronous)
@@ -237,7 +257,40 @@ foreach ($result_insert as $fileName => $state) {
     echo $fileName . ' => ' . json_encode($state->info_upload()) . PHP_EOL;
 }
 ```
-see example/exam8_http_gzip_batch_insert.php
+
+see speed test `example/exam08_http_gzip_batch_insert.php`
+
+### Max execution time
+
+```php
+$db->settings()->max_execution_time(200); // second
+```
+
+
+
+
+### Connection without port 
+
+```php 
+$config['host']='blabla.com';
+$config['port']=0;
+// getUri() === 'http://blabla.com'
+
+
+$config['host']='blabla.com/urls';
+$config['port']=8765;
+// getUri() === 'http://blabla.com/urls'
+
+$config['host']='blabla.com:2224';
+$config['port']=1234;
+// getUri() === 'http://blabla.com:2224'
+
+
+
+
+
+``` 
+
 
 ### tablesSize & databaseSize
 
@@ -270,16 +323,46 @@ print_r($db->dropPartition('summing_partions_views', '201512'));
 
 ```php
 $file_name_data1 = '/tmp/temp_csv.txt'; // two column file [int,string]
-$whereIn = new \ClickHouseDB\WhereInFile();
-$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\WhereInFile::FORMAT_CSV);
+$whereIn = new \ClickHouseDB\Query\WhereInFile();
+$whereIn->attachFile($file_name_data1, 'namex', ['site_id' => 'Int32', 'site_hash' => 'String'], \ClickHouseDB\Query\WhereInFile::FORMAT_CSV);
 $result = $db->select($sql, [], $whereIn);
 
 // see example/exam7_where_in.php
 ```
 
-### Simple sql conditions & template
 
-conditions is deprecated, if need use:
+### Bindings
+
+Bindings:
+
+```php
+$date1 = new DateTime("now"); // DateTimeInterface
+
+$Bindings = [
+  'select_date' => ['2000-10-10', '2000-10-11', '2000-10-12'],
+  'datetime'=>$date,
+  'limit' => 5,
+  'from_table' => 'table'
+];
+
+$statement = $db->selectAsync("SELECT FROM {table} WHERE datetime=:datetime limit {limit}", $Bindings);
+
+// Double bind in {KEY}
+$keys=[
+            'A'=>'{B}',
+            'B'=>':C',
+            'C'=>123,
+            'Z'=>[':C',':B',':C']
+        ];
+$this->client->selectAsync('{A} :Z', $keys)->sql() // ==   "123 ':C',':B',':C' FORMAT JSON",
+
+
+```
+
+
+#### Simple sql conditions & template
+
+Conditions is deprecated, if need use:
 `$db->enableQueryConditions();`
 
 Example with QueryConditions:
@@ -522,6 +605,18 @@ $db->settings()->https();
 ```
 
 
+
+### getServer System.Settings & Uptime
+
+```php
+print_r($db->getServerUptime());
+
+print_r($db->getServerSystemSettings());
+
+print_r($db->getServerSystemSettings('merge_tree_min_rows_for_concurrent_read'));
+
+```
+
 ### ReadOnly ClickHouse user
 
 ```php
@@ -547,6 +642,86 @@ $db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHous
 $db->selectAsync('select * from summing_url_views limit 4',[],null,new ClickHouseDB\WriteToFile('/tmp/_4_select.tab',true,'TabSeparated'));
 $statement=$db->selectAsync('select * from summing_url_views limit 54',[],null,new ClickHouseDB\WriteToFile('/tmp/_5_select.csv',true,ClickHouseDB\WriteToFile::FORMAT_CSV));
 ```
+
+## Stream
+
+streamWrite() : Closure stream write
+
+```php
+
+$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+
+$client->streamWrite(
+        $streamWrite,                                   // StreamWrite Class
+        'INSERT INTO {table_name} FORMAT JSONEachRow',  // SQL Query
+        ['table_name'=>'_phpCh_SteamTest']              // Binds
+    );
+```
+
+
+### streamWrite & custom Closure & Deflate
+
+```php
+
+$stream = fopen('php://memory','r+');
+
+for($f=0;$f<23;$f++) {  // Make json data in stream
+        fwrite($stream, json_encode(['a'=>$f]).PHP_EOL );
+}
+
+rewind($stream); // rewind stream
+
+
+$streamWrite=new ClickHouseDB\Transport\StreamWrite($stream);
+$streamWrite->applyGzip();   // Add Gzip zlib.deflate in stream
+
+$callable = function ($ch, $fd, $length) use ($stream) {
+    return ($line = fread($stream, $length)) ? $line : '';
+};
+// Apply closure
+$streamWrite->closure($callable);
+// Run Query
+$r=$client->streamWrite($streamWrite,'INSERT INTO {table_name} FORMAT JSONEachRow', ['table_name'=>'_phpCh_SteamTest']);
+// Result
+print_r($r->info_upload());
+
+```
+
+
+### streamRead
+
+streamRead is like `WriteToFile`
+
+
+```php
+$stream = fopen('php://memory','r+');
+$streamRead=new ClickHouseDB\Transport\StreamRead($stream);
+
+$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 4 FORMAT JSONEachRow', ['table_name'=>'system.numbers']);
+rewind($stream);
+while (($buffer = fgets($stream, 4096)) !== false) {
+    echo ">>> ".$buffer;
+}
+fclose($stream); // Need Close Stream
+
+
+
+// Send to closure
+
+$stream = fopen('php://memory','r+');
+$streamRead=new ClickHouseDB\Transport\StreamRead($stream);
+$callable = function ($ch, $string) use ($stream) {
+    // some magic for _BLOCK_ data
+    fwrite($stream, str_ireplace('"sin"','"max"',$string));
+    return strlen($string);
+};
+
+$streamRead->closure($callable);
+
+$r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos FROM {table_name} LIMIT 44 FORMAT JSONEachRow', ['table_name'=>'system.numbers']);
+
+```
+
 
 ### insert Assoc Bulk
 
@@ -592,12 +767,12 @@ $st=$db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
 $config = [
     'host' => 'cluster.clickhouse.dns.com', // any node name in cluster
     'port' => '8123',
-    'username' => 'default', // all node have one login+password 
+    'username' => 'default', // all node have one login+password
     'password' => ''
 ];
 
 
-// client connect first node, by DNS, read list IP, then connect to ALL nodes for check is !OK!   
+// client connect first node, by DNS, read list IP, then connect to ALL nodes for check is !OK!
 
 
 $cl = new ClickHouseDB\Cluster($config);
@@ -661,23 +836,87 @@ var_dump($cl->getError());
 
 ```
 
+### Return Extremes
+
+```php
+$db->enableExtremes(true);
+```
+
+### Enable Log Query
+
+You can log all query in ClickHouse
+
+```php
+$db->enableLogQueries();
+$db->select('SELECT 1 as p');
+print_r($db->select('SELECT * FROM system.query_log')->rows());
+```
+
+### isExists
+
+```php
+$db->isExists($database,$table);
+```
+
+
 ### Debug & Verbose
 
 ```php
-$cl->verbose();
+$db->verbose();
 ```
 
-### PHPUnit Test
 
-In phpunit.xml change constants:
+
+### Dev & PHPUnit Test
+
+
+* Don't forget to run composer install. It should setup PSR-4 autoloading.
+* Then you can simply run vendor/bin/phpunit and it should output the following
+
+
+```bash
+cp phpunit.xml.dist phpunit.xml
+mcedit phpunit.xml
+```
+
+Edit in phpunit.xml constants:
 ```xml
 <php>
-    <const name="phpunit_clickhouse_host" value="192.168.1.20" />
-    <const name="phpunit_clickhouse_port" value="8123" />
-    <const name="phpunit_clickhouse_user" value="default" />
-    <const name="phpunit_clickhouse_pass" value="" />
-    <const name="phpunit_clickhouse_tmp_path" value="/tmp/" />
+    <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
+    <env name="CLICKHOUSE_PORT" value="8123" />
+    <env name="CLICKHOUSE_USER" value="default" />
+    <env name="CLICKHOUSE_DATABASE" value="phpChTestDefault" />
+    <env name="CLICKHOUSE_PASSWORD" value="" />
+    <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
 </php>
+```
+
+Run test
+```bash
+
+./vendor/bin/phpunit
+
+./vendor/bin/phpunit --group ClientTest
+
+
+```
+
+
+Run PHPStan
+
+```
+# Main
+./vendor/bin/phpstan analyse src tests --level 7
+# SRC only
+./vendor/bin/phpstan analyse src --level 7
+
+
+
+# Examples
+./vendor/bin/phpstan analyse example -a ./example/Helper.php
+
+
+
 ```
 
 License
@@ -687,111 +926,5 @@ MIT
 
 ChangeLog
 ---------
-### 2017-12-28
 
-* Fix `FORMAT JSON` if set FORMAT in sql
-* GetRaw() - result raw response if not json ``SELECT number as format_id FROM system.numbers LIMIT 3 FORMAT CSVWithNames``
-
-### 2017-12-22
-
-* progressFunction()
-* Escape values
-
-### 2017-12-12
-
-* Not set `FORMAT JSON` if set FORMAT in sql
-
-### 2017-11-22
-
-- Add insertAssocBulk
-
-### 2017-08-25
-
-- Fix tablesSize(), use database filter
-- Fix partitions(), use database filter
-
-### 2017-08-14
-
-- Add session_id support
-
-### 2017-02-20
-
-- Build composer 0.17.02
-
-### 2016-12-09
-
-- for ReadOnly users need set : `client->setReadOnlyUser(true);` or `$confi['readonly']` , see exam19_readonly_user.php
-
-###  2016-11-25
-
-- `client->truncateTable('tableName')`
-- `cluster->getMasterNodeForTable('dbName.tableName') // node have is_leader=1`
-- `cluster->getSizeTable('dbName.tableName')`
-- `cluster->getTables()`
-- `cluster->truncateTable('dbName.tableName')`
-- See example cluster_06_truncate_table.php
-
-###  2016-11-24
-
-- add `cluster->setSoftCheck()`
-- insertBatchFiles() support `$file_names` - string or array , `$columns_array` - array or null
-- add insertBatchStream() return `\Curler\Request` no exec
-- writeStreamData() return `\Curler\Request`
-- fix httpCompression(false)
-- getHeaders() as array from `\Curler\Request`
-- `setReadFunction( function() )` in `Request`
-- Add class StreamInsert, direct read from stream_resource to clickhouse:stream
-
-###  2016-11-04
-
-- add `$db->insertBatchTSVFiles()`,
-- add format param in `$db->insertBatchFiles(,,,format)`,
-- deprecated class CSV
-- Add static class `\ClickHouseDB\FormatLine:CSV(),\ClickHouseDB\FormatLine:TSV(),\ClickHouseDB\FormatLine:Insert()`
-- CSV RFC4180 - `\ClickHouseDB\FormatLine::CSV(Array))."\n"`
-- Update exam12_array.php + unit tests
-
-###  2016-11-03
-
-- `$db->enableLogQueries(true)` - write to system.query_log
-- `$db->enableExtremes(true);` - default extremes now, disabled
-- `$db->isExists($database,$table)`
-
-###  2016-10-27
-
-- add Connect timeout , $db->setConnectTimeOut(5);
-- change default ConnectTimeOut = 5 seconds. before 1 sec.
-- change DNS_CACHE default to 120 seconds
-
-###  2016-10-25 Release 0.16.10
-
-- fix timeout error and add test
-
-###  2016-10-23
-
-- client->setTimeout($seconds)
-- cluster->clientLike($cluster,$ip_addr_like)
-- Delete all migration code from driver, move to https://github.com/smi2/phpMigrationsClickhouse
-
-###  2016-09-20 Release 0.16.09
-
-- Version/Release names: [ zero dot year dot month]
-- Support cluster: new class Cluster and ClusterQuery
-- output_format_write_statistics, for clickhouse version > v1.1.54019-stable
-- WriteToFile in select,selectAsync
-- Degeneration for Bindings & Conditions
-- $db->select(new Query("Select..."));
-- remove findActiveHostAndCheckCluster , clusterHosts , checkServerReplicas
-- Add cleanQueryDegeneration(),addQueryDegeneration()
-- Need $db->enableQueryConditions(); for use Conditions ; default Conditions - disabled;
-- float in CurlerRequest->timeOut(2.5) = 2500 ms
-- tablesSize() - add `sizebytes`
-
-
-### 2016-08-11 Release 0.2.0
-
-- exception on error write
-
-### 2016-08-06 Release 0.1.0
-
-- init
+See [changeLog.md](CHANGELOG.md)

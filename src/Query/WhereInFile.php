@@ -1,34 +1,9 @@
 <?php
 
-namespace ClickHouseDB;
+namespace ClickHouseDB\Query;
 
-/*
-// $structure - структура таблицы, в форме UserID UInt64, URL String. Определяет имена и типы столбцов.
-// $format - формат данных в файле. Если не указано - используется TabSeparated.
-// Имя таблицы берётся из имени файла.
-// {name}_format, {name}_types, {name}_structure, где name - имя таблицы,которой соответствуют эти параметры.
+use ClickHouseDB\Exception\QueryException;
 
-Не перечисляйте слишком большое количество значений (миллионы) явно.
-Если множество большое - лучше загрузить его во временную таблицу (например, смотрите раздел "Внешние данные для обработки запроса"), и затем воспользоваться подзапросом.
-
-Внешние данные для обработки запроса
-
-При использовании HTTP интерфейса, внешние данные передаются в формате multipart/form-data. Каждая таблица передаётся отдельным файлом. Имя таблицы берётся из имени файла. В query_string передаются параметры name_format, name_types, name_structure, где name - имя таблицы, которой соответствуют эти параметры. Смысл параметров такой же, как при использовании клиента командной строки.
-
-Пример:
-
-cat /etc/passwd | sed 's/:/\t/g' > passwd.tsv
-
-curl -F 'passwd=@passwd.tsv;' 'http://localhost:8123/
-
-?query=SELECT+shell,+count()+AS+c+FROM+passwd+GROUP+BY+shell+ORDER+BY+c+DESC
-&passwd_structure=login+String,+unused+String,+uid+UInt16,+gid+UInt16,+comment+String,+home+String,+shell+String'
-*/
-
-/**
- * Class WhereInFile
- * @package ClickHouseDB
- */
 class WhereInFile
 {
     /**
@@ -51,9 +26,9 @@ class WhereInFile
 
 
     /**
-     * @param $file_name
-     * @param $table_name
-     * @param $structure
+     * @param string $file_name
+     * @param string $table_name
+     * @param string $structure
      * @param string $format
      */
     public function attachFile($file_name, $table_name, $structure, $format = 'CSV')
@@ -91,7 +66,7 @@ class WhereInFile
     }
 
     /**
-     * @param $table
+     * @param string $table
      * @return string
      */
     public function fetchStructure($table)

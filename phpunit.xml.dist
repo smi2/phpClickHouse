@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         beStrictAboutChangesToGlobalState="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         colors="true"
+         verbose="true"
+>
+    <testsuite name="Diff">
+        <directory>tests</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">src</directory>
+        </whitelist>
+    </filter>
+
+    <php>
+        <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
+        <env name="CLICKHOUSE_PORT" value="8123" />
+        <env name="CLICKHOUSE_USER" value="default" />
+        <env name="CLICKHOUSE_PASSWORD" value="" />
+        <env name="CLICKHOUSE_DATABASE" value="php_clickhouse" />
+        <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
+    </php>
+
+    <logging>
+        <log
+                showOnlySummary="true"
+                showUncoveredFiles="true"
+                target="php://stdout"
+                type="coverage-text"
+        />
+        <log type="coverage-clover" target="temp/clover.xml"/>
+    </logging>
+</phpunit>
