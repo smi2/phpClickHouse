@@ -6,6 +6,7 @@ namespace ClickHouseDB;
 
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Degeneration;
+use ClickHouseDB\Query\Expression;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Query\Degeneration\Conditions;
 use ClickHouseDB\Query\WhereInFile;
@@ -898,6 +899,6 @@ CLICKHOUSE
      */
     public function expr($expression)
     {
-        return new \ClickHouseDB\Query\Expression($expression);
+        return new Expression($expression);
     }
 }
