@@ -183,14 +183,10 @@ class Statement
         return ($this->response()->http_code() !== 200 || $this->response()->error_no());
     }
 
-    /**
-     * @return bool
-     * @throws Exception\TransportException
-     */
-    private function check()
+    private function check() : bool
     {
         if (!$this->_request->isResponseExists()) {
-            throw new QueryException('Not have response');
+            throw QueryException::noResponse();
         }
 
         if ($this->isError()) {

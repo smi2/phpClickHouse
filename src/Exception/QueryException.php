@@ -12,4 +12,9 @@ class QueryException extends LogicException implements ClickHouseException
     {
         return new self('Inserting empty values array is not supported in ClickHouse');
     }
+
+    public static function noResponse() : self
+    {
+        return new self('No response returned');
+    }
 }
