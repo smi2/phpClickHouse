@@ -2,24 +2,21 @@
 
 namespace ClickHouseDB\Query;
 
-/**
- * Query expression
- *
- * @package ClickHouseDB
- */
 class Expression
 {
     /**
      * @var string
      */
-    protected $expression = '';
+    private $expression;
 
     /**
      * Expression constructor.
+     * Pass expression "as is" it should be sent and executed at server.
+     * P.ex.: `new Expression("UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926')");`
      *
-     * @param $expression
+     * @param string $expression
      */
-    public function __construct($expression)
+    public function __construct(string $expression)
     {
         $this->expression = $expression;
     }
