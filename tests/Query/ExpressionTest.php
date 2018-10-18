@@ -26,7 +26,7 @@ final class ExpressionTest extends TestCase
         $expressionString = "UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926')";
         $preparedValue = FormatLine::Insert([new Expression($expressionString)]);
 
-        $this->assertEquals(
+        self::assertEquals(
             $expressionString,
             $preparedValue
         );
