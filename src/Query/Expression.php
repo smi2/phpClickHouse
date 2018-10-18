@@ -8,9 +8,7 @@ namespace ClickHouseDB\Query;
  */
 class Expression
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $expression;
 
     public function __construct(string $expression)
