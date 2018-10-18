@@ -8,7 +8,7 @@ use ClickHouseDB\Query\Expression;
 use ClickHouseDB\Quote\FormatLine;
 use PHPUnit\Framework\TestCase;
 
-class ExpressionTest extends TestCase
+final class ExpressionTest extends TestCase
 {
     public function testToString() : void
     {
