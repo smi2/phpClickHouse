@@ -8,14 +8,14 @@ use ClickHouseDB\Query\Expression;
 use ClickHouseDB\Quote\FormatLine;
 use PHPUnit\Framework\TestCase;
 
-class ExpressionTest extends TestCase
+final class ExpressionTest extends TestCase
 {
     public function testToString() : void
     {
         $expressionString = "UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926')";
         $expr = new Expression($expressionString);
 
-        $this->assertEquals(
+        self::assertEquals(
             $expressionString,
             (string) $expr
         );
@@ -26,7 +26,7 @@ class ExpressionTest extends TestCase
         $expressionString = "UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926')";
         $preparedValue = FormatLine::Insert([new Expression($expressionString)]);
 
-        $this->assertEquals(
+        self::assertEquals(
             $expressionString,
             $preparedValue
         );
