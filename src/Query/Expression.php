@@ -17,7 +17,7 @@ class Expression
         $this->expression = $expression;
     }
 
-    public function __toString(): string
+    public function __toString() : string
     {
         return $this->expression;
     }
