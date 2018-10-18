@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class ExpressionTest extends TestCase
 {
-    public function testToString()
+    public function testToString() : void
     {
         $expressionString = "UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926')";
         $expr = new Expression($expressionString);
@@ -21,7 +21,7 @@ class ExpressionTest extends TestCase
         );
     }
 
-    public function testExpressionValueForInsert()
+    public function testExpressionValueForInsert() : void
     {
         $expressionString = "UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926')";
         $preparedValue = FormatLine::Insert([new Expression($expressionString)]);
