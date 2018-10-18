@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 namespace ClickHouseDB\Query;
 
 /**
@@ -16,7 +17,7 @@ class Expression
         $this->expression = $expression;
     }
 
-    public function __toString(): string
+    public function __toString() : string
     {
         return $this->expression;
     }

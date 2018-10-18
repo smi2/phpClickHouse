@@ -6,7 +6,6 @@ namespace ClickHouseDB;
 
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Degeneration;
-use ClickHouseDB\Query\Expression;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Query\Degeneration\Conditions;
 use ClickHouseDB\Query\WhereInFile;
