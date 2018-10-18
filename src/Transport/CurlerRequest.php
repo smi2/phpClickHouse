@@ -2,6 +2,9 @@
 
 namespace ClickHouseDB\Transport;
 
+use const CURLOPT_HTTPGET;
+use const CURLOPT_POST;
+
 class CurlerRequest
 {
     /**
@@ -44,14 +47,10 @@ class CurlerRequest
      */
     private $handle;
 
-    /**
-     * @var CurlerResponse
-     */
-    private $resp = null;
+    /** @var CurlerResponse */
+    private $response;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $_persistent = false;
 
     /**
@@ -616,24 +615,21 @@ class CurlerRequest
      */
     public function response()
     {
-        if (!$this->resp) {
+        if (! $this->response) {
             throw new \ClickHouseDB\Exception\TransportException('Can`t fetch response - is empty');
         }
 
-        return $this->resp;
+        return $this->response;
     }
 
-    /**
-     * @return bool
-     */
-    public function isResponseExists()
+    public function isResponseExists() : bool
     {
-        return ($this->resp ? true : false);
+        return $this->response !== null;
     }
 
-    public function setResponse(CurlerResponse $response)
+    public function setResponse(CurlerResponse $response) : void
     {
-        $this->resp = $response;
+        $this->response = $response;
     }
 
     /**
@@ -678,12 +674,12 @@ class CurlerRequest
 
 
         if (strtoupper($method) == 'GET') {
-            $curl_opt[CURLOPT_HTTPGET] = TRUE;
+            $curl_opt[CURLOPT_HTTPGET]       = true;
             $curl_opt[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
             $curl_opt[CURLOPT_POSTFIELDS] = false;
         } else {
             if (strtoupper($method) === 'POST') {
-                $curl_opt[CURLOPT_POST] = TRUE;
+                $curl_opt[CURLOPT_POST] = true;
             }
 
             $curl_opt[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
