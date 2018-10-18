@@ -889,16 +889,4 @@ CLICKHOUSE
 
         return $result;
     }
-
-    /**
-     * Build sql expression to be used "as is" in a query
-     *
-     * @param string $expression
-     *
-     * @return \ClickHouseDB\Query\Expression
-     */
-    public function expr($expression)
-    {
-        return new Expression($expression);
-    }
 }
