@@ -149,14 +149,10 @@ class Client
     /**
      * Set connection host
      *
-     * @param string|string[] $host
+     * @param string $host
      */
     public function setHost($host)
     {
-        if (is_array($host)) {
-            $host = array_rand(array_flip($host));
-        }
-
         $this->connectHost = $host;
         $this->transport()->setHost($host);
     }
