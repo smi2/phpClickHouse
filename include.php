@@ -3,6 +3,7 @@
 include_once __DIR__ . '/src/Quote/StrictQuoteLine.php';
 include_once __DIR__ . '/src/Quote/FormatLine.php';
 include_once __DIR__ . '/src/Quote/CSV.php';
+include_once __DIR__ . '/src/Quote/ValueFormatter.php';
 // Exception
 include_once __DIR__ . '/src/Exception/ClickHouseException.php';
 include_once __DIR__ . '/src/Exception/QueryException.php';

@@ -144,21 +144,33 @@ class CurlerRolling
     public function execLoopWait()
     {
         $c = 0;
+        $timeStart=time();
+        $uSleep=1000; // Timer: check response from server, and add new Task/Que to loop
+        $PendingAllConnections=$this->countPending();
+
+        echo "$PendingAllConnections\n";
+        // Max loop check
+
         $count=0;
         // add all tasks
         do {
             $this->exec();
+            $timeWork=time()-$timeStart;
+            //
+            $ActiveNowConnections = $this->countActive();
+            $PendingNowConnections = $this->countPending();
 
-            $loop = $this->countActive();
-            $pend = $this->countPending();
+            echo "$ActiveNowConnections\t[ $PendingNowConnections // $PendingAllConnections ] \t\t\t[ $c ]\t$timeWork\n";
 
-            $count=$loop+$pend;
+            $count=$ActiveNowConnections+$PendingNowConnections;
             $c++;
 
             if ($c > 20000) {
                 break;
             }
-            usleep(500);
+
+            usleep($uSleep);
+            // usleep(2000000) == 2 seconds
         } while ($count);
 
         return true;

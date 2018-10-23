@@ -372,6 +372,11 @@ class Client
         return $this->transport()->executeAsync();
     }
 
+    public function maxTimeExecutionAllAsync()
+    {
+
+    }
+
     /**
      * set progressFunction
      */

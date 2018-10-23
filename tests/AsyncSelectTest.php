@@ -20,17 +20,17 @@ final class AsyncSelectTest extends TestCase
         $list=[];
         for ($f=0;$f<$counter;$f++)
         {
-            $list[$f]=$this->client->selectAsync('SELECT {num} as num',['num'=>$f]);
+            $list[$f]=$this->client->selectAsync('SELECT {num} as num,sleep(0.1),SHA256(\'123{num}\') as s',['num'=>$f]);
         }
         $this->client->executeAsync();
         for ($f=0;$f<$counter;$f++)
         {
-            $ResultInt=0;
+            $ResultInt=-1;
             try {
                 $ResultInt=$list[$f]->fetchOne('num');
             } catch (\Exception $E)
             {
-
+                //
             }
             $this->assertEquals($f, $ResultInt);
         }
