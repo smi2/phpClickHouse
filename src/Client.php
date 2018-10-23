@@ -463,6 +463,8 @@ class Client
     /**
      * @param mixed[][] $values
      * @param string[]  $columns
+     * @return Statement
+     * @throws Exception\TransportException
      */
     public function insert(string $table, array $values, array $columns = []) : Statement
     {
