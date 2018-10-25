@@ -25,6 +25,6 @@ class UUIDStringToNum implements Expression
 
     public function getValue() : string
     {
-        return "UUIDStringToNum('{$this->uuid}')";
+        return \sprintf("UUIDStringToNum('%s')", $this->uuid);
     }
 }
