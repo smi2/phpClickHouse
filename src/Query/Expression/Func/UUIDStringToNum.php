@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ClickHouseDB\Query\Expression;
+namespace ClickHouseDB\Query\Expression\Func;
 
 use function sprintf;
 
