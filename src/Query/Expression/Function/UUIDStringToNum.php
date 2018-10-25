@@ -18,12 +18,12 @@ class UUIDStringToNum implements Expression
         $this->$uuid = $uuid;
     }
 
-    public function needsEncoding(): bool
+    public function needsEncoding() : bool
     {
         return false;
     }
 
-    public function getValue(): string
+    public function getValue() : string
     {
         return "UUIDStringToNum('{$this->uuid}')";
     }
