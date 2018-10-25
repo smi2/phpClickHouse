@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Query\Expression;
 
+use function sprintf;
+
 /**
  * Pass expression "as is" to be sent and executed at server.
  * P.ex.: `new Expression\Function\UUIDStringToNum('0f372656-6a5b-4727-a4c4-f6357775d926');`
@@ -25,6 +27,6 @@ class UUIDStringToNum implements Expression
 
     public function getValue() : string
     {
-        return \sprintf("UUIDStringToNum('%s')", $this->uuid);
+        return sprintf("UUIDStringToNum('%s')", $this->uuid);
     }
 }
