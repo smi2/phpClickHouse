@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ClickHouseDB\Tests\Query;
+namespace ClickHouseDB\Tests\Query\Exression;
 
 use ClickHouseDB\Query\Expression;
 use ClickHouseDB\Quote\FormatLine;
