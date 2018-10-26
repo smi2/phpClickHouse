@@ -18,7 +18,7 @@ class UUIDStringToNum implements Expression
 
     public function __construct(string $uuid)
     {
-        $this->$uuid = $uuid;
+        $this->uuid = $uuid;
     }
 
     public function needsEncoding() : bool
