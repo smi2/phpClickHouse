@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Query\Expression\Func;
 
+use ClickHouseDB\Query\Expression\Expression;
 use function sprintf;
 
 /**
