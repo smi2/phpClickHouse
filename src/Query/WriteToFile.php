@@ -12,8 +12,9 @@ class WriteToFile
     const FORMAT_TabSeparated          = 'TabSeparated';
     const FORMAT_TabSeparatedWithNames = 'TabSeparatedWithNames';
     const FORMAT_CSV                   = 'CSV';
+    const FORMAT_CSVWithNames          = 'CSVWithNames';
 
-    private $support_format = ['TabSeparated', 'TabSeparatedWithNames', 'CSV'];
+    private $support_format = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames'];
     /**
      * @var string
      */
