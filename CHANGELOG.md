@@ -1,5 +1,16 @@
 PHP ClickHouse wrapper - Changelog
 ======================
+ToDo:
+* maxTimeExecutionAllAsync
+* fix: add CSVWithNames to supported formats #107
+* Upgraded Expression proposal #106 -> UUIDStringToNum
+
+
+
+Done: 
+* readonly=2
+
+
 ### 2018-09-25 [Release 1.3.1]
 * Pull request #94 from simPod: Uint64 values
 * Pull request #95 from simPod: Bump to php 7.1

@@ -386,7 +386,7 @@ class Http
      */
     public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
     {
-        $urlParams = ['readonly' => 1];
+        $urlParams = ['readonly' => 2];
         $query_as_string = false;
         // ---------------------------------------------------------------------------------
         if ($whereInFile instanceof WhereInFile && $whereInFile->size()) {
