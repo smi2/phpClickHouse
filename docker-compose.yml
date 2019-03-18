@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  php:
+    build:
+      context: './docker/php/'
+      dockerfile: Dockerfile
+    container_name: phpClickHouse
+    volumes:
+      - ./docker/php/php-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro
+      - ./docker/run.tests.sh:/var/www/phpClickHouse/run.tests.sh:ro
+      - ./:/var/www/phpClickHouse:cached
+    environment:
+      - APP_ENV=dev
+      - TZ=Europe/Moscow
+      - CLICKHOUSE_HOST=chserver
+    working_dir: /var/www/phpClickHouse
+  chserver:
+    image: yandex/clickhouse-server
+    ports:
+      - 8123:8123
