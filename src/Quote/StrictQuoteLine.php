@@ -2,6 +2,7 @@
 namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\Expression\Expression;
 use ClickHouseDB\Type\NumericType;
 use function array_map;
 use function is_array;
@@ -73,6 +74,9 @@ class StrictQuoteLine
             $encode = true;
             if ($value instanceof NumericType) {
                 $encode = false;
+            }
+            if ($value instanceof Expression) {
+                $encode = $value->needsEncoding();
             }
 
             if (is_array($value)) {

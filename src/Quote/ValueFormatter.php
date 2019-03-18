@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\UnsupportedValueType;
-use ClickHouseDB\Query\Expression;
+use ClickHouseDB\Query\Expression\Expression;
 use ClickHouseDB\Type\Type;
 use DateTimeInterface;
 use function addslashes;
@@ -38,7 +38,7 @@ class ValueFormatter
         }
 
         if ($value instanceof Expression) {
-            return $value;
+            return $value->getValue();
         }
 
         if (is_object($value) && is_callable([$value, '__toString'])) {
