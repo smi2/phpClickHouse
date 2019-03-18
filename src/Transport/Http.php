@@ -195,7 +195,7 @@ class Http
         }
 
         $new->timeOut($this->settings()->getTimeOut());
-        $new->connectTimeOut($this->_connectTimeOut)->keepAlive(); // one sec
+        $new->connectTimeOut($this->_connectTimeOut);//->keepAlive(); // one sec
         $new->verbose(boolval($this->_verbose));
 
         return $new;
