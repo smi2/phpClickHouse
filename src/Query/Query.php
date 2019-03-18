@@ -22,6 +22,26 @@ class Query
      */
     private $degenerations = [];
 
+    private $supportFormats=[
+        "FORMAT\\s+TSV",
+        "FORMAT\\s+TSVRaw",
+        "FORMAT\\s+TSVWithNames",
+        "FORMAT\\s+TSVWithNamesAndTypes",
+        "FORMAT\\s+Vertical",
+        "FORMAT\\s+JSONCompact",
+        "FORMAT\\s+JSONEachRow",
+        "FORMAT\\s+TSKV",
+        "FORMAT\\s+TabSeparatedWithNames",
+        "FORMAT\\s+TabSeparatedWithNamesAndTypes",
+        "FORMAT\\s+TabSeparatedRaw",
+        "FORMAT\\s+BlockTabSeparated",
+        "FORMAT\\s+CSVWithNames",
+        "FORMAT\\s+CSV",
+        "FORMAT\\s+JSON",
+        "FORMAT\\s+TSVWithNamesAndTypes",
+        "FORMAT\\s+TabSeparated"
+    ];
+
     /**
      * Query constructor.
      * @param string $sql
@@ -52,8 +72,7 @@ class Query
         if (null === $this->format) {
             return false;
         }
-        $supportFormats =
-            "FORMAT\\s+TSV|FORMAT\\s+TSVRaw|FORMAT\\s+TSVWithNames|FORMAT\\s+TSVWithNamesAndTypes|FORMAT\\s+Vertical|FORMAT\\s+JSONCompact|FORMAT\\s+JSONEachRow|FORMAT\\s+TSKV|FORMAT\\s+TabSeparatedWithNames|FORMAT\\s+TabSeparatedWithNamesAndTypes|FORMAT\\s+TabSeparatedRaw|FORMAT\\s+BlockTabSeparated|FORMAT\\s+CSVWithNames|FORMAT\\s+CSV|FORMAT\\s+JSON|FORMAT\\s+TabSeparated";
+        $supportFormats = implode("|",$this->supportFormats);
 
         $matches = [];
         if (preg_match_all('%(' . $supportFormats . ')%ius', $this->sql, $matches)) {
