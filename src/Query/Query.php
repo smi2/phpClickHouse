@@ -23,10 +23,10 @@ class Query
     private $degenerations = [];
 
     private $supportFormats=[
-        "FORMAT\\s+TSV",
         "FORMAT\\s+TSVRaw",
-        "FORMAT\\s+TSVWithNames",
         "FORMAT\\s+TSVWithNamesAndTypes",
+        "FORMAT\\s+TSVWithNames",
+        "FORMAT\\s+TSV",
         "FORMAT\\s+Vertical",
         "FORMAT\\s+JSONCompact",
         "FORMAT\\s+JSONEachRow",
@@ -38,7 +38,6 @@ class Query
         "FORMAT\\s+CSVWithNames",
         "FORMAT\\s+CSV",
         "FORMAT\\s+JSON",
-        "FORMAT\\s+TSVWithNamesAndTypes",
         "FORMAT\\s+TabSeparated"
     ];
 

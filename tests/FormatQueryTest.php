@@ -41,10 +41,17 @@ final class FormatQueryTest extends TestCase
 
 
 
+
         $query="SELECT number as format_id FROM system.numbers LIMIT 1,1 FORMAT CSV";
         $st = $this->client->select($query);
         $this->assertEquals($query, $st->sql());
         $this->assertEquals('CSV', $st->getFormat());
+
+        $query="SELECT number as format_id FROM number(2) LIMIT 1,1 FORMAT TSVWithNamesAndTypes";
+        $st = $this->client->select($query);
+        $this->assertEquals($query, $st->sql());
+        $this->assertEquals('TSVWithNamesAndTypes', $st->getFormat());
+
     }
 
     public function testClientTimeoutSettings()
