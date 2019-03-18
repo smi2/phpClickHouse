@@ -148,7 +148,6 @@ class CurlerRolling
         $uSleep=1000; // Timer: check response from server, and add new Task/Que to loop
         $PendingAllConnections=$this->countPending();
 
-        echo "$PendingAllConnections\n";
         // Max loop check
 
         $count=0;
@@ -159,8 +158,6 @@ class CurlerRolling
             //
             $ActiveNowConnections = $this->countActive();
             $PendingNowConnections = $this->countPending();
-
-            echo "$ActiveNowConnections\t[ $PendingNowConnections // $PendingAllConnections ] \t\t\t[ $c ]\t$timeWork\n";
 
             $count=$ActiveNowConnections+$PendingNowConnections;
             $c++;
