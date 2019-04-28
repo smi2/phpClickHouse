@@ -30,8 +30,13 @@ final class ConditionsTest extends TestCase
 
     private function condTest($sql,$equal)
     {
+        $equal=$equal.' FORMAT JSON';
         $input_params=$this->getInputParams();
+//        echo "-----\n".$this->client->selectAsync($sql, $input_params)->sql()."\n----\n";
+        
         $this->assertEquals($equal,$this->client->selectAsync($sql, $input_params)->sql());
+
+
     }
     /**
      *
@@ -106,10 +111,11 @@ final class ConditionsTest extends TestCase
         $this->restartClickHouseClient();
         $this->client->enableQueryConditions();
         $input_params=$this->getInputParams();
+
+
         $this->assertNotContains(
             'NOT_SHOW',$this->client->selectAsync($select, $input_params)->sql()
         );
-
 
     }
     public function testSqlConditions1()
@@ -117,21 +123,22 @@ final class ConditionsTest extends TestCase
         $this->restartClickHouseClient();
         $this->client->enableQueryConditions();
 
-        $this->condTest('{ifint s_empty}NOT_SHOW{/if}{ifbool int1}NOT_SHOW{else}OK{/if}{ifbool int30}NOT_SHOW{else}OK{/if}','OKOK FORMAT JSON');
-        $this->condTest('{ifbool false}OK{/if}{ifbool true}OK{/if}{ifbool true}OK{else}NOT_SHOW{/if}','OKOK FORMAT JSON');
-        $this->condTest('{ifstring s_empty}NOT_SHOW{else}OK{/if}{ifstring s_null}OK{else}NOT_SHOW{/if}','OKOK FORMAT JSON');
-        $this->condTest('{ifint int1} OK {/if}',' OK FORMAT JSON');
-        $this->condTest('{ifint s_empty}NOT_SHOW{/if}_1_','_1_ FORMAT JSON');
-        $this->condTest('1_{ifint str0} NOT_SHOW {else}OK{/if}_2','1_OK_2 FORMAT JSON');
-        $this->condTest('1_{if zero}OK{/if}_2','1_OK_2 FORMAT JSON');
-        $this->condTest('1_{if empty}OK{/if}_2','1__2 FORMAT JSON');
-        $this->condTest('1_{if s_false}OK{/if}_2','1_OK_2 FORMAT JSON');
-        $this->condTest('1_{if qwert}NOT_SHOW{/if}_2','1__2 FORMAT JSON');
-        $this->condTest('1_{ifset zero} NOT_SHOW {else}OK{/if}{ifset false} NOT_SHOW {/if}{ifset s_false} OK {/if}_2','1_OK OK_2 FORMAT JSON');
-        $this->condTest('1_{ifint zero} NOT_SHOW {/if}{if zero}OK{/if}{ifint s_empty}NOT_SHOW{/if}_2','1_OK_2 FORMAT JSON');
-        $this->condTest('1_{ifint s_null}NOT_SHOW{/if}{ifset null} NOT_SHOW {/if}_2','1__2 FORMAT JSON');
-
-
+        $this->condTest('{ifint s_empty}NOT_SHOW{/if}{ifbool int1}NOT_SHOW{else}OK{/if}{ifbool int30}NOT_SHOW{else}OK{/if}','OKOK');
+        $this->condTest('{ifbool false}OK{/if}{ifbool true}OK{/if}{ifbool true}OK{else}NOT_SHOW{/if}','OKOK');
+        $this->condTest('{ifstring s_empty}NOT_SHOW{else}OK{/if}{ifstring s_null}OK{else}NOT_SHOW{/if}','OKOK');
+        $this->condTest('{ifint int1} OK {/if}',' OK');
+        $this->condTest('{ifint s_empty}NOT_SHOW{/if}_1_','_1_');
+        $this->condTest('1_{ifint str0} NOT_SHOW {else}OK{/if}_2','1_OK_2');
+        $this->condTest('1_{if zero}OK{/if}_2','1_OK_2');
+        $this->condTest('1_{if empty}OK{/if}_2','1__2');
+        $this->condTest('1_{if s_false}OK{/if}_2','1_OK_2');
+        $this->condTest('1_{if qwert}NOT_SHOW{/if}_2','1__2');
+        $this->condTest('1_{ifset zero} NOT_SHOW {else}OK{/if}{ifset false} NOT_SHOW {/if}{ifset s_false} OK {/if}_2','1_OK OK_2');
+        $this->condTest('1_{ifint zero} NOT_SHOW {/if}{if zero}OK{/if}{ifint s_empty}NOT_SHOW{/if}_2','1_OK_2');
+        $this->condTest('1_{ifint s_null}NOT_SHOW{/if}{ifset null} NOT_SHOW {/if}_2','1__2');
+        $this->condTest("{ifint lastdays}\n\n\nevent_date>=today()-{lastdays}-{lastdays}-{lastdays}\n\n\n{else}\n\n\nevent_date>=today()\n\n\n{/if}", "\n\n\nevent_date>=today()-3-3-3\n\n\n");
+        $this->condTest("1_{ifint lastdays}\n2_{lastdays}_\t{int1}_{str0}_{str1}\n_6{else}\n\n{/if}", "1_\n2_3_\t1_0_1\n_6");
+        $this->condTest("1_{ifint qwer}\n\n\n\n_6{else}\n{int1}{str0}{str1}\n{/if}\n_77", "1_\n101\n_77");
 
 
     }

@@ -28,7 +28,7 @@ class Conditions implements Degeneration
         $content_false = '';
         $condition = '';
         $flag_else = '';
-
+//print_r($matches);
         if (sizeof($matches) == 4) {
             list($condition, $preset, $variable, $content_true) = $matches;
         } elseif (sizeof($matches) == 6) {
@@ -75,13 +75,17 @@ class Conditions implements Degeneration
         $markers = $this->bindings;
 
         // ------ if/else conditions & if[set|int]/else conditions -----
-        $sql = preg_replace_callback('#\{if(.{0,}?)\s([^\}]+?)}([^\{]+?)(\{else\}([^\{]+?)?)?\s*\{\/if}#sui', function ($matches) use ($markers) {
+        $sql = preg_replace_callback('#\{if(.{0,}?)\s+([^\}]+?)\}(.+?)(\{else\}([^\{]+?)?)?\s*\{\/if}#sui', function ($matches) use ($markers) {
             return self::__ifsets($matches, $markers);
         }
             , $sql);
 
         return $sql;
 
+        /*
+         * $ifint var ELSE  {ENDIF}
+         *
+         */
 
         // stackoverflow
         // if(whatever) {  } else { adsffdsa } else if() { }

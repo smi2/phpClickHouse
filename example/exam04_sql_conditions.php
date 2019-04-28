@@ -16,6 +16,22 @@ $input_params = [
 
 $db->enableQueryConditions();
 
+$select='SELECT  {ifint lastdays}
+    
+    event_date>=today()-{lastdays}
+    
+    {else}
+    
+    event_date=today()
+    
+    {/if}';
+
+
+$statement = $db->selectAsync($select, $input_params);
+echo $statement->sql();
+echo "\n";
+
+
 
 $select = '
 SELECT * FROM {from_table}
@@ -105,7 +121,7 @@ SHOW
 {ifint lastdays}
 
 
-    event_date>=today()-{lastdays}
+    event_date>=today()-{lastdays}-{lastdays}-{lastdays}
 
 
 {else}
@@ -117,12 +133,12 @@ SHOW
 {/if}
 ";
 
-
-$select='{ifint s_empty}NOT_SHOW{/if}
-1: {ifbool int1}NOT_SHOW{else}OK{/if}
-2: {ifbool int30}NOT_SHOW{else}OK{/if}
-
-';
+//
+//$select='{ifint s_empty}NOT_SHOW{/if}
+//1: {ifbool int1}NOT_SHOW{else}OK{/if}
+//2: {ifbool int30}NOT_SHOW{else}OK{/if}
+//
+//';
 
 $input_params=[
   'lastdays'=>3,
