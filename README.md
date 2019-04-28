@@ -892,6 +892,11 @@ Edit in phpunit.xml constants:
     <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
 </php>
 ```
+Run docker ClickHouse server  
+```
+cd ./tests
+docker-compose up
+```
 
 Run test
 ```bash
@@ -899,6 +904,8 @@ Run test
 ./vendor/bin/phpunit
 
 ./vendor/bin/phpunit --group ClientTest
+
+./vendor/bin/phpunit --group ConditionsTest
 
 
 ```

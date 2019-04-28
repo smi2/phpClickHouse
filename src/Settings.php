@@ -171,7 +171,7 @@ class Settings
     }
 
     /**
-     * @param int $time
+     * @param int|float $time
      * @return $this
      */
     public function max_execution_time($time)

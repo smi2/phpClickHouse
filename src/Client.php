@@ -31,6 +31,10 @@ use function stripos;
 use function strtotime;
 use function trim;
 
+/**
+ * Class Client
+ * @package ClickHouseDB
+ */
 class Client
 {
     const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
@@ -176,7 +180,7 @@ class Client
     /**
      * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
      */
-    public function setConnectTimeOut(float $connectTimeOut)
+    public function setConnectTimeOut(int $connectTimeOut)
     {
         $this->transport()->setConnectTimeOut($connectTimeOut);
     }
@@ -258,9 +262,10 @@ class Client
     }
 
     /**
-     * @return static
+     * @param string|null $useSessionId
+     * @return $this
      */
-    public function useSession(bool $useSessionId = false)
+    public function useSession(string $useSessionId = null)
     {
         if (! $this->settings()->getSessionId()) {
             if (! $useSessionId) {
@@ -269,7 +274,6 @@ class Client
                 $this->settings()->session_id($useSessionId);
             }
         }
-
         return $this;
     }
 
