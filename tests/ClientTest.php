@@ -149,82 +149,8 @@ class ClientTest extends TestCase
 
 
 
-    /**
-     *
-     */
-    public function testSqlConditions()
-    {
-        $input_params = [
-            'select_date' => ['2000-10-10', '2000-10-11', '2000-10-12'],
-            'limit'       => 5,
-            'from_table'  => 'table_x_y',
-            'idid'        => 0,
-            'false'       => false
-        ];
-
-        $this->assertEquals(
-            'SELECT * FROM table_x_y FORMAT JSON',
-            $this->client->selectAsync('SELECT * FROM {from_table}', $input_params)->sql()
-        );
-
-        $this->assertEquals(
-            'SELECT * FROM table_x_y WHERE event_date IN (\'2000-10-10\',\'2000-10-11\',\'2000-10-12\') FORMAT JSON',
-            $this->client->selectAsync('SELECT * FROM {from_table} WHERE event_date IN (:select_date)', $input_params)->sql()
-        );
-
-        $this->client->enableQueryConditions();
-
-        $this->assertEquals(
-            'SELECT * FROM ZZZ LIMIT 5 FORMAT JSON',
-            $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', $input_params)->sql()
-        );
-
-        $this->assertEquals(
-            'SELECT * FROM ZZZ NOOPE FORMAT JSON',
-            $this->client->selectAsync('SELECT * FROM ZZZ {if nope}LIMIT {limit}{else}NOOPE{/if}', $input_params)->sql()
-        );
-        $this->assertEquals(
-            'SELECT * FROM 0 FORMAT JSON',
-            $this->client->selectAsync('SELECT * FROM :idid', $input_params)->sql()
-        );
 
 
-        $this->assertEquals(
-            'SELECT * FROM  FORMAT JSON',
-            $this->client->selectAsync('SELECT * FROM :false', $input_params)->sql()
-        );
-
-
-
-        $isset=[
-            'FALSE'=>false,
-            'ZERO'=>0,
-            'NULL'=>null
-
-        ];
-
-        $this->assertEquals(
-            '|ZERO||  FORMAT JSON',
-            $this->client->selectAsync('{if FALSE}FALSE{/if}|{if ZERO}ZERO{/if}|{if NULL}NULL{/if}| ' ,$isset)->sql()
-        );
-
-
-
-    }
-
-
-
-    public function testSqlDisableConditions()
-    {
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', [])->sql());
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
-        $this->client->cleanQueryDegeneration();
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
-        $this->restartClickHouseClient();
-        $this->assertEquals('SELECT * FROM ZZZ {if limit}LIMIT 123{/if} FORMAT JSON',  $this->client->selectAsync('SELECT * FROM ZZZ {if limit}LIMIT {limit}{/if}', ['limit'=>123])->sql());
-
-
-    }
 
     public function testInsertNullable()
     {
