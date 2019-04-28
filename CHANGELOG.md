@@ -1,5 +1,15 @@
 PHP ClickHouse wrapper - Changelog
 ======================
+### 2019-04-29 [Release 1.3.4]
+* #118 Fix Error in Conditions & more ConditionsTest
+* Fix phpStan warnings in getConnectTimeOut() & max_execution_time()
+
+
+
+### 2019-04-25 [Release 1.3.3]
+* fix clickhouse release 19.5.2.6 error parsing #117 
+* chore(Travis CI): Enable PHP 7.3 testing #116 
+
 
 ### 2019-03-18 [Release 1.3.2]
 * fix: add CSVWithNames to supported formats #107
