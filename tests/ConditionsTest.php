@@ -13,6 +13,7 @@ final class ConditionsTest extends TestCase
     private function getInputParams()
     {
         return [
+            'topSites'=>30,
             'lastdays'=>3,
             'null'=>null,
             'false'=>false,
@@ -59,39 +60,35 @@ final class ConditionsTest extends TestCase
             1: {ifset null} NOT_SHOW {/if}
             
             
-            INT: 
+            CHECK_INT: 
             0: {ifint zero} NOT_SHOW {/if}
             1: {ifint int1} OK {/if}
             2: {ifint int30} OK {/if}
             3: {ifint int30}OK {else} NOT_SHOW {/if}
             4: {ifint str0} NOT_SHOW {else}OK{/if}
-            5: {ifint str1} OK {else} NOT_SHOW {/if}
-            6: {ifint int30} OK {else} NOT_SHOW {/if}
+            5: {ifint str1} OK_11 {else} NOT_SHOW {/if}
+            6: {ifint int30} OK_22 {else} NOT_SHOW {/if}
             7: {ifint s_empty} NOT_SHOW {else} OK {/if}
-            8: {ifint true} OK {else} NOT_SHOW {/if}
+            8: {ifint true} OK_33 {else} NOT_SHOW {/if}
             
-            STRING:
+            CHECK_STRING:
             0: {ifstring s_empty}NOT_SHOW{else}OK{/if}
             1: {ifstring s_null}OK{else}NOT_SHOW{/if}
-            
+            LAST_LINE_1
             BOOL:
             1: {ifbool int1}NOT_SHOW{else}OK{/if}
-            2: {ifbool int30}NOT_SHOW{else}OK{/if}
-            3: {ifbool zero}NOT_SHOW{else}OK{/if}
+            2: {ifbool int30}NOT_SHOW{else}OK_B11{/if}
+            3: {ifbool zero}NOT_SHOW{else}OK_B22{/if}
             4: {ifbool false}NOT_SHOW{else}OK{/if}
             5: {ifbool true}OK{else}NOT_SHOW{/if}
             5: {ifbool true}OK{/if}
             6: {ifbool false}OK{/if}
-            
-            
-            0: {if s_empty}
-            
+            0: s_empty_check:{if s_empty}
             
             SHOW
             
-            
             {/if}
-            
+            CHECL_IFINT:
             {ifint lastdays}
             
             
@@ -102,20 +99,50 @@ final class ConditionsTest extends TestCase
             
             
                 event_date>=today()
+           
             
-            
+            {/if} LAST_LINE_2
+            {ifint lastdays}
+        event_date>=today()-{lastdays}
+      {else}
+        event_date>=today()
+      {/if}
+            {ifset topSites}
+             AND  site_id in ( {->Sites->Top(topSites)} )
             {/if}
-        ";
+            {ifset topSites}
+             AND  site_id in ( {->Sites->Top(topSites)} )
+            {/if}
+            
 
+             {if topSites}
+                    AND  site_id in ( {->Sites->Top(topSites)} )
+             {/if}
+              
+
+        ";
 
         $this->restartClickHouseClient();
         $this->client->enableQueryConditions();
         $input_params=$this->getInputParams();
 
+        $result=$this->client->selectAsync($select, $input_params)->sql();
 
-        $this->assertNotContains(
-            'NOT_SHOW',$this->client->selectAsync($select, $input_params)->sql()
-        );
+        $this->assertNotContains('NOT_SHOW',$result);
+        $this->assertContains('s_empty_check',$result);
+        $this->assertContains('LAST_LINE_1',$result);
+        $this->assertContains('LAST_LINE_2',$result);
+        $this->assertContains('CHECL_IFINT',$result);
+        $this->assertContains('CHECK_INT',$result);
+        $this->assertContains('CHECK_STRING',$result);
+        $this->assertContains('OK_11',$result);
+        $this->assertContains('OK_22',$result);
+        $this->assertContains('OK_33',$result);
+        $this->assertContains('OK_B11',$result);
+        $this->assertContains('OK_B22',$result);
+        $this->assertContains('=today()-3',$result);
+
+//        echo "\n----\n$result\n----\n";
 
     }
     public function testSqlConditions1()
