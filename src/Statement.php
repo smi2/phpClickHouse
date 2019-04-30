@@ -7,6 +7,7 @@ use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Query;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
+use function is_array;
 
 class Statement
 {
@@ -162,10 +163,10 @@ class Statement
 
             if ($parse) {
                 throw new DatabaseException($parse['message'] . "\nIN:" . $this->sql(), $parse['code']);
-            } else {
-                $code = $this->response()->http_code();
-                $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
             }
+
+            $code    = $this->response()->http_code();
+            $message = 'HttpCode:' . $this->response()->http_code() . ' ; ' . $this->response()->error() . ' ;' . $body;
         } else {
             $code = $error_no;
             $message = $this->response()->error();
@@ -352,17 +353,20 @@ class Statement
     public function statistics($key = false)
     {
         $this->init();
-        if ($key)
-        {
-            if (!is_array($this->statistics)) {
-                return null;
-            }
-            if (!isset($this->statistics[$key])) {
-                return null;
-            }
-            return $this->statistics[$key];
+
+        if (! $key) {
+            return $this->statistics;
         }
-        return $this->statistics;
+
+        if (! is_array($this->statistics)) {
+            return null;
+        }
+
+        if (! isset($this->statistics[$key])) {
+            return null;
+        }
+
+        return $this->statistics[$key];
     }
 
     /**
@@ -399,16 +403,16 @@ class Statement
     {
         $this->init();
 
-        if (isset($this->array_data[0])) {
-            if ($key) {
-                if (isset($this->array_data[0][$key])) {
-                    return $this->array_data[0][$key];
-                } else {
-                    return null;
-                }
-            }
+        if (! isset($this->array_data[0])) {
+            return null;
+        }
 
+        if (! $key) {
             return $this->array_data[0];
+        }
+
+        if (isset($this->array_data[0][$key])) {
+            return $this->array_data[0][$key];
         }
 
         return null;
