@@ -359,17 +359,19 @@ class Statement
     public function statistics($key = false)
     {
         $this->init();
-        if ($key)
-        {
-            if (!is_array($this->statistics)) {
-                return null;
-            }
-            if (!isset($this->statistics[$key])) {
-                return null;
-            }
-            return $this->statistics[$key];
+
+        if (!is_array($this->statistics)) {
+            return null;
         }
-        return $this->statistics;
+
+        if (!$key) return $this->statistics;
+
+        if (!isset($this->statistics[$key])) {
+            return null;
+        }
+
+        return $this->statistics[$key];
+
     }
 
     /**
@@ -410,19 +412,22 @@ class Statement
         $this->init();
 
         $position=$this->iterator;
-        if (isset($this->array_data[$position])) {
-            $this->iterator++;
-            if ($key) {
-                if (isset($this->array_data[$position][$key])) {
-                    return $this->array_data[$position][$key];
-                } else {
-                    return null;
-                }
-            }
-            return $this->array_data[$position];
+
+        if (!isset($this->array_data[$position])) {
+            return null;
         }
 
-        return null;
+        $this->iterator++;
+
+        if (!$key) {
+            return $this->array_data[$position];
+        }
+        if (!isset($this->array_data[$position][$key])) {
+            return null;
+        }
+
+        return $this->array_data[$position][$key];
+
     }
     /**
      * @param string $key
@@ -432,17 +437,19 @@ class Statement
     public function fetchOne($key = null)
     {
         $this->init();
-        if (isset($this->array_data[0])) {
-            if ($key) {
-                if (isset($this->array_data[0][$key])) {
-                    return $this->array_data[0][$key];
-                } else {
-                    return null;
-                }
-            }
+        if (!isset($this->array_data[0])) {
+            return null;
+        }
+
+        if (!$key) {
             return $this->array_data[0];
         }
-        return null;
+
+        if (!isset($this->array_data[0][$key])) {
+            return null;
+        }
+
+        return $this->array_data[0][$key];
     }
 
     /**

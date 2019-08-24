@@ -1008,24 +1008,4 @@ class ClientTest extends TestCase
         $this->assertEquals(count(file($file_name)), $statement->count());
     }
 
-
-    public function testFetchOne()
-    {
-        $result = $this->client->select(
-            'SELECT number FROM system.numbers LIMIT 5'
-        );
-        // fetchOne
-        $this->assertEquals(0,$result->fetchOne('number'));
-        $this->assertEquals(0,$result->fetchOne('number'));
-        $this->assertEquals(0,$result->fetchOne('number'));
-
-        // fetchRow
-        $this->assertEquals(0,$result->fetchRow('number'));
-        $this->assertEquals(1,$result->fetchRow('number'));
-        $this->assertEquals(2,$result->fetchRow('number'));
-        $result->resetIterator();
-        $this->assertEquals(0,$result->fetchRow('number'));
-        $this->assertEquals(1,$result->fetchRow('number'));
-        $this->assertEquals(2,$result->fetchRow('number'));
-    }
 }
