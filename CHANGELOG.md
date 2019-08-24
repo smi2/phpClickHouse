@@ -1,5 +1,16 @@
 PHP ClickHouse wrapper - Changelog
 ======================
+### 2019-04-29 [Release 1.3.6]
+* #122 Add function fetchRow()
+* Use X-ClickHouse-User by headers
+* Add setDirtyCurler() in HTTP
+* Add more tests
+      
+
+
+### 2019-04-29 [Release 1.3.5]
+* Reupload 1.3.4
+
 ### 2019-04-29 [Release 1.3.4]
 * #118 Fix Error in Conditions & more ConditionsTest
 * Fix phpStan warnings in getConnectTimeOut() & max_execution_time()
