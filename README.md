@@ -511,20 +511,20 @@ Class for FormatLine array
 
 ```php
 var_dump(
-    \ClickHouseDB\FormatLine::CSV(
+    ClickHouseDB\Quote\FormatLine::CSV(
         ['HASH1', ["a", "dddd", "xxx"]]
     )
 );
 
 var_dump(
-    \ClickHouseDB\FormatLine::TSV(
+    ClickHouseDB\Quote\FormatLine::TSV(
         ['HASH1', ["a", "dddd", "xxx"]]
     )
 );
 
 // example write to file
 $row=['event_time'=>date('Y-m-d H:i:s'),'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]];
-file_put_contents($fileName,\ClickHouseDB\FormatLine::TSV($row)."\n",FILE_APPEND);
+file_put_contents($fileName,ClickHouseDB\Quote\FormatLine::TSV($row)."\n",FILE_APPEND);
 ```
 
 ### Cluster drop old Partitions
