@@ -1,6 +1,6 @@
 PHP ClickHouse wrapper - Changelog
 ======================
-### 2019-04-29 [Release 1.3.6]
+### 2019-08-24 [Release 1.3.6]
 * #122 Add function fetchRow()
 * Use X-ClickHouse-User by headers
 * Add setDirtyCurler() in HTTP
