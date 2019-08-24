@@ -438,6 +438,12 @@ class CurlerRequest
         return $this;
     }
 
+    public function authByHeaders($username, $password)
+    {
+        $this->headers['X-ClickHouse-User'] = $username;
+        $this->headers['X-ClickHouse-Key'] = $password;
+        return $this;
+    }
     /**
      * @param array|string $data
      * @return $this

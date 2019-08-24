@@ -191,7 +191,7 @@ class Http
     private function newRequest($extendinfo)
     {
         $new = new CurlerRequest();
-        $new->auth($this->_username, $this->_password)
+        $new->authByHeaders($this->_username, $this->_password)
             ->POST()
             ->setRequestExtendedInfo($extendinfo);
 
