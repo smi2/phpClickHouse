@@ -80,6 +80,11 @@ class Statement
      */
     private $statistics = null;
 
+    /**
+     * @var int
+     */
+    public $iterator=0;
+
 
     public function __construct(CurlerRequest $request)
     {
@@ -206,6 +211,7 @@ class Statement
             return false;
         }
 
+
         $this->check();
 
 
@@ -252,6 +258,7 @@ class Statement
 
             $this->array_data[] = $r;
         }
+
 
         return true;
     }
@@ -391,14 +398,40 @@ class Statement
     }
 
     /**
+     *
+     */
+    public function resetIterator()
+    {
+        $this->iterator=0;
+    }
+
+    public function fetchRow($key = null)
+    {
+        $this->init();
+
+        $position=$this->iterator;
+        if (isset($this->array_data[$position])) {
+            $this->iterator++;
+            if ($key) {
+                if (isset($this->array_data[$position][$key])) {
+                    return $this->array_data[$position][$key];
+                } else {
+                    return null;
+                }
+            }
+            return $this->array_data[$position];
+        }
+
+        return null;
+    }
+    /**
      * @param string $key
      * @return mixed|null
      * @throws Exception\TransportException
      */
-    public function fetchOne($key = '')
+    public function fetchOne($key = null)
     {
         $this->init();
-
         if (isset($this->array_data[0])) {
             if ($key) {
                 if (isset($this->array_data[0][$key])) {
@@ -407,10 +440,8 @@ class Statement
                     return null;
                 }
             }
-
             return $this->array_data[0];
         }
-
         return null;
     }
 
