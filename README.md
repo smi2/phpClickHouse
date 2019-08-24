@@ -311,16 +311,6 @@ $count_result = 2;
 print_r($db->partitions('summing_partions_views', $count_result));
 ```
 
-Drop partitions ( pre production )
-
-```php
-$count_old_days = 10;
-print_r($db->dropOldPartitions('summing_partions_views', $count_old_days));
-
-// by `partition_id`
-print_r($db->dropPartition('summing_partions_views', '201512'));
-```
-
 ### Select WHERE IN ( _local csv file_ )
 
 ```php
