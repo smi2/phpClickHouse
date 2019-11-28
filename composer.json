@@ -1,9 +1,9 @@
 {
-  "name": "vovantune/phpclickhouse",
+  "name": "smi2/phpclickhouse",
   "type": "library",
   "description": "PHP ClickHouse Client",
   "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client", "php"],
-  "homepage": "https://github.com/vovantune/phpClickHouse",
+  "homepage": "https://github.com/smi2/phpClickHouse",
   "license": "MIT",
   "authors": [
     {
