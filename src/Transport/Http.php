@@ -66,6 +66,11 @@ class Http
     private $xClickHouseProgress = null;
 
     /**
+     * @var null|string
+     */
+    private $sslCA = null;
+
+    /**
      * Http constructor.
      * @param string $host
      * @param int $port
@@ -118,6 +123,16 @@ class Http
         }
 
         $this->_host = $host;
+    }
+
+    /**
+     * Sets client SSL certificate for Yandex Cloud
+     *
+     * @param string $caPath
+     */
+    public function setSslCA($caPath)
+    {
+        $this->sslCA = $caPath;
     }
 
     /**
@@ -201,8 +216,8 @@ class Http
         if ($this->settings()->getSessionId()) {
             $new->persistent();
         }
-        if ($this->settings()->get('sslCA')) {
-            $new->setSslCA($this->settings()->get('sslCA'));
+        if ($this->sslCA) {
+            $new->setSslCA($this->sslCA);
         }
 
         $new->timeOut($this->settings()->getTimeOut());

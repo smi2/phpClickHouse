@@ -35,7 +35,6 @@ class Settings
             'max_execution_time' => 20,
             'enable_http_compression' => 0,
             'https' => false,
-            'sslCA' => null,
         ];
 
         $this->settings = $default;
