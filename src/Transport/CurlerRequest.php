@@ -94,6 +94,11 @@ class CurlerRequest
     private $resultFileHandle = null;
 
     /**
+     * @var string
+     */
+    private $sslCa = null;
+
+    /**
      * @param bool $id
      */
     public function __construct($id = false)
@@ -131,8 +136,7 @@ class CurlerRequest
 
     public function close()
     {
-        if ($this->handle)
-        {
+        if ($this->handle) {
             curl_close($this->handle);
         }
         $this->handle = null;
@@ -207,8 +211,7 @@ class CurlerRequest
     {
         $this->header('Expect', '');
         $this->infile_handle = fopen($file_name, 'r');
-        if (is_resource($this->infile_handle))
-        {
+        if (is_resource($this->infile_handle)) {
 
             if ($this->_httpCompression) {
                 $this->header('Content-Encoding', 'gzip');
@@ -240,8 +243,9 @@ class CurlerRequest
      */
     public function setWriteFunction($callback)
     {
-        $this->options[CURLOPT_WRITEFUNCTION]=$callback;
+        $this->options[CURLOPT_WRITEFUNCTION] = $callback;
     }
+
     /**
      * @param callable $callback
      */
@@ -378,8 +382,8 @@ class CurlerRequest
     public function getHeaders()
     {
         $head = [];
-        foreach ($this->headers as $key=>$value) {
-                    $head[] = sprintf("%s: %s", $key, $value);
+        foreach ($this->headers as $key => $value) {
+            $head[] = sprintf("%s: %s", $key, $value);
         }
         return $head;
     }
@@ -420,8 +424,7 @@ class CurlerRequest
         if ($flag) {
             $this->_httpCompression = $flag;
             $this->options[CURLOPT_ENCODING] = 'gzip';
-        } else
-        {
+        } else {
             $this->_httpCompression = false;
             unset($this->options[CURLOPT_ENCODING]);
         }
@@ -444,6 +447,7 @@ class CurlerRequest
         $this->headers['X-ClickHouse-Key'] = $password;
         return $this;
     }
+
     /**
      * @param array|string $data
      * @return $this
@@ -606,6 +610,17 @@ class CurlerRequest
     }
 
     /**
+     * Sets client certificate
+     *
+     * @param string $filePath
+     */
+    public function setSslCa($filePath)
+    {
+        $this->option(CURLOPT_SSL_VERIFYPEER, true);
+        $this->option(CURLOPT_CAINFO, $filePath);
+    }
+
+    /**
      * @param string $method
      * @return $this
      */
@@ -621,19 +636,19 @@ class CurlerRequest
      */
     public function response()
     {
-        if (! $this->response) {
+        if (!$this->response) {
             throw new \ClickHouseDB\Exception\TransportException('Can`t fetch response - is empty');
         }
 
         return $this->response;
     }
 
-    public function isResponseExists() : bool
+    public function isResponseExists(): bool
     {
         return $this->response !== null;
     }
 
-    public function setResponse(CurlerResponse $response) : void
+    public function setResponse(CurlerResponse $response): void
     {
         $this->response = $response;
     }
@@ -680,7 +695,7 @@ class CurlerRequest
 
 
         if (strtoupper($method) == 'GET') {
-            $curl_opt[CURLOPT_HTTPGET]       = true;
+            $curl_opt[CURLOPT_HTTPGET] = true;
             $curl_opt[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
             $curl_opt[CURLOPT_POSTFIELDS] = false;
         } else {
@@ -715,9 +730,8 @@ class CurlerRequest
             $curl_opt[CURLOPT_PUT] = true;
         }
 
-        if (!empty($curl_opt[CURLOPT_WRITEFUNCTION]))
-        {
-            $curl_opt[CURLOPT_HEADER]=false;
+        if (!empty($curl_opt[CURLOPT_WRITEFUNCTION])) {
+            $curl_opt[CURLOPT_HEADER] = false;
         }
 
         if ($this->resultFileHandle) {
