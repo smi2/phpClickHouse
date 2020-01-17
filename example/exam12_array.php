@@ -150,3 +150,25 @@ $st=$db->select('SELECT round(sum(flos),5),sum(ints) FROM testTABWrite');
 print_r($st->rows());
 
 //
+$db->write("DROP TABLE IF EXISTS NestedNested_arr");
+
+$res = $db->write('
+    CREATE TABLE IF NOT EXISTS NestedNested_arr (
+        s_key String,
+        s_arr Array(String)
+    ) ENGINE = Memory
+');
+
+//------------------------------------------------------------------------------
+
+$XXX=['AAA'."'".'A',"BBBBB".'\\'];
+
+print_r($XXX);
+
+echo "Insert\n";
+$stat = $db->insert('NestedNested_arr', [
+    ['HASH\1', $XXX],
+], ['s_key','s_arr']);
+echo "Insert Done\n";
+
+print_r($db->select('SELECT * FROM NestedNested_arr WHERE s_key=\'HASH\1\'')->rows());

@@ -841,6 +841,8 @@ Run test
 
 ./vendor/bin/phpunit --group ClientTest
 
+./vendor/bin/phpunit --group ClientTest --filter testInsertNestedArray
+
 ./vendor/bin/phpunit --group ConditionsTest
 
 

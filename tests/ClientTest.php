@@ -233,6 +233,44 @@ class ClientTest extends TestCase
 
 
 
+    public function testInsertNestedArray()
+    {
+
+        $this->client->write("DROP TABLE IF EXISTS NestedNested_test");
+
+        $this->client->write('
+    CREATE TABLE IF NOT EXISTS NestedNested_test (
+        s_key String,
+        topics Nested( id UInt8 , ww Float32 ),
+        s_arr Array(String)
+    ) ENGINE = Memory
+');
+
+
+        //
+        $TestArrayPHP=['AAA'."'".'A',"BBBBB".'\\'];
+        $this->client->insert('NestedNested_test', [
+            ['HASH\1', [11,33],[3.2,2.1],$TestArrayPHP],
+        ], ['s_key', 'topics.id','topics.ww','s_arr']);
+
+        // wait read  [0] => AAA'A  [1] => BBBBB\
+
+
+
+        $st=$this->client->select('SELECT cityHash64(s_arr) as hash FROM NestedNested_test');
+        $this->assertEquals('3072250716474788897', $st->fetchOne('hash'));
+
+
+        $row=$this->client->select('SELECT * FROM NestedNested_test ARRAY JOIN topics WHERE topics.id=11')->fetchOne();
+
+        $this->assertEquals(11, $row['topics.id']);
+        $this->assertEquals(3.2, $row['topics.ww']);
+        $this->assertEquals($TestArrayPHP, $row['s_arr']);
+
+
+
+
+    }
     public function testRFCCSVAndTSVWrite()
     {
         $fileName=$this->tmpPath.'__testRFCCSVWrite';
@@ -257,7 +295,7 @@ class ClientTest extends TestCase
             ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME STRING','flos'=>2.3,'ints'=>2,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
             ['event_time'=>date('Y-m-d H:i:s'),'strs'=>'SOME\'STRING','flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B"]],
             ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"SOMET\nRI\n\"N\"G\\XX_ABCDEFG",'flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]],
-            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"ID_ARRAY",'flos'=>0,'ints'=>0,'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC",$array_value_test]]
+            ['event_time'=>date('Y-m-d H:i:s'),'strs'=>"ID_ARRAY",'flos'=>0,'ints'=>0,'arr1'=>[1,2,4],'arrs'=>["A","B\nD\nC",$array_value_test]]
         ];
 
         // 1.1 + 2.3 = 3.3999999761581
@@ -276,6 +314,8 @@ class ClientTest extends TestCase
             'arrs',
         ]);
 
+
+
         $st=$this->client->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
 
 
@@ -284,7 +324,6 @@ class ClientTest extends TestCase
         $ID_ARRAY=$this->client->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
 
         $this->assertEquals($array_value_test, $ID_ARRAY);
-
 
 
         $row=$this->client->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();
@@ -336,7 +375,6 @@ class ClientTest extends TestCase
         $ID_ARRAY=$this->client->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
 
         $this->assertEquals($array_value_test, $ID_ARRAY);
-
 
 
         $row=$this->client->select('SELECT round(sum(flos),1) as flos,round(sum(ints),1) as ints FROM testRFCCSVWrite')->fetchOne();

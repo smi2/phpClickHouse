@@ -29,11 +29,12 @@ class FormatLine
      * Array in a string for a query Insert
      *
      * @param mixed[] $row
+     * @param bool $skipEncode
      * @return string
      */
-    public static function Insert(array $row)
+    public static function Insert(array $row,bool $skipEncode=false)
     {
-        return self::strictQuote('Insert')->quoteRow($row);
+        return self::strictQuote('Insert')->quoteRow($row,$skipEncode);
     }
 
     /**

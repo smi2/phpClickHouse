@@ -51,25 +51,37 @@ class StrictQuoteLine
 
         $this->settings = $this->preset[$format];
     }
-    public function quoteRow($row)
+
+    /**
+     * @param $row
+     * @param bool $skipEncode
+     * @return string
+     */
+    public function quoteRow($row,bool $skipEncode=false )
     {
-        return implode($this->settings['Delimiter'], $this->quoteValue($row));
+        return implode($this->settings['Delimiter'], $this->quoteValue($row,$skipEncode));
     }
-    public function quoteValue($row)
+
+    /**
+     * @param $row
+     * @param bool $skipEncode
+     * @return array
+     */
+    public function quoteValue($row,bool $skipEncode=false)
     {
         $enclosure = $this->settings['Enclosure'];
         $delimiter = $this->settings['Delimiter'];
-        $encode = $this->settings['EncodeEnclosure'];
+        $encodeEnclosure = $this->settings['EncodeEnclosure'];
         $encodeArray = $this->settings['EnclosureArray'];
         $null = $this->settings['Null'];
         $tabEncode = $this->settings['TabEncode'];
 
-        $quote = function($value) use ($enclosure, $delimiter, $encode, $encodeArray, $null, $tabEncode) {
+        $quote = function($value) use ($enclosure, $delimiter, $encodeEnclosure, $encodeArray, $null, $tabEncode, $skipEncode) {
             $delimiter_esc = preg_quote($delimiter, '/');
 
             $enclosure_esc = preg_quote($enclosure, '/');
 
-            $encode_esc = preg_quote($encode, '/');
+            $encode_esc = preg_quote($encodeEnclosure, '/');
 
             $encode = true;
             if ($value instanceof NumericType) {
@@ -84,14 +96,14 @@ class StrictQuoteLine
                 // Elements of the array - the numbers are formatted as usual, and the dates, dates-with-time, and lines are in
                 // single quotation marks with the same screening rules as above.
                 // as in the TabSeparated format, and then the resulting string is output in InsertRow in double quotes.
+
                 $value       = array_map(
                     function ($v) use ($enclosure_esc, $encode_esc) {
                         return is_string($v) ? $this->encodeString($v, $enclosure_esc, $encode_esc) : $v;
                     },
                     $value
                 );
-                $resultArray = FormatLine::Insert($value);
-
+                $resultArray = FormatLine::Insert($value,($encodeEnclosure==='\\'?true:false));
                 return $encodeArray . '[' . $resultArray . ']' . $encodeArray;
             }
 
@@ -106,6 +118,7 @@ class StrictQuoteLine
                     return str_replace(["\t", "\n"], ['\\t', '\\n'], $value);
                 }
 
+                if (!$skipEncode)
                 $value = $this->encodeString($value, $enclosure_esc, $encode_esc);
 
                 return $enclosure . $value . $enclosure;

@@ -21,6 +21,7 @@ class ValueFormatter
 {
     /**
      * @param mixed $value
+     * @param bool $addQuotes
      * @return mixed
      */
     public static function formatValue($value, bool $addQuotes = true)
