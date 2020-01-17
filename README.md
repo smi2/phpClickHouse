@@ -688,6 +688,14 @@ $st=$db->select('SELECT number,sleep(0.2) FROM system.numbers limit 5');
 
 ```
 
+### ssl CA
+```php
+$config = [
+    'host' => 'cluster.clickhouse.dns.com', // any node name in cluster
+    'port' => '8123',
+    'sslCA' => '...', 
+];
+```
 
 
 ### Cluster

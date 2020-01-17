@@ -130,7 +130,7 @@ class Http
      *
      * @param string $caPath
      */
-    public function setSslCA($caPath)
+    public function setSslCa($caPath)
     {
         $this->sslCA = $caPath;
     }
@@ -217,7 +217,7 @@ class Http
             $new->persistent();
         }
         if ($this->sslCA) {
-            $new->setSslCA($this->sslCA);
+            $new->setSslCa($this->sslCA);
         }
 
         $new->timeOut($this->settings()->getTimeOut());
