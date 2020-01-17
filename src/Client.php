@@ -675,6 +675,7 @@ class Client
      * Size of database
      *
      * @return mixed|null
+     * @throws \Exception
      */
     public function databaseSize()
     {
@@ -695,6 +696,7 @@ class Client
      * Size of tables
      *
      * @return mixed
+     * @throws \Exception
      */
     public function tableSize(string $tableName)
     {
@@ -722,6 +724,7 @@ class Client
      *
      * @param bool $flatList
      * @return mixed[][]
+     * @throws \Exception
      */
     public function tablesSize($flatList = false)
     {
@@ -759,6 +762,7 @@ class Client
      * isExists
      *
      * @return array
+     * @throws \Exception
      */
     public function isExists(string $database, string $table)
     {
@@ -774,6 +778,7 @@ class Client
      * List of partitions
      *
      * @return mixed[][]
+     * @throws \Exception
      */
     public function partitions(string $table, int $limit = null, bool $active = null)
     {
@@ -812,6 +817,7 @@ CLICKHOUSE
     /**
      * Truncate ( drop all partitions )
      * @return array
+     * @throws \Exception
      * @deprecated
      */
     public function truncateTable(string $tableName)
@@ -831,6 +837,7 @@ CLICKHOUSE
      *
      * @return int
      * @throws Exception\TransportException
+     * @throws \Exception
      */
     public function getServerUptime()
     {
@@ -849,6 +856,7 @@ CLICKHOUSE
      * Read system.settings table
      *
      * @return mixed[][]
+     * @throws \Exception
      */
     public function getServerSystemSettings(string $like = '')
     {
@@ -866,39 +874,4 @@ CLICKHOUSE
         return $l;
     }
 
-    /**
-     * dropOldPartitions by day_ago
-     * @return array
-     * @throws Exception\TransportException
-     * @throws \Exception
-     * @deprecated
-     *
-     */
-    public function dropOldPartitions(string $table_name, int $days_ago, int $count_partitons_per_one = 100)
-    {
-        $days_ago = strtotime(date('Y-m-d 00:00:00', strtotime('-' . $days_ago . ' day')));
-
-        $drop = [];
-        $list_patitions = $this->partitions($table_name, $count_partitons_per_one);
-
-        foreach ($list_patitions as $partion_id => $partition) {
-            if (stripos($partition['engine'], 'mergetree') === false) {
-                continue;
-            }
-
-            // $min_date = strtotime($partition['min_date']);
-            $max_date = strtotime($partition['max_date']);
-
-            if ($max_date < $days_ago) {
-                $drop[] = $partition['partition'];
-            }
-        }
-
-        $result = [];
-        foreach ($drop as $partition_id) {
-            $result[$partition_id] = $this->dropPartition($table_name, $partition_id);
-        }
-
-        return $result;
-    }
 }

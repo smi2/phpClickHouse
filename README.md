@@ -527,68 +527,6 @@ $row=['event_time'=>date('Y-m-d H:i:s'),'arr1'=>[1,2,3],'arrs'=>["A","B\nD\nC"]]
 file_put_contents($fileName,ClickHouseDB\Quote\FormatLine::TSV($row)."\n",FILE_APPEND);
 ```
 
-### Cluster drop old Partitions
-
-Example code :
-
-```php
-class my
-{
-    /**
-     * @return \ClickHouseDB\Cluster
-     */
-    public function getClickHouseCluster()
-    {
-            return $this->_cluster;
-    }
-
-    public function msg($text)
-    {
-            echo $text."\n";
-    }
-
-    private function cleanTable($dbt)
-    {
-
-        $sizes=$this->getClickHouseCluster()->getSizeTable($dbt);
-        $this->msg("Clean table : $dbt,size = ".$this->humanFileSize($sizes));
-
-        // split string "DB.TABLE"
-        list($db,$table)=explode('.',$dbt);
-
-        // Get Master node for table
-        $nodes=$this->getClickHouseCluster()->getMasterNodeForTable($dbt);
-        foreach ($nodes as $node)
-        {
-            $client=$this->getClickHouseCluster()->client($node);
-
-            $size=$client->database($db)->tableSize($table);
-
-            $this->msg("$node \t {$size['size']} \t {$size['min_date']} \t {$size['max_date']}");
-
-            $client->dropOldPartitions($table,30,30);
-        }
-    }
-
-    public function clean()
-    {
-        $this->msg("clean");
-
-        $this->getClickHouseCluster()->setScanTimeOut(2.5); // 2500 ms
-        $this->getClickHouseCluster()->setSoftCheck(true);
-        if (!$this->getClickHouseCluster()->isReplicasIsOk())
-        {
-            throw new Exception('Replica state is bad , error='.$this->getClickHouseCluster()->getError());
-        }
-
-        $this->cleanTable('model.history_full_model_sharded');
-
-        $this->cleanTable('model.history_model_result_sharded');
-    }
-}
-
-```
-
 ### HTTPS
 
 ```php
