@@ -3,10 +3,12 @@ PHP ClickHouse wrapper - Changelog
 
 
 ======================
-### 2020-001-17 [Release 1.3.8]
+### 2020-01-17 [Release 1.3.8]
 * #131 Fix: async loop breaks after 20 seconds 
 * #129 Add client certificate support to able to work with Yandex ClickHouse cloud hosting 
 * Delete `dropOldPartitions`
+* Fix error : The error of array saving #127
+* More test 
 
 ### 2019-09-20 [Release 1.3.7]
 * #125 WriteToFile: support for JSONEachRow format
