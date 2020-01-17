@@ -6,6 +6,8 @@ use ClickHouseDB\Exception\TransportException;
 
 class CurlerRolling
 {
+    const SLEEP_DELAY = 1000; // 1ms
+
     /**
      * @var int
      *
@@ -143,32 +145,10 @@ class CurlerRolling
      */
     public function execLoopWait()
     {
-        $c = 0;
-        $timeStart=time();
-        $uSleep=1000; // Timer: check response from server, and add new Task/Que to loop
-        $PendingAllConnections=$this->countPending();
-
-        // Max loop check
-
-        $count=0;
-        // add all tasks
         do {
             $this->exec();
-            $timeWork=time()-$timeStart;
-            //
-            $ActiveNowConnections = $this->countActive();
-            $PendingNowConnections = $this->countPending();
-
-            $count=$ActiveNowConnections+$PendingNowConnections;
-            $c++;
-
-            if ($c > 20000) {
-                break;
-            }
-
-            usleep($uSleep);
-            // usleep(2000000) == 2 seconds
-        } while ($count);
+            usleep(self::SLEEP_DELAY);
+        } while (($this->countActive() + $this->countPending()) > 0);
 
         return true;
     }
@@ -339,13 +319,11 @@ class CurlerRolling
 
     public function makePendingRequestsQue()
     {
-
         $max = $this->getSimultaneousLimit();
         $active = $this->countActive();
 
 
         if ($active < $max) {
-
             $canAdd = $max - $active;
 //            $pending = sizeof($this->pendingRequests);
 
@@ -372,7 +350,6 @@ class CurlerRolling
                 foreach ($ll as $task_id) {
                     $this->_prepareLoopQue($task_id);
                 }
-
             }// if add
         }// if can add
     }
