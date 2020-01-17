@@ -63,26 +63,26 @@ class Client
      */
     public function __construct(array $connectParams, array $settings = [])
     {
-        if (! isset($connectParams['username'])) {
+        if (!isset($connectParams['username'])) {
             throw  new \InvalidArgumentException('not set username');
         }
 
-        if (! isset($connectParams['password'])) {
+        if (!isset($connectParams['password'])) {
             throw  new \InvalidArgumentException('not set password');
         }
 
-        if (! isset($connectParams['port'])) {
+        if (!isset($connectParams['port'])) {
             throw  new \InvalidArgumentException('not set port');
         }
 
-        if (! isset($connectParams['host'])) {
+        if (!isset($connectParams['host'])) {
             throw  new \InvalidArgumentException('not set host');
         }
 
         $this->connectUsername = $connectParams['username'];
         $this->connectPassword = $connectParams['password'];
-        $this->connectPort     = $connectParams['port'];
-        $this->connectHost     = $connectParams['host'];
+        $this->connectPort = $connectParams['port'];
+        $this->connectHost = $connectParams['host'];
 
         // init transport class
         $this->transport = new Http(
@@ -96,7 +96,7 @@ class Client
 
         // apply settings to transport class
         $this->settings()->database('default');
-        if (! empty($settings)) {
+        if (!empty($settings)) {
             $this->settings()->apply($settings);
         }
 
@@ -106,6 +106,10 @@ class Client
 
         if (isset($connectParams['https'])) {
             $this->https($connectParams['https']);
+        }
+
+        if (isset($connectParams['sslCA'])) {
+            $this->transport->setSslCA($connectParams['sslCA']);
         }
 
         $this->enableHttpCompression();
@@ -198,7 +202,7 @@ class Client
      */
     public function transport()
     {
-        if (! $this->transport) {
+        if (!$this->transport) {
             throw  new \InvalidArgumentException('Empty transport class');
         }
 
@@ -267,8 +271,8 @@ class Client
      */
     public function useSession(string $useSessionId = null)
     {
-        if (! $this->settings()->getSessionId()) {
-            if (! $useSessionId) {
+        if (!$this->settings()->getSessionId()) {
+            if (!$useSessionId) {
                 $this->settings()->makeSessionId();
             } else {
                 $this->settings()->session_id($useSessionId);
@@ -314,7 +318,7 @@ class Client
      */
     public function enableLogQueries(bool $flag = true)
     {
-        $this->settings()->set('log_queries', (int) $flag);
+        $this->settings()->set('log_queries', (int)$flag);
 
         return $this;
     }
@@ -350,7 +354,7 @@ class Client
      */
     public function enableExtremes(bool $flag = true)
     {
-        $this->settings()->set('extremes', (int) $flag);
+        $this->settings()->set('extremes', (int)$flag);
 
         return $this;
     }
@@ -364,7 +368,8 @@ class Client
         array $bindings = [],
         WhereInFile $whereInFile = null,
         WriteToFile $writeToFile = null
-    ) {
+    )
+    {
         return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
     }
 
@@ -386,14 +391,14 @@ class Client
      */
     public function progressFunction(callable $callback)
     {
-        if (! is_callable($callback)) {
+        if (!is_callable($callback)) {
             throw new \InvalidArgumentException('Not is_callable progressFunction');
         }
 
-        if (! $this->settings()->is('send_progress_in_http_headers')) {
+        if (!$this->settings()->is('send_progress_in_http_headers')) {
             $this->settings()->set('send_progress_in_http_headers', 1);
         }
-        if (! $this->settings()->is('http_headers_progress_interval_ms')) {
+        if (!$this->settings()->is('http_headers_progress_interval_ms')) {
             $this->settings()->set('http_headers_progress_interval_ms', 100);
         }
 
@@ -411,7 +416,8 @@ class Client
         array $bindings = [],
         WhereInFile $whereInFile = null,
         WriteToFile $writeToFile = null
-    ) {
+    )
+    {
         return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
     }
 
@@ -467,11 +473,11 @@ class Client
 
     /**
      * @param mixed[][] $values
-     * @param string[]  $columns
+     * @param string[] $columns
      * @return Statement
      * @throws Exception\TransportException
      */
-    public function insert(string $table, array $values, array $columns = []) : Statement
+    public function insert(string $table, array $values, array $columns = []): Statement
     {
         if (empty($values)) {
             throw QueryException::cannotInsertEmptyValues();
@@ -548,7 +554,7 @@ class Client
      * insert TabSeparated files
      *
      * @param string|string[] $fileNames
-     * @param string[]        $columns
+     * @param string[] $columns
      * @return mixed
      */
     public function insertBatchTSVFiles(string $tableName, $fileNames, array $columns = [])
@@ -560,8 +566,8 @@ class Client
      * insert Batch Files
      *
      * @param string|string[] $fileNames
-     * @param string[]        $columns
-     * @param string          $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     * @param string[] $columns
+     * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return Statement[]
      * @throws Exception\TransportException
      */
@@ -574,14 +580,14 @@ class Client
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
 
-        if (! in_array($format, self::SUPPORTED_FORMATS, true)) {
+        if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
             throw new QueryException('Format not support in insertBatchFiles');
         }
 
         $result = [];
 
         foreach ($fileNames as $fileName) {
-            if (! is_file($fileName) || ! is_readable($fileName)) {
+            if (!is_file($fileName) || !is_readable($fileName)) {
                 throw  new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
@@ -598,7 +604,7 @@ class Client
 
         // fetch resutl
         foreach ($fileNames as $fileName) {
-            if (! $result[$fileName]->isError()) {
+            if (!$result[$fileName]->isError()) {
                 continue;
             }
 
@@ -612,7 +618,7 @@ class Client
      * insert Batch Stream
      *
      * @param string[] $columns
-     * @param string   $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return Transport\CurlerRequest
      */
     public function insertBatchStream(string $tableName, array $columns = [], string $format = 'CSV')
@@ -621,7 +627,7 @@ class Client
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
 
-        if (! in_array($format, self::SUPPORTED_FORMATS, true)) {
+        if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
             throw new QueryException('Format not support in insertBatchFiles');
         }
 
@@ -771,9 +777,9 @@ class Client
      */
     public function partitions(string $table, int $limit = null, bool $active = null)
     {
-        $database          = $this->settings()->getDatabase();
-        $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int) $active);
-        $limitClause       = $limit !== null ? ' LIMIT ' . $limit : '';
+        $database = $this->settings()->getDatabase();
+        $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int)$active);
+        $limitClause = $limit !== null ? ' LIMIT ' . $limit : '';
 
         return $this->select(<<<CLICKHOUSE
 SELECT *
@@ -786,8 +792,8 @@ CLICKHOUSE
 
     /**
      * dropPartition
-     * @deprecated
      * @return Statement
+     * @deprecated
      */
     public function dropPartition(string $dataBaseTableName, string $partition_id)
     {
@@ -797,7 +803,7 @@ CLICKHOUSE
         $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id',
             [
                 'dataBaseTableName' => $dataBaseTableName,
-                'partion_id'        => $partition_id,
+                'partion_id' => $partition_id,
             ]);
 
         return $state;
@@ -805,15 +811,15 @@ CLICKHOUSE
 
     /**
      * Truncate ( drop all partitions )
-     * @deprecated
      * @return array
+     * @deprecated
      */
     public function truncateTable(string $tableName)
     {
         $partions = $this->partitions($tableName);
-        $out      = [];
+        $out = [];
         foreach ($partions as $part_key => $part) {
-            $part_id       = $part['partition'];
+            $part_id = $part['partition'];
             $out[$part_id] = $this->dropPartition($tableName, $part_id);
         }
 
@@ -834,9 +840,9 @@ CLICKHOUSE
     /**
      * Returns string with the server version.
      */
-    public function getServerVersion() : string
+    public function getServerVersion(): string
     {
-        return (string) $this->select('SELECT version() as version')->fetchOne('version');
+        return (string)$this->select('SELECT version() as version')->fetchOne('version');
     }
 
     /**
@@ -846,7 +852,7 @@ CLICKHOUSE
      */
     public function getServerSystemSettings(string $like = '')
     {
-        $l    = [];
+        $l = [];
         $list = $this->select('SELECT * FROM system.settings' . ($like ? ' WHERE name LIKE :like' : ''),
             ['like' => '%' . $like . '%'])->rows();
         foreach ($list as $row) {
@@ -862,17 +868,17 @@ CLICKHOUSE
 
     /**
      * dropOldPartitions by day_ago
-     * @deprecated
-     *
      * @return array
      * @throws Exception\TransportException
      * @throws \Exception
+     * @deprecated
+     *
      */
     public function dropOldPartitions(string $table_name, int $days_ago, int $count_partitons_per_one = 100)
     {
         $days_ago = strtotime(date('Y-m-d 00:00:00', strtotime('-' . $days_ago . ' day')));
 
-        $drop           = [];
+        $drop = [];
         $list_patitions = $this->partitions($table_name, $count_partitons_per_one);
 
         foreach ($list_patitions as $partion_id => $partition) {

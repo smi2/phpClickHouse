@@ -30,11 +30,11 @@ class Settings
     public function __construct(Http $client)
     {
         $default = [
-            'extremes'                => false,
-            'readonly'                => true,
-            'max_execution_time'      => 20,
+            'extremes' => false,
+            'readonly' => true,
+            'max_execution_time' => 20,
             'enable_http_compression' => 0,
-            'https'                   => false
+            'https' => false,
         ];
 
         $this->settings = $default;
@@ -150,6 +150,7 @@ class Settings
         $this->set('session_id', $session_id);
         return $this;
     }
+
     /**
      * @return mixed|bool
      */
