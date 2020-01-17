@@ -33,12 +33,20 @@ final class ProgressAndEscapeTest extends TestCase
             global $resultTest;
             $resultTest=$data;
         });
-        $st=$this->client->select('SELECT number,sleep(0.1) FROM system.numbers limit 4');
+        $st=$this->client->select('SELECT number,sleep(0.2) FROM system.numbers limit 4');
 
         // read_rows + read_bytes + total_rows
         $this->assertArrayHasKey('read_rows',$resultTest);
         $this->assertArrayHasKey('read_bytes',$resultTest);
-        $this->assertArrayHasKey('total_rows',$resultTest);
+
+        if (isset($resultTest['total_rows']))
+        {
+            $this->assertArrayHasKey('total_rows',$resultTest);
+        } else {
+            $this->assertArrayHasKey('total_rows_to_read',$resultTest);
+        }
+
+
 
         $this->assertGreaterThan(3,$resultTest['read_rows']);
         $this->assertGreaterThan(3,$resultTest['read_bytes']);
