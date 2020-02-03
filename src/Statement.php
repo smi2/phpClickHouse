@@ -2,6 +2,7 @@
 
 namespace ClickHouseDB;
 
+use ClickHouseDB\Exception\ClickHouseUnavailableException;
 use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Query;
@@ -176,6 +177,9 @@ class Statement
             $message = $this->response()->error();
         }
 
+        if ($code === CURLE_COULDNT_CONNECT) {
+            throw new ClickHouseUnavailableException($message, $code);
+        }
         throw new QueryException($message, $code);
     }
 
