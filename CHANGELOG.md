@@ -3,6 +3,11 @@ PHP ClickHouse wrapper - Changelog
 
 
 ======================
+
+### 2020-02-03 [Release 1.3.9]
+* #134 Enhancement: Add a new exception to be able to distinguish that ClickHouse is not available. 
+
+
 ### 2020-01-17 [Release 1.3.8]
 * #131 Fix: async loop breaks after 20 seconds 
 * #129 Add client certificate support to able to work with Yandex ClickHouse cloud hosting 
