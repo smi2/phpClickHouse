@@ -163,6 +163,7 @@ class Statement
         $error_no = $this->response()->error_no();
         $error = $this->response()->error();
 
+        $dumpStatement = false;
         if (!$error_no && !$error) {
             $parse = $this->parseErrorClickHouse($body);
 
@@ -171,16 +172,24 @@ class Statement
             } else {
                 $code = $this->response()->http_code();
                 $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
+                $dumpStatement = true;
             }
         } else {
             $code = $error_no;
             $message = $this->response()->error();
         }
 
+        $exception = new QueryException($message, $code);
         if ($code === CURLE_COULDNT_CONNECT) {
-            throw new ClickHouseUnavailableException($message, $code);
+            $exception = new ClickHouseUnavailableException($message, $code);
         }
-        throw new QueryException($message, $code);
+
+        if ($dumpStatement) {
+            $exception->setRequestDetails($this->_request->getDetails());
+            $exception->setResponseDetails($this->response()->getDetails());
+        }
+
+        throw $exception;
     }
 
     /**

@@ -158,6 +158,16 @@ class CurlerResponse
         print_r($this->json());
     }
 
+    public function getDetails(): array
+    {
+        return [
+            'body'    => $this->_body,
+            'headers' => $this->_headers,
+            'error'   => $this->error(),
+            'info'    => $this->_info,
+        ];
+    }
+
     /**
      * @param bool $result
      * @return string
