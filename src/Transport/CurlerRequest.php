@@ -285,6 +285,16 @@ class CurlerRequest
         }
     }
 
+    public function getDetails(): array
+    {
+        return [
+            'url'        => $this->url,
+            'method'     => $this->method,
+            'parameters' => $this->parameters,
+            'headers'    => $this->headers,
+        ];
+    }
+
     /**
      * @param bool $result
      * @return string
