@@ -13,6 +13,16 @@ use const PHP_EOL;
 
 class Http
 {
+    const AUTH_METHOD_HEADER       = 1;
+    const AUTH_METHOD_QUERY_STRING = 2;
+    const AUTH_METHOD_BASIC_AUTH   = 3;
+
+    const AUTH_METHODS_LIST = [
+        self::AUTH_METHOD_HEADER,
+        self::AUTH_METHOD_QUERY_STRING,
+        self::AUTH_METHOD_BASIC_AUTH,
+    ];
+
     /**
      * @var string
      */
@@ -22,6 +32,17 @@ class Http
      * @var string
      */
     private $_password = null;
+
+    /**
+     * The username and password can be indicated in one of three ways:
+     *  - Using HTTP Basic Authentication.
+     *  - In the ‘user’ and ‘password’ URL parameters.
+     *  - Using ‘X-ClickHouse-User’ and ‘X-ClickHouse-Key’ headers (by default)
+     *
+     * @see https://clickhouse.tech/docs/en/interfaces/http/
+     * @var int
+     */
+    private $_authMethod = self::AUTH_METHOD_HEADER;
 
     /**
      * @var string
@@ -76,13 +97,15 @@ class Http
      * @param int $port
      * @param string $username
      * @param string $password
+     * @param int $authMethod
      */
-    public function __construct($host, $port, $username, $password)
+    public function __construct($host, $port, $username, $password, int $authMethod = null)
     {
         $this->setHost($host, $port);
 
         $this->_username = $username;
         $this->_password = $password;
+        $this->_authMethod = $authMethod;
         $this->_settings = new Settings($this);
 
         $this->setCurler();
@@ -206,9 +229,25 @@ class Http
     private function newRequest($extendinfo)
     {
         $new = new CurlerRequest();
-        $new->authByHeaders($this->_username, $this->_password)
-            ->POST()
-            ->setRequestExtendedInfo($extendinfo);
+
+        switch ($this->_authMethod) {
+            case self::AUTH_METHOD_QUERY_STRING:
+                /* @todo: Move this implementation to CurlerRequest class. Possible options: the authentication method
+                 *        should be applied in method `CurlerRequest:prepareRequest()`.
+                 */
+                $this->settings()->set('user', $this->_username);
+                $this->settings()->set('password', $this->_password);
+                break;
+            case self::AUTH_METHOD_BASIC_AUTH:
+                $new->authByBasicAuth($this->_username, $this->_password);
+                break;
+            default:
+                // Auth with headers by default
+                $new->authByHeaders($this->_username, $this->_password);
+                break;
+        }
+
+        $new->POST()->setRequestExtendedInfo($extendinfo);
 
         if ($this->settings()->isEnableHttpCompression()) {
             $new->httpCompression(true);
@@ -242,8 +281,6 @@ class Http
             $urlParams['query'] = $sql;
         }
 
-        $url = $this->getUrl($urlParams);
-
         $extendinfo = [
             'sql' => $sql,
             'query' => $query,
@@ -251,6 +288,12 @@ class Http
         ];
 
         $new = $this->newRequest($extendinfo);
+
+        /*
+         * Build URL after request making, since URL may contain auth data. This will not matter after the
+         * implantation of the todo in the `HTTP:newRequest()` method.
+         */
+        $url = $this->getUrl($urlParams);
         $new->url($url);
 
 
@@ -277,10 +320,6 @@ class Http
             $query = new Query($sql);
         }
 
-        $url = $this->getUrl([
-            'readonly' => 0,
-            'query' => $query->toSql()
-        ]);
         $extendinfo = [
             'sql' => $sql,
             'query' => $query,
@@ -288,6 +327,16 @@ class Http
         ];
 
         $request = $this->newRequest($extendinfo);
+
+        /*
+         * Build URL after request making, since URL may contain auth data. This will not matter after the
+         * implantation of the todo in the `HTTP:newRequest()` method.
+         */
+        $url = $this->getUrl([
+            'readonly' => 0,
+            'query' => $query->toSql()
+        ]);
+
         $request->url($url);
         return $request;
     }
@@ -303,11 +352,6 @@ class Http
     {
         $query = new Query($sql);
 
-        $url = $this->getUrl([
-            'readonly' => 0,
-            'query' => $query->toSql()
-        ]);
-
         $extendinfo = [
             'sql' => $sql,
             'query' => $query,
@@ -315,6 +359,16 @@ class Http
         ];
 
         $request = $this->newRequest($extendinfo);
+
+        /*
+         * Build URL after request making, since URL may contain auth data. This will not matter after the
+         * implantation of the todo in the `HTTP:newRequest()` method.
+         */
+        $url = $this->getUrl([
+            'readonly' => 0,
+            'query' => $query->toSql()
+        ]);
+
         $request->url($url);
 
         $request->setCallbackFunction(function (CurlerRequest $request) {
