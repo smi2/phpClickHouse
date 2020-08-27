@@ -665,7 +665,7 @@ class Client
     public function streamRead(Stream $streamRead, string $sql, array $bind = [])
     {
         if ($this->getCountPendingQueue() > 0) {
-            throw new QueryException('Queue must be empty, before streamWrite');
+            throw new QueryException('Queue must be empty, before streamRead');
         }
 
         return $this->transport()->streamRead($streamRead, $sql, $bind);
