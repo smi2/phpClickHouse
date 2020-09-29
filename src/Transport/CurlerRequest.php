@@ -445,7 +445,7 @@ class CurlerRequest
      * @param string $password
      * @return $this
      */
-    public function auth($username, $password)
+    public function authByBasicAuth($username, $password)
     {
         $this->options[CURLOPT_USERPWD] = sprintf("%s:%s", $username, $password);
         return $this;

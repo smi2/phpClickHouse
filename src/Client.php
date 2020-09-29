@@ -54,6 +54,9 @@ class Client
     /** @var string */
     private $connectPort;
 
+    /** @var int */
+    private $authMethod;
+
     /** @var bool */
     private $connectUserReadonly = false;
 
@@ -79,6 +82,18 @@ class Client
             throw  new \InvalidArgumentException('not set host');
         }
 
+        if (array_key_exists('auth_method', $connectParams)) {
+            if (false === in_array($connectParams['auth_method'], Http::AUTH_METHODS_LIST)) {
+                $errorMessage = sprintf(
+                    'Invalid value for "auth_method" param. Should be one of [%s].',
+                    json_encode(Http::AUTH_METHODS_LIST)
+                );
+                throw  new \InvalidArgumentException($errorMessage);
+            }
+
+            $this->authMethod = $connectParams['auth_method'];
+        }
+
         $this->connectUsername = $connectParams['username'];
         $this->connectPassword = $connectParams['password'];
         $this->connectPort = $connectParams['port'];
@@ -89,7 +104,8 @@ class Client
             $this->connectHost,
             $this->connectPort,
             $this->connectUsername,
-            $this->connectPassword
+            $this->connectPassword,
+            $this->authMethod
         );
 
         $this->transport->addQueryDegeneration(new Bindings());
@@ -239,6 +255,14 @@ class Client
     public function getConnectUsername()
     {
         return $this->connectUsername;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAuthMethod(): int
+    {
+        return $this->authMethod;
     }
 
     /**
