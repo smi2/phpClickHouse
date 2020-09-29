@@ -99,13 +99,16 @@ class Http
      * @param string $password
      * @param int $authMethod
      */
-    public function __construct($host, $port, $username, $password, int $authMethod = null)
+    public function __construct($host, $port, $username, $password, $authMethod = null)
     {
         $this->setHost($host, $port);
 
         $this->_username = $username;
         $this->_password = $password;
-        $this->_authMethod = $authMethod;
+        if ($authMethod) {
+            $this->_authMethod = $authMethod;
+        }
+
         $this->_settings = new Settings($this);
 
         $this->setCurler();
