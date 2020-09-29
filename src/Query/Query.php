@@ -73,6 +73,11 @@ class Query
         }
         $supportFormats = implode("|",$this->supportFormats);
 
+        $this->sql = trim($this->sql);
+        if (substr($this->sql, -1) == ';') {
+            $this->sql = substr($this->sql, 0, -1);
+        }
+
         $matches = [];
         if (preg_match_all('%(' . $supportFormats . ')%ius', $this->sql, $matches)) {
 
