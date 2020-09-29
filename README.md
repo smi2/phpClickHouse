@@ -42,10 +42,7 @@ $db = new ClickHouseDB\Client(['config_array']);
 $db->ping();
 ```
 
-Last stable version for:
-- php 5.6 = `1.1.2`
-- php 7.0 = `1.2.4`
-
+Last stable version for php 5.6 = `1.1.2`
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
@@ -669,6 +666,26 @@ $r=$client->streamRead($streamRead,'SELECT sin(number) as sin,cos(number) as cos
 
 $db->insertAssocBulk([$oneRow, $oneRow, $failRow])
 ```
+### Auth methods
+
+```
+   AUTH_METHOD_HEADER       = 1;
+   AUTH_METHOD_QUERY_STRING = 2;
+   AUTH_METHOD_BASIC_AUTH   = 3;
+```
+
+In config set `auth_method`
+
+```php
+$config=[
+    'host'=>'host.com',
+    //...
+    'auth_method'=>1,
+];
+
+```
+
+
 ### progressFunction
 
 ```php
