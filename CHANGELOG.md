@@ -4,6 +4,15 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+
+### 2019-09-29 [Release 1.3.10]
+* Add two new types of authentication #139
+* Fixed typo in streamRead exception text #140
+* fix the exception(multi-statement not allow) when sql end with ';' #138
+* Added more debug info for empty response with error #135
+
+
+
 ### 2020-02-03 [Release 1.3.9]
 * #134 Enhancement: Add a new exception to be able to distinguish that ClickHouse is not available. 
 
