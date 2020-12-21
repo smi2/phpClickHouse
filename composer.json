@@ -13,15 +13,15 @@
     }
   ],
   "require": {
-    "php": "^7.1",
+    "php": "^7.3|^8.0",
     "ext-curl": "*",
     "ext-json": "*"
   },
   "require-dev": {
-    "doctrine/coding-standard": "^5.0",
-    "phpstan/phpstan": "^0.10.3",
-    "phpunit/phpunit": "^7",
-    "sebastian/comparator": "~3.0"
+    "doctrine/coding-standard": "^8.2",
+    "phpstan/phpstan": "^0.12",
+    "phpunit/phpunit": "^9.5",
+    "sebastian/comparator": "^4.0"
   },
   "autoload": {
     "psr-4": {

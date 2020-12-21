@@ -23,7 +23,7 @@ class ClientTest extends TestCase
 {
     use WithClient;
 
-    public function setUp()
+    public function setUp(): void
     {
         date_default_timezone_set('Europe/Moscow');
 
@@ -34,7 +34,7 @@ class ClientTest extends TestCase
     /**
      *
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         //
     }
@@ -1010,7 +1010,7 @@ class ClientTest extends TestCase
     public function testVersion()
     {
         $version = $this->client->getServerVersion();
-        $this->assertRegExp('/(^[0-9]+.[0-9]+.[0-9]+.*$)/mi', $version);
+        $this->assertMatchesRegularExpression('/(^[0-9]+.[0-9]+.[0-9]+.*$)/mi', $version);
     }
 
     public function testServerSystemSettings()
