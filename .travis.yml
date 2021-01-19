@@ -7,9 +7,9 @@ cache:
     - $HOME/.composer/cache
 
 php:
-  - 7.1
-  - 7.2
   - 7.3
+  - 7.4
+  - 8.0
   - nightly
 
 services:
@@ -43,7 +43,13 @@ jobs:
 
     - stage: Test
       env: LOWEST_DEPENDENCIES
-      php: 7.2
+      php: 7.4
+      install:
+        - travis_retry composer update -n --prefer-dist --prefer-lowest
+
+    - stage: Test
+      env: LOWEST_DEPENDENCIES
+      php: 8.0
       install:
         - travis_retry composer update -n --prefer-dist --prefer-lowest
 
@@ -62,7 +68,7 @@ jobs:
 
     - stage: Test
       env: COVERAGE
-      php: 7.1
+      php: 7.3
       before_script:
         - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
         - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
@@ -75,7 +81,7 @@ jobs:
     - stage: Code Quality
       if: type = pull_request
       env: PULL_REQUEST_CODING_STANDARD
-      php: 7.1
+      php: 7.3
       install: travis_retry composer install --prefer-dist
       script:
         - |

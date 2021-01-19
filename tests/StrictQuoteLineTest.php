@@ -19,7 +19,7 @@ class StrictQuoteLineTest extends TestCase
     /**
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->client->write('DROP TABLE IF EXISTS cities');
         $this->client->write('

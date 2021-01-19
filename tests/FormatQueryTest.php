@@ -16,7 +16,7 @@ final class FormatQueryTest extends TestCase
     /**
      * @throws Exception
      */
-    public function setUp()
+    public function setUp(): void
     {
         date_default_timezone_set('Europe/Moscow');
 

@@ -128,19 +128,19 @@ final class ConditionsTest extends TestCase
 
         $result=$this->client->selectAsync($select, $input_params)->sql();
 
-        $this->assertNotContains('NOT_SHOW',$result);
-        $this->assertContains('s_empty_check',$result);
-        $this->assertContains('LAST_LINE_1',$result);
-        $this->assertContains('LAST_LINE_2',$result);
-        $this->assertContains('CHECL_IFINT',$result);
-        $this->assertContains('CHECK_INT',$result);
-        $this->assertContains('CHECK_STRING',$result);
-        $this->assertContains('OK_11',$result);
-        $this->assertContains('OK_22',$result);
-        $this->assertContains('OK_33',$result);
-        $this->assertContains('OK_B11',$result);
-        $this->assertContains('OK_B22',$result);
-        $this->assertContains('=today()-3',$result);
+        $this->assertStringNotContainsString('NOT_SHOW',$result);
+        $this->assertStringContainsString('s_empty_check',$result);
+        $this->assertStringContainsString('LAST_LINE_1',$result);
+        $this->assertStringContainsString('LAST_LINE_2',$result);
+        $this->assertStringContainsString('CHECL_IFINT',$result);
+        $this->assertStringContainsString('CHECK_INT',$result);
+        $this->assertStringContainsString('CHECK_STRING',$result);
+        $this->assertStringContainsString('OK_11',$result);
+        $this->assertStringContainsString('OK_22',$result);
+        $this->assertStringContainsString('OK_33',$result);
+        $this->assertStringContainsString('OK_B11',$result);
+        $this->assertStringContainsString('OK_B22',$result);
+        $this->assertStringContainsString('=today()-3',$result);
 
 //        echo "\n----\n$result\n----\n";
 
@@ -221,7 +221,7 @@ final class ConditionsTest extends TestCase
         ];
 
         $this->assertEquals(
-            '|ZERO||  FORMAT JSON',
+            '|ZERO|| FORMAT JSON',
             $this->client->selectAsync('{if FALSE}FALSE{/if}|{if ZERO}ZERO{/if}|{if NULL}NULL{/if}| ' ,$isset)->sql()
         );
 

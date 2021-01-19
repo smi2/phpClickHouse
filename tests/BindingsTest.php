@@ -133,7 +133,7 @@ final class BindingsTest extends TestCase
         ];
 
         $a=$this->client->selectAsync(":a :b :c :aa :bb :cc ", $arr);
-        $this->assertEquals("'[A]' '[B]' '[C]' '[AA]' '[BB]' :cc  FORMAT JSON",$a->sql());
+        $this->assertEquals("'[A]' '[B]' '[C]' '[AA]' '[BB]' :cc FORMAT JSON",$a->sql());
 
         $a=$this->client->selectAsync(":a1 :a2 :a3 :a11 :a23 :a5 :arra", $arr);
         $this->assertEquals("'[A1]' '[A2]' '[A3]' '[A11]' '[A23]' '[a5]' 1,2,3,4 FORMAT JSON",$a->sql());

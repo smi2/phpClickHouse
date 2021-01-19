@@ -38,7 +38,7 @@ final class StreamTest extends TestCase
 
         $checkString='{"max":0,"cos":1}';
 
-        $this->assertContains($checkString,$bufferCheck);
+        $this->assertStringContainsString($checkString,$bufferCheck);
 
     }
     public function testStreamInsert()
