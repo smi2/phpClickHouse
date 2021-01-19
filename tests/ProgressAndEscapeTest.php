@@ -46,7 +46,7 @@ final class ProgressAndEscapeTest extends TestCase
         } else {
             $this->assertArrayHasKey('total_rows_to_read',$resultTest);
         }
-        $this->assertGreaterThan(3,$resultTest['read_rows']);
-        $this->assertGreaterThan(3,$resultTest['read_bytes']);
+        $this->assertGreaterThan(1,$resultTest['read_rows']);
+        $this->assertGreaterThan(1,$resultTest['read_bytes']);
     }
 }
