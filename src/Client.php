@@ -770,7 +770,7 @@ class Client
                         FROM system.parts 
                         WHERE active AND database=:database
                         GROUP BY table,database
-            ) USING ( table,database )
+            ) as s USING ( table,database )
             WHERE database=:database
             GROUP BY table,database
         ',
