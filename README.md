@@ -42,7 +42,10 @@ $db = new ClickHouseDB\Client(['config_array']);
 $db->ping();
 ```
 
-Last stable version for php 5.6 = `1.1.2`
+Last stable version for 
+* php 5.6 <= `1.1.2`
+* php 7.2 <= `1.3.10`
+* php 7.3 >= `1.4.x`
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
