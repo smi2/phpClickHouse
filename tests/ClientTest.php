@@ -273,6 +273,9 @@ class ClientTest extends TestCase
     }
     public function testRFCCSVAndTSVWrite()
     {
+
+        $check_hash='5774439760453101066';
+
         $fileName=$this->tmpPath.'__testRFCCSVWrite';
 
         $array_value_test="\n1\n2's'";
@@ -318,8 +321,7 @@ class ClientTest extends TestCase
 
         $st=$this->client->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
 
-
-        $this->assertEquals('5774439760453101066', $st->fetchOne('hash'));
+        $this->assertEquals($check_hash, $st->fetchOne('hash'));
 
         $ID_ARRAY=$this->client->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
 
@@ -370,7 +372,7 @@ class ClientTest extends TestCase
         $st=$this->client->select('SELECT sipHash64(strs) as hash FROM testRFCCSVWrite WHERE like(strs,\'%ABCDEFG%\') ');
 
 
-        $this->assertEquals('17721988568158798984', $st->fetchOne('hash'));
+        $this->assertEquals($check_hash, $st->fetchOne('hash'));
 
         $ID_ARRAY=$this->client->select('SELECT * FROM testRFCCSVWrite WHERE strs=\'ID_ARRAY\'')->fetchOne('arrs')[2];
 
@@ -483,10 +485,12 @@ class ClientTest extends TestCase
     }
 
     /**
-     * @expectedException \ClickHouseDB\Exception\DatabaseException
+     * @expectedException \ClickHouseDB\Exception\QueryException
      */
     public function testInsertCSVError()
     {
+        $this->expectException(\ClickHouseDB\Exception\QueryException::class);
+
         $file_data_names = [
             $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data'
         ];
@@ -639,7 +643,8 @@ class ClientTest extends TestCase
         $this->assertEquals(6408, $st->count());
 
         $st = $this->client->select('SELECT * FROM summing_url_views LIMIT 4');
-        $this->assertEquals(4, $st->countAll());
+
+        $this->assertGreaterThan(4, $st->countAll());
 
 
         $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
