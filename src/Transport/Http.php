@@ -434,14 +434,14 @@ class Http
             if (!$header_size) {
                 return false;
             }
-            $pos = strrpos($header, 'X-ClickHouse-Progress');
 
+            $pos = strrpos($header, 'X-ClickHouse-Summary:');
             if (!$pos) {
                 return false;
             }
 
             $last = substr($header, $pos);
-            $data = @json_decode(str_ireplace('X-ClickHouse-Progress:', '', $last), true);
+            $data = @json_decode(str_ireplace('X-ClickHouse-Summary:', '', $last), true);
 
             if ($data && is_callable($this->xClickHouseProgress)) {
 
@@ -657,7 +657,7 @@ class Http
     /**
      * @param callable $callback
      */
-    public function setProgressFunction(callable $callback)
+    public function setProgressFunction(callable $callback) : void
     {
         $this->xClickHouseProgress = $callback;
     }

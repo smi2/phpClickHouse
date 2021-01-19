@@ -28,16 +28,17 @@ final class ProgressAndEscapeTest extends TestCase
         global $resultTest;
 
         $this->client->settings()->set('max_block_size', 1);
-
         $this->client->progressFunction(function ($data) {
             global $resultTest;
             $resultTest=$data;
         });
-        $st=$this->client->select('SELECT number,sleep(0.2) FROM system.numbers limit 4');
+        $st=$this->client->select('SELECT number,sleep(0.1) FROM system.numbers limit 2 UNION ALL SELECT number,sleep(0.1) FROM system.numbers limit 12');
 
         // read_rows + read_bytes + total_rows
         $this->assertArrayHasKey('read_rows',$resultTest);
         $this->assertArrayHasKey('read_bytes',$resultTest);
+        $this->assertArrayHasKey('written_rows',$resultTest);
+        $this->assertArrayHasKey('written_bytes',$resultTest);
 
         if (isset($resultTest['total_rows']))
         {
@@ -45,9 +46,6 @@ final class ProgressAndEscapeTest extends TestCase
         } else {
             $this->assertArrayHasKey('total_rows_to_read',$resultTest);
         }
-
-
-
         $this->assertGreaterThan(3,$resultTest['read_rows']);
         $this->assertGreaterThan(3,$resultTest['read_bytes']);
     }
