@@ -4,6 +4,9 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2021-01-19 [Release 1.4.0]
+* Add support php 7.3 & php 8
+
 
 ### 2019-09-29 [Release 1.3.10]
 * Add two new types of authentication #139
