@@ -288,7 +288,13 @@ class CurlerRolling
 
             // send the return values to the callback function.
 
-            $key = (string) $done['handle'];
+
+            if (is_object($done['handle'])) {
+                $key = spl_object_id( $done['handle'] );
+            } else {
+                $key = (string) $done['handle'] ;
+            }
+
             $task_id = $this->handleMapTasks[$key];
             $request = $this->pendingRequests[$this->handleMapTasks[$key]];
 
@@ -367,7 +373,12 @@ class CurlerRolling
         // pool
         curl_multi_add_handle($this->handlerMulti(), $h);
 
-        $key = (string) $h;
+        if (is_object($h)) {
+            $key = spl_object_id( $h );
+        } else {
+            $key = (string) $h ;
+        }
+
         $this->handleMapTasks[$key] = $task_id;
     }
 }
