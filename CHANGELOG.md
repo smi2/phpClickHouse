@@ -4,7 +4,7 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
-### 2021-01-19 [Release 1.4.0]
+### 2021-01-19 [Release 1.4.1]
 * Add support php 7.3 & php 8
 
 
