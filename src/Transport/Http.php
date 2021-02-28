@@ -115,7 +115,7 @@ class Http
     }
 
 
-    public function setCurler()
+    public function setCurler() : void
     {
         $this->_curler = new CurlerRolling();
     }
@@ -123,7 +123,7 @@ class Http
     /**
      * @param CurlerRolling $curler
      */
-    public function setDirtyCurler(CurlerRolling $curler)
+    public function setDirtyCurler(CurlerRolling $curler) : void
     {
         if ($curler instanceof CurlerRolling) {
             $this->_curler = $curler;
@@ -133,7 +133,7 @@ class Http
     /**
      * @return CurlerRolling
      */
-    public function getCurler()
+    public function getCurler(): ?CurlerRolling
     {
         return $this->_curler;
     }
@@ -142,7 +142,7 @@ class Http
      * @param string $host
      * @param int $port
      */
-    public function setHost($host, $port = -1)
+    public function setHost(string $host, $port = -1) : void
     {
         if ($port > 0) {
             $this->_port = $port;
@@ -156,7 +156,7 @@ class Http
      *
      * @param string $caPath
      */
-    public function setSslCa($caPath)
+    public function setSslCa(string $caPath) : void
     {
         $this->sslCA = $caPath;
     }
@@ -164,7 +164,7 @@ class Http
     /**
      * @return string
      */
-    public function getUri()
+    public function getUri(): string
     {
         $proto = 'http';
         if ($this->settings()->isHttps()) {
@@ -183,7 +183,7 @@ class Http
     /**
      * @return Settings
      */
-    public function settings()
+    public function settings(): Settings
     {
         return $this->_settings;
     }
@@ -192,7 +192,7 @@ class Http
      * @param bool|int $flag
      * @return mixed
      */
-    public function verbose($flag)
+    public function verbose($flag): mixed
     {
         $this->_verbose = $flag;
         return $flag;
@@ -202,7 +202,7 @@ class Http
      * @param array $params
      * @return string
      */
-    private function getUrl($params = [])
+    private function getUrl($params = []): string
     {
         $settings = $this->settings()->getSettings();
 
@@ -229,7 +229,7 @@ class Http
      * @param array $extendinfo
      * @return CurlerRequest
      */
-    private function newRequest($extendinfo)
+    private function newRequest($extendinfo): CurlerRequest
     {
         $new = new CurlerRequest();
 
@@ -276,7 +276,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function makeRequest(Query $query, $urlParams = [], $query_as_string = false)
+    private function makeRequest(Query $query, $urlParams = [], $query_as_string = false): CurlerRequest
     {
         $sql = $query->toSql();
 
@@ -314,7 +314,7 @@ class Http
      * @param string|Query $sql
      * @return CurlerRequest
      */
-    public function writeStreamData($sql)
+    public function writeStreamData($sql): CurlerRequest
     {
 
         if ($sql instanceof Query) {
@@ -351,7 +351,7 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function writeAsyncCSV($sql, $file_name)
+    public function writeAsyncCSV($sql, $file_name): Statement
     {
         $query = new Query($sql);
 
@@ -392,7 +392,7 @@ class Http
      *
      * @return int
      */
-    public function getCountPendingQueue()
+    public function getCountPendingQueue(): int
     {
         return $this->_curler->countPending();
     }
@@ -402,7 +402,7 @@ class Http
      *
      * @param int $connectTimeOut
      */
-    public function setConnectTimeOut($connectTimeOut)
+    public function setConnectTimeOut(int $connectTimeOut)
     {
         $this->_connectTimeOut = $connectTimeOut;
     }
@@ -412,13 +412,13 @@ class Http
      *
      * @return int
      */
-    public function getConnectTimeOut()
+    public function getConnectTimeOut(): int
     {
         return $this->_connectTimeOut;
     }
 
 
-    public function __findXClickHouseProgress($handle)
+    public function __findXClickHouseProgress($handle): bool
     {
         $code = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 
@@ -455,7 +455,7 @@ class Http
             }
 
         }
-
+        return false;
     }
 
     /**
@@ -465,7 +465,7 @@ class Http
      * @return CurlerRequest
      * @throws \Exception
      */
-    public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null)
+    public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null): CurlerRequest
     {
         $urlParams = ['readonly' => 2];
         $query_as_string = false;
@@ -526,13 +526,13 @@ class Http
 
     }
 
-    public function cleanQueryDegeneration()
+    public function cleanQueryDegeneration(): bool
     {
         $this->_query_degenerations = [];
         return true;
     }
 
-    public function addQueryDegeneration(Degeneration $degeneration)
+    public function addQueryDegeneration(Degeneration $degeneration): bool
     {
         $this->_query_degenerations[] = $degeneration;
         return true;
@@ -543,7 +543,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function getRequestWrite(Query $query)
+    public function getRequestWrite(Query $query): CurlerRequest
     {
         $urlParams = ['readonly' => 0];
         return $this->makeRequest($query, $urlParams);
@@ -566,7 +566,7 @@ class Http
      * @param mixed[] $bindings
      * @return Query
      */
-    private function prepareQuery($sql, $bindings)
+    private function prepareQuery($sql, $bindings): Query
     {
 
         // add Degeneration query
@@ -586,7 +586,7 @@ class Http
      * @return CurlerRequest
      * @throws \Exception
      */
-    private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null)
+    private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null): CurlerRequest
     {
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
@@ -603,7 +603,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function prepareWrite($sql, $bindings = [])
+    private function prepareWrite($sql, $bindings = []): CurlerRequest
     {
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
@@ -617,7 +617,7 @@ class Http
      * @return bool
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function executeAsync()
+    public function executeAsync(): bool
     {
         return $this->_curler->execLoopWait();
     }
@@ -631,7 +631,7 @@ class Http
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
      */
-    public function select($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
+    public function select($sql, array $bindings = [], $whereInFile = null, $writeToFile = null): Statement
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
         $this->_curler->execOne($request);
@@ -647,7 +647,7 @@ class Http
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
      */
-    public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null)
+    public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null): Statement
     {
         $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
         $this->_curler->addQueLoop($request);
@@ -669,7 +669,7 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function write($sql, array $bindings = [], $exception = true)
+    public function write($sql, array $bindings = [], $exception = true): Statement
     {
         $request = $this->prepareWrite($sql, $bindings);
         $this->_curler->execOne($request);
@@ -688,7 +688,7 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function streaming(Stream $streamRW, CurlerRequest $request)
+    private function streaming(Stream $streamRW, CurlerRequest $request): Statement
     {
         $callable = $streamRW->getClosure();
         $stream = $streamRW->getStream();
@@ -757,7 +757,7 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamRead(Stream $streamRead, $sql, $bindings = [])
+    public function streamRead(Stream $streamRead, $sql, $bindings = []): Statement
     {
         $sql = $this->prepareQuery($sql, $bindings);
         $request = $this->getRequestRead($sql);
@@ -772,7 +772,7 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamWrite(Stream $streamWrite, $sql, $bindings = [])
+    public function streamWrite(Stream $streamWrite, $sql, $bindings = []): Statement
     {
         $sql = $this->prepareQuery($sql, $bindings);
         $request = $this->writeStreamData($sql);
