@@ -719,7 +719,7 @@ class CurlerRequest
                 $curl_opt[CURLOPT_POSTFIELDS] = $this->parameters;
 
                 if (!is_array($this->parameters)) {
-                    $this->header('Content-Length', strlen($this->parameters));
+                    $this->header('Content-Length',  mb_strlen($this->parameters, '8bit'));
                 }
             }
         }
