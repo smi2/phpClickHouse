@@ -9,6 +9,7 @@ include_once __DIR__ . '/src/Exception/ClickHouseException.php';
 include_once __DIR__ . '/src/Exception/QueryException.php';
 include_once __DIR__ . '/src/Exception/DatabaseException.php';
 include_once __DIR__ . '/src/Exception/TransportException.php';
+include_once __DIR__ . '/src/Exception/ClickHouseUnavailableException.php';
 // Client
 include_once __DIR__ . '/src/Statement.php';
 include_once __DIR__ . '/src/Client.php';
