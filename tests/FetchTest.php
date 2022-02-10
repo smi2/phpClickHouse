@@ -2,7 +2,6 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\QueryException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 final class FetchTest extends TestCase
 {
     use WithClient;
-
 
 
     public function testFetchRowKeys()
@@ -33,6 +31,7 @@ final class FetchTest extends TestCase
         $this->assertEquals(null,$result->fetchOne('q'));
         $this->assertEquals(0,$result->fetchOne('number'));
     }
+
     public function testFetchOne()
     {
         $result = $this->client->select(
@@ -51,5 +50,15 @@ final class FetchTest extends TestCase
         $this->assertEquals(0,$result->fetchRow('number'));
         $this->assertEquals(1,$result->fetchRow('number'));
         $this->assertEquals(2,$result->fetchRow('number'));
+    }
+
+    public function testCorrentInitOnFetchRow()
+    {
+        $result = $this->client->select(
+            'SELECT number FROM system.numbers LIMIT 5'
+        );
+
+        $result->fetchRow();
+        $this->assertTrue($result->isInited());
     }
 }
