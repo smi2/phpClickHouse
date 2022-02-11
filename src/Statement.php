@@ -84,7 +84,7 @@ class Statement
     /**
      * @var int
      */
-    public $iterator=0;
+    public $iterator = 0;
 
 
     public function __construct(CurlerRequest $request)
@@ -216,6 +216,14 @@ class Statement
 
     /**
      * @return bool
+     */
+    public function isInited()
+    {
+        return $this->_init;
+    }
+
+    /**
+     * @return bool
      * @throws Exception\TransportException
      */
     private function init()
@@ -224,9 +232,7 @@ class Statement
             return false;
         }
 
-
         $this->check();
-
 
         $this->_rawData = $this->response()->rawDataOrJson($this->format);
 
@@ -234,23 +240,21 @@ class Statement
             $this->_init = true;
             return false;
         }
-        $data=[];
+
+        $data = [];
         foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least', 'statistics'] as $key) {
 
             if (isset($this->_rawData[$key])) {
-                if ($key=='data')
-                {
+                if ($key=='data') {
                     $data=$this->_rawData[$key];
-                }
-                else{
+                } else {
                     $this->{$key} = $this->_rawData[$key];
                 }
-
             }
         }
 
         if (empty($this->meta)) {
-            throw  new QueryException('Can`t find meta');
+            throw new QueryException('Can`t find meta');
         }
 
         $isJSONCompact=(stripos($this->format,'JSONCompact')!==false?true:false);
@@ -258,12 +262,9 @@ class Statement
         foreach ($data as $rows) {
             $r = [];
 
-
-            if ($isJSONCompact)
-            {
-                $r[]=$rows;
-            }
-            else {
+            if ($isJSONCompact) {
+                $r[] = $rows;
+            } else {
                 foreach ($this->meta as $meta) {
                     $r[$meta['name']] = $rows[$meta['name']];
                 }
@@ -272,6 +273,7 @@ class Statement
             $this->array_data[] = $r;
         }
 
+        $this->_init = true;
 
         return true;
     }
