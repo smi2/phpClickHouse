@@ -52,7 +52,7 @@ final class FetchTest extends TestCase
         $this->assertEquals(2,$result->fetchRow('number'));
     }
 
-    public function testCorrentInitOnFetchRow()
+    public function testCorrectInitOnFetchRow()
     {
         $result = $this->client->select(
             'SELECT number FROM system.numbers LIMIT 5'
