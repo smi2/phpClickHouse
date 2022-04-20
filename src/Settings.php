@@ -33,7 +33,7 @@ class Settings
             'extremes' => false,
             'readonly' => true,
             'max_execution_time' => 20,
-            'enable_http_compression' => 0,
+            'enable_http_compression' => 1,
             'https' => false,
         ];
 
