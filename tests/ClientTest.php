@@ -271,6 +271,7 @@ class ClientTest extends TestCase
 
 
     }
+
     public function testRFCCSVAndTSVWrite()
     {
 
@@ -483,7 +484,24 @@ class ClientTest extends TestCase
         }
 
     }
-
+//    /**
+//     * @expectedException \ClickHouseDB\Exception\QueryException
+//     */
+//    public function testDBException()
+//    {
+////        $this->expectException(\ClickHouseDB\Exception\QueryException::class);
+//        $this->client->settings()->set('max_threads',1);
+//        $this->client->settings()->set('max_memory_usage_for_user',1);
+//        $this->client->settings()->set('cast_keep_nullable',1);
+//        $this->client->settings()->set('network_zstd_compression_level',123);
+////        $stat = $this->client->select("SELECT SHA1(toString(number)) as g FROM system.numbers GROUP BY g LIMIT 2 ")->rows();
+//        $stat = $this->client->write("DROP TABLE IF EXISTS arrays_test_ints");
+//        $stat = $this->client->write("CREATE TABLE IF NOT EXISTS arrays_test_ints ENGINE = Memory AS SELECT sqrt(-1)");
+////        $stat = $this->client->write("ALTER TABLE arrays_test_ints ON CLUSTER default_cluster UPDATE c2=0 WHERE 1;");
+//        echo "-----\n";
+//        var_dump($stat->response()->body());
+//        echo "-----\n";
+// }
     /**
      * @expectedException \ClickHouseDB\Exception\QueryException
      */
@@ -741,15 +759,15 @@ class ClientTest extends TestCase
 
     public function testExceptionWrite()
     {
-        $this->expectException(DatabaseException::class);
+        $this->expectException(QueryException::class);
 
         $this->client->write("DRAP TABLEX")->isError();
     }
 
     public function testExceptionInsert()
     {
-        $this->expectException(DatabaseException::class);
-        $this->expectExceptionCode(60);
+        $this->expectException(QueryException::class);
+        $this->expectExceptionCode(404);
 
         $this->client->insert('bla_bla', [
             ['HASH1', [11, 22, 33]],
@@ -767,8 +785,8 @@ class ClientTest extends TestCase
 
     public function testExceptionSelect()
     {
-        $this->expectException(DatabaseException::class);
-        $this->expectExceptionCode(60);
+        $this->expectException(QueryException::class);
+        $this->expectExceptionCode(404);
 
         $this->client->select("SELECT * FROM XXXXX_SSS")->rows();
     }

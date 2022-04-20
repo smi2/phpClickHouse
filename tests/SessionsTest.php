@@ -2,7 +2,7 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\DatabaseException;
+use ClickHouseDB\Exception\QueryException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -25,7 +25,7 @@ final class SessionsTest extends TestCase
 
     public function testCreateTableTEMPORARYNoSession()
     {
-        $this->expectException(DatabaseException::class);
+        $this->expectException(QueryException::class);
 
         $this->client->write('DROP TABLE IF EXISTS phpunti_test_xxxx');
         $this->client->write('

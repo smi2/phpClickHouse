@@ -92,6 +92,10 @@ class Http
     private $sslCA = null;
 
     /**
+     * @var null|resource
+     */
+    private $stdErrOut = null;
+    /**
      * Http constructor.
      * @param string $host
      * @param int $port
@@ -142,7 +146,7 @@ class Http
      * @param string $host
      * @param int $port
      */
-    public function setHost(string $host, $port = -1) : void
+    public function setHost(string $host, int $port = -1) : void
     {
         if ($port > 0) {
             $this->_port = $port;
@@ -189,10 +193,10 @@ class Http
     }
 
     /**
-     * @param bool|int $flag
-     * @return mixed
+     * @param bool $flag
+     * @return bool
      */
-    public function verbose($flag): mixed
+    public function verbose(bool $flag): bool
     {
         $this->_verbose = $flag;
         return $flag;
@@ -252,9 +256,8 @@ class Http
 
         $new->POST()->setRequestExtendedInfo($extendinfo);
 
-        if ($this->settings()->isEnableHttpCompression()) {
-            $new->httpCompression(true);
-        }
+        $new->httpCompression($this->settings()->isEnableHttpCompression());
+
         if ($this->settings()->getSessionId()) {
             $new->persistent();
         }
@@ -276,7 +279,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function makeRequest(Query $query, $urlParams = [], $query_as_string = false): CurlerRequest
+    private function makeRequest(Query $query, array $urlParams = [], bool $query_as_string = false): CurlerRequest
     {
         $sql = $query->toSql();
 
@@ -284,13 +287,13 @@ class Http
             $urlParams['query'] = $sql;
         }
 
-        $extendinfo = [
+        $extendInfo = [
             'sql' => $sql,
             'query' => $query,
             'format' => $query->getFormat()
         ];
 
-        $new = $this->newRequest($extendinfo);
+        $new = $this->newRequest($extendInfo);
 
         /*
          * Build URL after request making, since URL may contain auth data. This will not matter after the
@@ -303,11 +306,21 @@ class Http
         if (!$query_as_string) {
             $new->parameters_json($sql);
         }
-        if ($this->settings()->isEnableHttpCompression()) {
-            $new->httpCompression(true);
-        }
+        $new->httpCompression($this->settings()->isEnableHttpCompression());
 
         return $new;
+    }
+
+    /**
+     * @param resource $stream
+     * @return void
+     */
+    public function setStdErrOut($stream)
+    {
+        if (is_resource($stream)) {
+            $this->stdErrOut=$stream;
+        }
+
     }
 
     /**
@@ -323,13 +336,13 @@ class Http
             $query = new Query($sql);
         }
 
-        $extendinfo = [
+        $extendInfo = [
             'sql' => $sql,
             'query' => $query,
             'format' => $query->getFormat()
         ];
 
-        $request = $this->newRequest($extendinfo);
+        $request = $this->newRequest($extendInfo);
 
         /*
          * Build URL after request making, since URL may contain auth data. This will not matter after the
@@ -517,6 +530,10 @@ class Http
                     fclose($request->getResultFileHandle());
                 });
             }
+        }
+
+        if ($this->stdErrOut) {
+            $request->setStdErrOut($this->stdErrOut);
         }
         if ($this->xClickHouseProgress) {
             $request->setFunctionProgress([$this, '__findXClickHouseProgress']);

@@ -10,7 +10,7 @@ class CurlerRequest
     /**
      * @var array
      */
-    public $extendinfo = array();
+    public $extendinfo = [];
 
     /**
      * @var string|array
@@ -98,6 +98,11 @@ class CurlerRequest
      */
     private $sslCa = null;
 
+
+    /**
+     * @var null|resource
+     */
+    private $stdErrOut = null;
     /**
      * @param bool $id
      */
@@ -296,6 +301,18 @@ class CurlerRequest
     }
 
     /**
+     * @param resource $stream
+     * @return void
+     */
+    public function setStdErrOut($stream)
+    {
+        if (is_resource($stream)) {
+            $this->stdErrOut=$stream;
+        }
+
+    }
+
+    /**
      * @param bool $result
      * @return string
      */
@@ -356,7 +373,7 @@ class CurlerRequest
      * @param int $sec
      * @return $this
      */
-    public function keepAlive($sec = 60)
+    public function keepAlive(int $sec = 60)
     {
         $this->options[CURLOPT_FORBID_REUSE] = TRUE;
         $this->headers['Connection'] = 'Keep-Alive';
@@ -369,7 +386,7 @@ class CurlerRequest
      * @param bool $flag
      * @return $this
      */
-    public function verbose($flag = true)
+    public function verbose(bool $flag = true)
     {
         $this->options[CURLOPT_VERBOSE] = $flag;
         return $this;
@@ -380,7 +397,7 @@ class CurlerRequest
      * @param string $value
      * @return $this
      */
-    public function header($key, $value)
+    public function header(string $key, string $value)
     {
         $this->headers[$key] = $value;
         return $this;
@@ -389,7 +406,7 @@ class CurlerRequest
     /**
      * @return array
      */
-    public function getHeaders()
+    public function getHeaders():array
     {
         $head = [];
         foreach ($this->headers as $key => $value) {
@@ -402,16 +419,16 @@ class CurlerRequest
      * @param string $url
      * @return $this
      */
-    public function url($url)
+    public function url(string $url)
     {
         $this->url = $url;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getUrl()
+    public function getUrl():string
     {
         return $this->url;
     }
@@ -421,7 +438,7 @@ class CurlerRequest
      * @param string $id
      * @return string
      */
-    public function getUniqHash($id)
+    public function getUniqHash(string $id):string
     {
         return $id . '.' . microtime() . mt_rand(0, 1000000);
     }
@@ -429,7 +446,7 @@ class CurlerRequest
     /**
      * @param bool $flag
      */
-    public function httpCompression($flag)
+    public function httpCompression(bool $flag):void
     {
         if ($flag) {
             $this->_httpCompression = $flag;
@@ -728,7 +745,7 @@ class CurlerRequest
         $curl_opt[CURLOPT_URL] = $this->url;
 
         if (!empty($this->headers) && sizeof($this->headers)) {
-            $curl_opt[CURLOPT_HTTPHEADER] = array();
+            $curl_opt[CURLOPT_HTTPHEADER] = [];
 
             foreach ($this->headers as $key => $value) {
                 $curl_opt[CURLOPT_HTTPHEADER][] = sprintf("%s: %s", $key, $value);
@@ -750,8 +767,20 @@ class CurlerRequest
         }
 
         if ($this->options[CURLOPT_VERBOSE]) {
-            echo "\n-----------BODY REQUEST----------\n" . $curl_opt[CURLOPT_POSTFIELDS] . "\n------END--------\n";
+            $msg="\n-----------BODY REQUEST----------\n" . $curl_opt[CURLOPT_POSTFIELDS] . "\n------END--------\n";
+            if ($this->stdErrOut && is_resource($this->stdErrOut)) {
+                fwrite($this->stdErrOut,$msg);
+            } else {
+                echo $msg;
+            }
         }
+
+        if ($this->stdErrOut) {
+            if (is_resource($this->stdErrOut)) {
+                $curl_opt[CURLOPT_STDERR]=$this->stdErrOut;
+            }
+        }
+
         curl_setopt_array($this->handle, $curl_opt);
         return true;
     }

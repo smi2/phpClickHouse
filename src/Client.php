@@ -272,9 +272,9 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public function verbose()
+    public function verbose(bool $flag = true):bool
     {
         return $this->transport()->verbose(true);
     }
@@ -525,12 +525,12 @@ class Client
     }
 
     /**
-     *       * Prepares the values to insert from the associative array.
-     *       * There may be one or more lines inserted, but then the keys inside the array list must match (including in the sequence)
-     *       *
-     *       * @param mixed[] $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
-     *       * @return mixed[][] - list of arrays - 0 => fields, 1 => list of value arrays for insertion
-     *       */
+     * Prepares the values to insert from the associative array.
+     * There may be one or more lines inserted, but then the keys inside the array list must match (including in the sequence)
+     *
+     * @param mixed[] $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+     * @return mixed[][] - list of arrays - 0 => fields, 1 => list of value arrays for insertion
+     **/
     public function prepareInsertAssocBulk(array $values)
     {
         if (isset($values[0]) && is_array($values[0])) { //случай, когда много строк вставляется
