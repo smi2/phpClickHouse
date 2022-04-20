@@ -824,6 +824,26 @@ $db->verbose();
 ```
 
 
+Verbose to file|steam:
+
+```php
+    // init client
+    $cli = new Client($config);
+    $cli->verbose();
+    // temp stream
+    $stream = fopen('php://memory', 'r+');
+    // set stream to curl
+    $cli->transport()->setStdErrOut($stream);
+    // exec curl
+    $st=$cli->select('SElect 1 as ppp');
+    $st->rows();
+    // rewind 
+    fseek($stream,0,SEEK_SET);
+    
+    // output
+    echo stream_get_contents($stream);
+```
+
 
 ### Dev & PHPUnit Test
 
