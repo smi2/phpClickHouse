@@ -127,8 +127,6 @@ class Client
         if (isset($connectParams['sslCA'])) {
             $this->transport->setSslCa($connectParams['sslCA']);
         }
-
-        $this->enableHttpCompression();
     }
 
     /**
