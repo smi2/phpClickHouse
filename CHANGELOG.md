@@ -5,7 +5,7 @@ PHP ClickHouse wrapper - Changelog
 ======================
 
 
-### 2022-04-20  [Release 1.4.4]
+### 2022-04-23  [Release 1.4.4]
 * Fix ping() for windows users 
 * ping(true) throw TransportException if can`t connect/ping
 
