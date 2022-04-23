@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ClickHouseDB;
 
 use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Exception\TransportException;
 use ClickHouseDB\Query\Degeneration;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Query\Degeneration\Conditions;
@@ -735,11 +736,15 @@ class Client
     /**
      * Ping server
      *
+     * @param bool $throwException
      * @return bool
+     * @throws TransportException
      */
-    public function ping()
+    public function ping(bool $throwException=false): bool
     {
-        return $this->transport()->ping();
+        $result=$this->transport()->ping();
+        if ($throwException && !$result) throw new TransportException('Can`t ping server');
+        return $result;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Client;
 use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Exception\TransportException;
 use ClickHouseDB\Query\WhereInFile;
 use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Quote\FormatLine;
@@ -803,6 +804,10 @@ class ClientTest extends TestCase
 
         $db = new Client($config);
         $this->assertFalse($db->ping());
+
+        $this->expectException(TransportException::class);
+        $db->ping(true);
+
     }
 
     public function testSettings()

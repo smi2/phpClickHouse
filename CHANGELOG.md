@@ -5,6 +5,10 @@ PHP ClickHouse wrapper - Changelog
 ======================
 
 
+### 2022-04-20  [Release 1.4.4]
+* Fix ping() for windows users 
+* ping(true) throw TransportException if can`t connect/ping
+
 ### 2022-04-20  [Release 1.4.3]
 * Fix: prevent enable_http_compression parameter from being overridden #164
 * For correct work with utf-8 . I am working on server with PHP 5.6.40 Update CurlerRequest.php #158

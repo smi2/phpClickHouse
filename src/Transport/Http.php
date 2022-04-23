@@ -575,7 +575,7 @@ class Http
         $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
         $this->_curler->execOne($request);
 
-        return $request->response()->body() === 'Ok.' . PHP_EOL;
+        return trim($request->response()->body()) === 'Ok.';
     }
 
     /**
