@@ -158,6 +158,14 @@ print_r($statement->info());
 // if clickhouse-server version >= 54011
 $db->settings()->set('output_format_write_statistics',true);
 print_r($statement->statistics());
+
+
+// Statement Iterator
+$state=$this->client->select('SELECT (number+1) as nnums FROM system.numbers LIMIT 5');
+foreach ($state as $key=>$value) {
+    echo $value['nnums'];
+}
+
 ```
 
 Select result as tree:

@@ -273,6 +273,18 @@ class ClientTest extends TestCase
 
     }
 
+
+    public function testStatementIterator()
+    {
+        $calc=0;
+        $state=$this->client->select('SELECT (number+1) as nnums FROM system.numbers LIMIT 5');
+        foreach ($state as $key=>$value) {
+            $calc+=$value['nnums'];
+        }
+        $this->assertEquals(15,$calc);
+    }
+
+
     public function testRFCCSVAndTSVWrite()
     {
 

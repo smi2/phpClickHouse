@@ -224,11 +224,7 @@ final class ConditionsTest extends TestCase
             '|ZERO|| FORMAT JSON',
             $this->client->selectAsync('{if FALSE}FALSE{/if}|{if ZERO}ZERO{/if}|{if NULL}NULL{/if}| ' ,$isset)->sql()
         );
-
-
-
     }
-
 
     public function testSqlDisableConditions()
     {

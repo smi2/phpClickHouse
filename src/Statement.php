@@ -9,7 +9,7 @@ use ClickHouseDB\Query\Query;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
 
-class Statement
+class Statement implements \Iterator
 {
     /**
      * @var string|mixed
@@ -342,14 +342,6 @@ class Statement
     /**
      *
      */
-    public function dumpRaw()
-    {
-        print_r($this->_rawData);
-    }
-
-    /**
-     *
-     */
     public function dump()
     {
         $this->_request->dump();
@@ -579,5 +571,30 @@ class Statement
             return [];
         }
         return $tree;
+    }
+
+
+    public function rewind(): void {
+        $this->iterator = 0;
+    }
+
+    public function current() {
+        if (!isset($this->array_data[$this->iterator])) {
+            return null;
+        }
+        return $this->array_data[$this->iterator];
+    }
+
+    public function key(): int {
+        return $this->iterator;
+    }
+
+    public function next(): void {
+        ++$this->iterator;
+    }
+
+    public function valid(): bool {
+        $this->init();
+        return isset($this->array_data[$this->iterator]);
     }
 }
