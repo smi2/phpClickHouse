@@ -339,7 +339,7 @@ $Bindings = [
   'from_table' => 'table'
 ];
 
-$statement = $db->selectAsync("SELECT FROM {table} WHERE datetime=:datetime limit {limit}", $Bindings);
+$statement = $db->selectAsync("SELECT FROM {from_table} WHERE datetime=:datetime limit {limit}", $Bindings);
 
 // Double bind in {KEY}
 $keys=[
