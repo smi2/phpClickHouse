@@ -183,7 +183,7 @@ class Client
     /**
      * @return Settings
      */
-    public function setTimeout(float $timeout)
+    public function setTimeout(int $timeout)
     {
         return $this->settings()->max_execution_time($timeout);
     }

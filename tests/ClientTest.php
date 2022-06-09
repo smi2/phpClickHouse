@@ -918,13 +918,13 @@ class ClientTest extends TestCase
         $this->create_table_summing_url_views();
 
 
-        $this->client->setTimeout(0.01);
+        $this->client->settings()->set('max_execution_time',0.1);
 
 
         $stat = $this->client->insertBatchFiles('summing_url_views', $file_data_names, [
             'event_time', 'url_hash', 'site_id', 'views', 'v_00', 'v_55'
         ]);
-        $this->client->ping();
+
     }
     /**
      *

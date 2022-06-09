@@ -58,16 +58,23 @@ final class FormatQueryTest extends TestCase
     {
         $this->client->database('default');
 
-        $timeout = 1.5;
+        $timeout = 0.55;
         $this->client->setTimeout($timeout);      // 1500 ms
-        $this->assertSame($timeout, $this->client->getTimeout());
+        $this->client->select('SELECT 123,123 as ping ')->rows();
+        $this->assertSame(intval($timeout), $this->client->getTimeout());
 
         $timeout = 10.0;
         $this->client->setTimeout($timeout);      // 10 seconds
-        $this->assertSame($timeout, $this->client->getTimeout());
+        $this->client->select('SELECT 123,123 as ping ')->rows();
+        $this->assertSame(intval($timeout), $this->client->getTimeout());
 
-        $timeout = 5.0;
+        $timeout = 5.14;
         $this->client->setConnectTimeOut($timeout);      // 5 seconds
+        $this->client->select('SELECT 123,123 as ping ')->rows();
         $this->assertSame(5, $this->client->getConnectTimeOut());
     }
+
+
+
+
 }

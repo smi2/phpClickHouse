@@ -172,12 +172,12 @@ class Settings
     }
 
     /**
-     * @param int|float $time
+     * @param int $time
      * @return $this
      */
     public function max_execution_time($time)
     {
-        $this->set('max_execution_time', $time);
+        $this->set('max_execution_time', intval($time));
         return $this;
     }
 

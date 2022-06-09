@@ -63,7 +63,7 @@ $config = [
 ];
 $db = new ClickHouseDB\Client($config);
 $db->database('default');
-$db->setTimeout(1.5);      // 1500 ms
+$db->setTimeout(1.5);      // 1 second , support only Int value
 $db->setTimeout(10);       // 10 seconds
 $db->setConnectTimeOut(5); // 5 seconds
 $db->ping(true); // if can`t connect throw exception  
@@ -788,7 +788,7 @@ $cli->ping();
 $result=$cl->truncateTable('dbNane.TableName_sharded');
 
 // get one active node ( random )
-$cl->activeClient()->setTimeout(0.01);
+$cl->activeClient()->setTimeout(500);
 $cl->activeClient()->write("DROP TABLE IF EXISTS default.asdasdasd ON CLUSTER cluster2");
 
 
