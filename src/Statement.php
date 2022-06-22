@@ -578,6 +578,10 @@ class Statement implements \Iterator
         $this->iterator = 0;
     }
 
+    /**
+     * @return mixed
+     */
+    #[\ReturnTypeWillChange]
     public function current() {
         if (!isset($this->array_data[$this->iterator])) {
             return null;
