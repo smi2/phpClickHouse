@@ -125,8 +125,8 @@ class CurlerRolling
     {
         $response = curl_multi_getcontent($oneHandle);
         $header_size = curl_getinfo($oneHandle, CURLINFO_HEADER_SIZE);
-        $header = substr($response, 0, $header_size);
-        $body = substr($response, $header_size);
+        $header = substr($response ?? '', 0, $header_size);
+        $body = substr($response ?? '', $header_size);
 
         $n = new CurlerResponse();
         $n->_headers = $this->parse_headers_from_curl_response($header);
