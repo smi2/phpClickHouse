@@ -488,12 +488,12 @@ class CurlerRequest
     /**
      * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
      *
-     * @param int $seconds
+     * @param float $seconds
      * @return $this
      */
-    public function connectTimeOut($seconds = 1)
+    public function connectTimeOut(float $seconds = 1.0)
     {
-        $this->options[CURLOPT_CONNECTTIMEOUT] = $seconds;
+        $this->options[CURLOPT_CONNECTTIMEOUT_MS] = (int) ($seconds*1000.0);
         return $this;
     }
 
@@ -503,9 +503,9 @@ class CurlerRequest
      * @param float $seconds
      * @return $this
      */
-    public function timeOut($seconds = 10)
+    public function timeOut(float $seconds = 10)
     {
-        return $this->timeOutMs(intval($seconds * 1000));
+        return $this->timeOutMs((int) ($seconds * 1000.0));
     }
 
     /**
@@ -514,7 +514,7 @@ class CurlerRequest
      * @param int $ms millisecond
      * @return $this
      */
-    protected function timeOutMs($ms = 10000)
+    protected function timeOutMs(int $ms = 10000)
     {
         $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;

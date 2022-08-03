@@ -189,9 +189,9 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return float
      */
-    public function getTimeout()
+    public function getTimeout(): float
     {
         return $this->settings()->getTimeOut();
     }
@@ -199,15 +199,15 @@ class Client
     /**
      * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
      */
-    public function setConnectTimeOut(int $connectTimeOut)
+    public function setConnectTimeOut(float $connectTimeOut)
     {
         $this->transport()->setConnectTimeOut($connectTimeOut);
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function getConnectTimeOut()
+    public function getConnectTimeOut(): float
     {
         return $this->transport()->getConnectTimeOut();
     }
