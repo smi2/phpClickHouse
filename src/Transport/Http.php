@@ -77,9 +77,9 @@ class Http
     /**
      * Count seconds (int)
      *
-     * @var int
+     * @var float
      */
-    private $_connectTimeOut = 5;
+    private $_connectTimeOut = 5.0;
 
     /**
      * @var callable
@@ -413,9 +413,9 @@ class Http
     /**
      * set Connect TimeOut in seconds [CURLOPT_CONNECTTIMEOUT] ( int )
      *
-     * @param int $connectTimeOut
+     * @param float $connectTimeOut
      */
-    public function setConnectTimeOut(int $connectTimeOut)
+    public function setConnectTimeOut(float $connectTimeOut)
     {
         $this->_connectTimeOut = $connectTimeOut;
     }
@@ -425,7 +425,7 @@ class Http
      *
      * @return int
      */
-    public function getConnectTimeOut(): int
+    public function getConnectTimeOut(): float
     {
         return $this->_connectTimeOut;
     }

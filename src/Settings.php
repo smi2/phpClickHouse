@@ -32,7 +32,7 @@ class Settings
         $default = [
             'extremes' => false,
             'readonly' => true,
-            'max_execution_time' => 20,
+            'max_execution_time' => 20.0,
             'enable_http_compression' => 1,
             'https' => false,
         ];
@@ -93,9 +93,9 @@ class Settings
     }
 
     /**
-     * @return mixed
+     * @return float
      */
-    public function getTimeOut()
+    public function getTimeOut(): float
     {
         return $this->get('max_execution_time');
     }
@@ -172,12 +172,12 @@ class Settings
     }
 
     /**
-     * @param int $time
+     * @param float $time
      * @return $this
      */
-    public function max_execution_time($time)
+    public function max_execution_time(float $time)
     {
-        $this->set('max_execution_time', intval($time));
+        $this->set('max_execution_time',$time);
         return $this;
     }
 
