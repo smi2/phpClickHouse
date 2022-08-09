@@ -189,9 +189,12 @@ class Client
     }
 
     /**
-     * @return float
+     * Return max_execution_time in Second `int`
+     * M(Seconds, max_execution_time, 0, "", 0) in /src/Core/Settings.h#L52
+     *
+     * @return int
      */
-    public function getTimeout(): float
+    public function getTimeout(): int
     {
         return $this->settings()->getTimeOut();
     }

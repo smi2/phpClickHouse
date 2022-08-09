@@ -93,9 +93,9 @@ class Settings
     }
 
     /**
-     * @return float
+     * @return int
      */
-    public function getTimeOut(): float
+    public function getTimeOut(): int
     {
         return $this->get('max_execution_time');
     }
