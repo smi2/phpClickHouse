@@ -33,5 +33,10 @@
       "ClickHouseDB\\Tests\\": "tests/",
       "ClickHouseDB\\Example\\": "example/"
     }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }
