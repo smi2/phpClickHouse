@@ -444,29 +444,23 @@ class Http
             }
 
             $header = substr($response, 0, $header_size);
-            if (!$header_size) {
+            if (!$header) {
                 return false;
             }
 
-            $pos = strrpos($header, 'X-ClickHouse-Summary:');
-            if (!$pos) {
-                return false;
-            }
+            $match = [];
+            if (preg_match_all('/^X-ClickHouse-(?:Progress|Summary):(.*?)$/im', $header, $match)) {
+                $data = @json_decode(end($match[1]), true);
+                if ($data && is_callable($this->xClickHouseProgress)) {
 
-            $last = substr($header, $pos);
-            $data = @json_decode(str_ireplace('X-ClickHouse-Summary:', '', $last), true);
+                    if (is_array($this->xClickHouseProgress)) {
+                        call_user_func_array($this->xClickHouseProgress, [$data]);
+                    } else {
+                        call_user_func($this->xClickHouseProgress, $data);
+                    }
 
-            if ($data && is_callable($this->xClickHouseProgress)) {
-
-                if (is_array($this->xClickHouseProgress)) {
-                    call_user_func_array($this->xClickHouseProgress, [$data]);
-                } else {
-                    call_user_func($this->xClickHouseProgress, $data);
                 }
-
-
             }
-
         }
         return false;
     }
