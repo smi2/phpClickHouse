@@ -15,7 +15,8 @@
   "require": {
     "php": "^7.3|^8.0",
     "ext-curl": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-mbstring": "*"
   },
   "require-dev": {
     "doctrine/coding-standard": "^8.2",
