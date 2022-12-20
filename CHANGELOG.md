@@ -4,6 +4,16 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2022-12-20  [Release 1.5.0]
+
+* Change exceptionCode in Clickhouse version 22.8.3.13 (official build) #180 
+* Fix Docker for tests, Change the correct Docker image name #177
+* Some type fix
+* Fix types: max_execution_time & setConnectTimeOut, undo: Support floats in timeout and connect_timeout #173
+* add mbstring to composer require #183
+* fixed progressFunction #182
+* Add allow_plugins setting since Composer 2.2.x #178
+
 
 ### 2022-04-23  [Release 1.4.4]
 * Fix ping() for windows users 
