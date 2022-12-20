@@ -780,7 +780,7 @@ class ClientTest extends TestCase
     public function testExceptionInsert()
     {
         $this->expectException(QueryException::class);
-        $this->expectExceptionCode(404);
+        $this->expectExceptionCode(60); // Table default.ZZZZZ doesn't exist
 
         $this->client->insert('bla_bla', [
             ['HASH1', [11, 22, 33]],
@@ -799,7 +799,7 @@ class ClientTest extends TestCase
     public function testExceptionSelect()
     {
         $this->expectException(QueryException::class);
-        $this->expectExceptionCode(404);
+        $this->expectExceptionCode(60); // Table not exists
 
         $this->client->select("SELECT * FROM XXXXX_SSS")->rows();
     }

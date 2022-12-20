@@ -93,11 +93,11 @@ class Settings
     }
 
     /**
-     * @return float
+     * @return int
      */
-    public function getTimeOut(): float
+    public function getTimeOut(): int
     {
-        return $this->get('max_execution_time');
+        return intval($this->get('max_execution_time'));
     }
 
     /**
@@ -172,10 +172,13 @@ class Settings
     }
 
     /**
-     * @param float $time
+     *
+     * max_execution_time - is integer in Seconds clickhouse source
+     *
+     * @param int $time
      * @return $this
      */
-    public function max_execution_time(float $time)
+    public function max_execution_time(int $time)
     {
         $this->set('max_execution_time',$time);
         return $this;
@@ -193,7 +196,7 @@ class Settings
      * @param array $settings_array
      * @return $this
      */
-    public function apply($settings_array)
+    public function apply(array $settings_array)
     {
         foreach ($settings_array as $key => $value) {
             $this->set($key, $value);
@@ -205,7 +208,7 @@ class Settings
     /**
      * @param int|bool $flag
      */
-    public function setReadOnlyUser($flag)
+    public function setReadOnlyUser(mixed $flag):void
     {
         $this->_ReadOnlyUser = $flag;
     }
@@ -213,7 +216,7 @@ class Settings
     /**
      * @return bool
      */
-    public function isReadOnlyUser()
+    public function isReadOnlyUser():bool
     {
         return $this->_ReadOnlyUser;
     }
@@ -222,7 +225,7 @@ class Settings
      * @param string $name
      * @return mixed|null
      */
-    public function getSetting($name)
+    public function getSetting(string $name)
     {
         if (!isset($this->settings[$name])) {
             return null;

@@ -191,7 +191,7 @@ class Client
     /**
      * @return float
      */
-    public function getTimeout(): float
+    public function getTimeout(): int
     {
         return $this->settings()->getTimeOut();
     }

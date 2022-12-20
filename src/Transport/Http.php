@@ -423,7 +423,7 @@ class Http
     /**
      * get ConnectTimeOut in seconds
      *
-     * @return int
+     * @return float
      */
     public function getConnectTimeOut(): float
     {
