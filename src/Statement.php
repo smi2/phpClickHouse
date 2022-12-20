@@ -138,11 +138,12 @@ class Statement implements \Iterator
         $body = trim($body);
         $mathes = [];
 
-        // Code: 115, e.displayText() = DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception
-        // Code: 192, e.displayText() = DB::Exception: Unknown user x, e.what() = DB::Exception
-        // Code: 60, e.displayText() = DB::Exception: Table default.ZZZZZ doesn't exist., e.what() = DB::Exception
+        // Code: 115. DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception
+        // Code: 192. DB::Exception: Unknown user x, e.what() = DB::Exception
+        // Code: 60. DB::Exception: Table default.ZZZZZ doesn't exist., e.what() = DB::Exception
+        // Code: 516. DB::Exception: test_username: Authentication failed: password is incorrect or there is no user with such name. (AUTHENTICATION_FAILED) (version 22.8.3.13 (official build))
 
-        if (preg_match("%Code: (\d+),\se\.displayText\(\) \=\s*DB\:\:Exception\s*:\s*(.*)(?:\,\s*e\.what|\(version).*%ius", $body, $mathes)) {
+        if (preg_match("%Code:\s(\d+).\s*DB\:\:Exception\s*:\s*(.*)(?:\,\s*e\.what|\(version).*%ius", $body, $mathes)) {
             return ['code' => $mathes[1], 'message' => $mathes[2]];
         }
 
