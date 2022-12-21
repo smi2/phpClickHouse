@@ -30,6 +30,7 @@ class ClientTest extends TestCase
 
         $this->client->enableHttpCompression(true);
         $this->client->ping();
+        $this->client->setReadOnlyUser(false);
     }
 
     /**

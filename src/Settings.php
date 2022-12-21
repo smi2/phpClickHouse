@@ -208,7 +208,7 @@ class Settings
     /**
      * @param int|bool $flag
      */
-    public function setReadOnlyUser(mixed $flag):void
+    public function setReadOnlyUser($flag):void
     {
         $this->_ReadOnlyUser = $flag;
     }
