@@ -28,6 +28,11 @@ class Bindings implements Degeneration
         }
     }
 
+    public function getBind(): array
+    {
+        return $this->bindings;
+    }
+
     /**
      * @param string $column
      * @param mixed  $value

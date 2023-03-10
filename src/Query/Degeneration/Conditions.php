@@ -22,6 +22,10 @@ class Conditions implements Degeneration
         }
     }
 
+    public function getBind(): array
+    {
+        return $this->bindings;
+    }
 
     static function __ifsets($matches, $markers)
     {
