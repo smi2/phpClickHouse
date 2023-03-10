@@ -817,9 +817,14 @@ class Client
         return $this->select(<<<CLICKHOUSE
 SELECT *
 FROM system.parts 
-WHERE like(table,'%$table%') AND database='$database'$whereActiveClause
+WHERE table={tbl:String} AND database = {db:String}
+$whereActiveClause
 ORDER BY max_date $limitClause
-CLICKHOUSE
+CLICKHOUSE,
+            [
+                'db'=>$database,
+                'tbl'=>$table
+            ]
         )->rowsAsTree('name');
     }
 
