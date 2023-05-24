@@ -57,4 +57,16 @@ final class BindingsPostTest extends TestCase
         }
     }
 
+    public function testArrayAsPostParam()
+    {
+        $arr = [1,3,6];
+        $result = $this->client->select(
+            'SELECT {arr:Array(UInt8)} as arr',
+            [
+                'arr'=>json_encode($arr)
+            ]
+        );
+        $this->assertEquals($arr, $result->fetchRow('arr'));
+    }
+
 }

@@ -110,7 +110,7 @@ class Query
     public function isUseInUrlBindingsParams():bool
     {
         //  'query=select {p1:UInt8} + {p2:UInt8}' -F "param_p1=3" -F "param_p2=4"
-        return preg_match('#{[\w+]+:[\w+]+}#',$this->sql);
+        return preg_match('#{[\w+]+:[\w+()]+}#',$this->sql);
 
     }
     public function getUrlBindingsParams():array
