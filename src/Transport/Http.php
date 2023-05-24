@@ -299,6 +299,10 @@ class Http
          * Build URL after request making, since URL may contain auth data. This will not matter after the
          * implantation of the todo in the `HTTP:newRequest()` method.
          */
+
+        if ($query->isUseInUrlBindingsParams()) {
+            $urlParams=array_replace_recursive($query->getUrlBindingsParams());
+        }
         $url = $this->getUrl($urlParams);
         $new->url($url);
 

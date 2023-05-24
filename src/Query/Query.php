@@ -104,8 +104,34 @@ class Query
      */
     public function getFormat()
     {
-
         return $this->format;
+    }
+
+    public function isUseInUrlBindingsParams():bool
+    {
+        //  'query=select {p1:UInt8} + {p2:UInt8}' -F "param_p1=3" -F "param_p2=4"
+        return preg_match('#{[\w+]+:[\w+()]+}#',$this->sql);
+
+    }
+    public function getUrlBindingsParams():array
+    {
+        $out=[];
+        if (sizeof($this->degenerations)) {
+            foreach ($this->degenerations as $degeneration) {
+                if ($degeneration instanceof Degeneration) {
+                    $params=$degeneration->getBind();
+                    break;
+                    // need first response
+                }
+            }
+        }
+        if (sizeof($params)) {
+            foreach ($params as $key=>$value)
+            {
+                $out['param_'.$key]=$value;
+            }
+        }
+        return $out;
     }
 
     public function toSql()
