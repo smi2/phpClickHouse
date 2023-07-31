@@ -1,0 +1,5 @@
+.*                  export-ignore
+/examples           export-ignore
+/tests              export-ignore
+*.dist              export-ignore
+include.php         export-ignore
