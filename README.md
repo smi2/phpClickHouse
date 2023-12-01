@@ -59,7 +59,8 @@ $config = [
     'host' => '192.168.1.1',
     'port' => '8123',
     'username' => 'default',
-    'password' => ''
+    'password' => '',
+    'https' => true
 ];
 $db = new ClickHouseDB\Client($config);
 $db->database('default');
