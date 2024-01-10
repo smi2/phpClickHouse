@@ -113,6 +113,8 @@ class StrictQuoteLine
                 return (string) $value;
             }
 
+            $value = is_bool($value) ? ($value ? 'true' : 'false') : $value;
+
             if (is_string($value) && $encode) {
                 if ($tabEncode) {
                     return str_replace(["\t", "\n"], ['\\t', '\\n'], $value);
