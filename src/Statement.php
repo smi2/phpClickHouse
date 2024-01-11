@@ -535,6 +535,14 @@ class Statement implements \Iterator
     }
 
     /**
+     * @return false|string
+    */
+    public function jsonRows()
+    {
+        return json_encode($this->rows(), JSON_PRETTY_PRINT);
+    }
+
+    /**
      * @param array|string $arr
      * @param null|string|array $path
      * @return array
