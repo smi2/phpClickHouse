@@ -38,7 +38,7 @@ use function trim;
  */
 class Client
 {
-    const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
+    const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow','CSVWithNamesAndTypes','TSVWithNamesAndTypes'];
 
     /** @var Http */
     private $transport;
