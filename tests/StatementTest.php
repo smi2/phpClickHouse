@@ -38,7 +38,7 @@ final class StatementTest extends TestCase
         $this->assertInstanceOf(Statement::class, $statement);
 
         $this->expectException(DatabaseException::class);
-        $this->expectDeprecationMessage($exceptionMessage);
+        $this->expectExceptionMessage($exceptionMessage);
         $this->expectExceptionCode($exceptionCode);
 
         $statement->error();
