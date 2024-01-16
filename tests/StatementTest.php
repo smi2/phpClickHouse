@@ -17,6 +17,39 @@ use PHPUnit\Framework\TestCase;
  */
 final class StatementTest extends TestCase
 {
+    use WithClient;
+
+    public function testIsError()
+    {
+        $result = $this->client->select(
+            'SELECT throwIf(1=1, \'Raised error\');'
+        );
+
+        $this->assertGreaterThanOrEqual(500, $result->getRequest()->response()->http_code());
+        $this->assertTrue($result->isError());
+    }
+
+    /**
+     * @link https://github.com/smi2/phpClickHouse/issues/144
+     * @link https://clickhouse.com/docs/en/interfaces/http#http_response_codes_caveats
+     *
+     * During execution of query it is possible to get ExceptionWhileProcessing in Clickhouse
+     * In that case HTTP status code of Clickhouse interface would be 200
+     * and it is kind of "expected" behaviour of CH
+     */
+    public function testIsErrorWithOkStatusCode()
+    {
+        // value of "number" in query must be greater than 100 thousand
+        // for part of CH response to be flushed to client with 200 status code
+        // and further ExceptionWhileProcessing occurrence
+        $result = $this->client->select(
+            'SELECT number, throwIf(number=100100, \'Raised error\') FROM system.numbers;'
+        );
+
+        $this->assertEquals(200, $result->getRequest()->response()->http_code());
+        $this->assertTrue($result->isError());
+    }
+
     /**
      * @dataProvider dataProvider
      */
