@@ -164,7 +164,7 @@ class Client
      *
      * @return bool
      */
-    public function enableQueryConditions()
+    public function enableQueryConditions(): bool
     {
         return $this->transport->addQueryDegeneration(new Conditions());
     }
@@ -174,18 +174,20 @@ class Client
      *
      * @param string $host
      */
-    public function setHost($host)
+    public function setHost($host): void
     {
         $this->connectHost = $host;
         $this->transport()->setHost($host);
     }
 
     /**
+     * max_execution_time , in int value (seconds)
+     *
      * @return Settings
      */
-    public function setTimeout(int $timeout)
+    public function setTimeout(int|float $timeout):Settings
     {
-        return $this->settings()->max_execution_time($timeout);
+        return $this->settings()->max_execution_time(intval($timeout));
     }
 
     /**
@@ -199,7 +201,7 @@ class Client
     /**
      * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
      */
-    public function setConnectTimeOut(float $connectTimeOut)
+    public function setConnectTimeOut(float $connectTimeOut): void
     {
         $this->transport()->setConnectTimeOut($connectTimeOut);
     }
@@ -215,7 +217,7 @@ class Client
     /**
      * @return Http
      */
-    public function transport()
+    public function transport(): Http
     {
         if (!$this->transport) {
             throw  new \InvalidArgumentException('Empty transport class');
@@ -227,7 +229,7 @@ class Client
     /**
      * @return string
      */
-    public function getConnectHost()
+    public function getConnectHost(): string
     {
         return $this->connectHost;
     }
@@ -235,7 +237,7 @@ class Client
     /**
      * @return string
      */
-    public function getConnectPassword()
+    public function getConnectPassword(): string
     {
         return $this->connectPassword;
     }
@@ -243,7 +245,7 @@ class Client
     /**
      * @return string
      */
-    public function getConnectPort()
+    public function getConnectPort(): string
     {
         return $this->connectPort;
     }
