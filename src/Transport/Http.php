@@ -301,11 +301,11 @@ class Http
          */
 
         if ($query->isUseInUrlBindingsParams()) {
-            $urlParams=array_replace_recursive($query->getUrlBindingsParams());
+            $urlParams = array_replace_recursive($urlParams, $query->getUrlBindingsParams());
         }
+
         $url = $this->getUrl($urlParams);
         $new->url($url);
-
 
         if (!$query_as_string) {
             $new->parameters_json($sql);
