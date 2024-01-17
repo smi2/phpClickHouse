@@ -186,9 +186,9 @@ class Client
      * @param int|float $timeout
      * @return Settings
      */
-    public function setTimeout($timeout):Settings
+    public function setTimeout(int $timeout): Settings
     {
-        return $this->settings()->max_execution_time(intval($timeout));
+        return $this->settings()->max_execution_time($timeout);
     }
 
     /**
