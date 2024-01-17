@@ -183,9 +183,10 @@ class Client
     /**
      * max_execution_time , in int value (seconds)
      *
+     * @param int|float $timeout
      * @return Settings
      */
-    public function setTimeout(int|float $timeout):Settings
+    public function setTimeout($timeout):Settings
     {
         return $this->settings()->max_execution_time(intval($timeout));
     }
