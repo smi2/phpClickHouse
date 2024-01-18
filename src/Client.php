@@ -182,9 +182,6 @@ class Client
 
     /**
      * max_execution_time , in int value (seconds)
-     *
-     * @param int|float $timeout
-     * @return Settings
      */
     public function setTimeout(int $timeout): Settings
     {
