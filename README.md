@@ -1,12 +1,9 @@
 PHP ClickHouse wrapper
 ======================
 
-[![Build Status](https://travis-ci.org/smi2/phpClickHouse.svg)](https://travis-ci.org/smi2/phpClickHouse)
 [![Downloads](https://poser.pugx.org/smi2/phpClickHouse/d/total.svg)](https://packagist.org/packages/smi2/phpClickHouse)
 [![Packagist](https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg)](https://packagist.org/packages/smi2/phpClickHouse)
 [![Licence](https://poser.pugx.org/smi2/phpClickHouse/license.svg)](https://packagist.org/packages/smi2/phpClickHouse)
-[![Quality Score](https://scrutinizer-ci.com/g/smi2/phpClickHouse/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
-[![Code Coverage](https://scrutinizer-ci.com/g/smi2/phpClickHouse/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
 
 ## Features
 
