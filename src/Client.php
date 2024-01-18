@@ -183,9 +183,9 @@ class Client
     /**
      * max_execution_time , in int value (seconds)
      */
-    public function setTimeout(int $timeout): Settings
+    public function setTimeout($timeout): Settings
     {
-        return $this->settings()->max_execution_time($timeout);
+        return $this->settings()->max_execution_time(intval($timeout));
     }
 
     /**
