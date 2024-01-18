@@ -11,6 +11,8 @@ use ClickHouseDB\Transport\CurlerResponse;
 
 class Statement implements \Iterator
 {
+    private const CLICKHOUSE_ERROR_REGEX = "%Code:\s(\d+)\.\s*DB::Exception\s*:\s*(.*)(?:,\s*e\.what|\(version).*%ius";
+
     /**
      * @var string|mixed
      */
@@ -133,21 +135,26 @@ class Statement implements \Iterator
      * @param string $body
      * @return array|bool
      */
-    private function parseErrorClickHouse($body)
+    private function parseErrorClickHouse(string $body)
     {
         $body = trim($body);
-        $mathes = [];
+        $matches = [];
 
         // Code: 115. DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception
         // Code: 192. DB::Exception: Unknown user x, e.what() = DB::Exception
         // Code: 60. DB::Exception: Table default.ZZZZZ doesn't exist., e.what() = DB::Exception
         // Code: 516. DB::Exception: test_username: Authentication failed: password is incorrect or there is no user with such name. (AUTHENTICATION_FAILED) (version 22.8.3.13 (official build))
 
-        if (preg_match("%Code:\s(\d+).\s*DB\:\:Exception\s*:\s*(.*)(?:\,\s*e\.what|\(version).*%ius", $body, $mathes)) {
-            return ['code' => $mathes[1], 'message' => $mathes[2]];
+        if (preg_match(self::CLICKHOUSE_ERROR_REGEX, $body, $matches)) {
+            return ['code' => $matches[1], 'message' => $matches[2]];
         }
 
         return false;
+    }
+
+    private function hasErrorClickhouse(string $body): bool {
+
+        return preg_match(self::CLICKHOUSE_ERROR_REGEX, $body) === 1;
     }
 
     /**
@@ -197,12 +204,24 @@ class Statement implements \Iterator
      * @return bool
      * @throws Exception\TransportException
      */
-    public function isError()
+    public function isError(): bool
     {
-        return ($this->response()->http_code() !== 200 || $this->response()->error_no());
+        if ($this->response()->http_code() !== 200) {
+            return true;
+        }
+
+        if ($this->response()->error_no()) {
+            return true;
+        }
+
+        if ($this->hasErrorClickhouse($this->response()->body())) {
+            return true;
+        }
+
+        return false;
     }
 
-    private function check() : bool
+    private function check(): bool
     {
         if (!$this->_request->isResponseExists()) {
             throw QueryException::noResponse();
