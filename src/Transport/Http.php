@@ -113,7 +113,7 @@ class Http
             $this->_authMethod = $authMethod;
         }
 
-        $this->_settings = new Settings($this);
+        $this->_settings = new Settings();
 
         $this->setCurler();
     }

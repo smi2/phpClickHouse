@@ -2,15 +2,8 @@
 
 namespace ClickHouseDB;
 
-use ClickHouseDB\Transport\Http;
-
 class Settings
 {
-    /**
-     * @var Http
-     */
-    private $client = null;
-
     /**
      * @var array
      */
@@ -19,15 +12,9 @@ class Settings
     private $_ReadOnlyUser = false;
 
     /**
-     * @var bool
-     */
-    private $_isHttps = false;
-
-    /**
      * Settings constructor.
-     * @param Http $client
      */
-    public function __construct(Http $client)
+    public function __construct()
     {
         $default = [
             'extremes' => false,
@@ -38,7 +25,6 @@ class Settings
         ];
 
         $this->settings = $default;
-        $this->client = $client;
     }
 
     /**
