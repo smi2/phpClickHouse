@@ -189,7 +189,7 @@ class Client
     }
 
     /**
-     * @return float
+     * @return int
      */
     public function getTimeout(): int
     {
