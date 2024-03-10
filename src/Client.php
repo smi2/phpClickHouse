@@ -68,19 +68,19 @@ class Client
     public function __construct(array $connectParams, array $settings = [])
     {
         if (!isset($connectParams['username'])) {
-            throw  new \InvalidArgumentException('not set username');
+            throw new \InvalidArgumentException('not set username');
         }
 
         if (!isset($connectParams['password'])) {
-            throw  new \InvalidArgumentException('not set password');
+            throw new \InvalidArgumentException('not set password');
         }
 
         if (!isset($connectParams['port'])) {
-            throw  new \InvalidArgumentException('not set port');
+            throw new \InvalidArgumentException('not set port');
         }
 
         if (!isset($connectParams['host'])) {
-            throw  new \InvalidArgumentException('not set host');
+            throw new \InvalidArgumentException('not set host');
         }
 
         if (array_key_exists('auth_method', $connectParams)) {
@@ -89,7 +89,7 @@ class Client
                     'Invalid value for "auth_method" param. Should be one of [%s].',
                     json_encode(Http::AUTH_METHODS_LIST)
                 );
-                throw  new \InvalidArgumentException($errorMessage);
+                throw new \InvalidArgumentException($errorMessage);
             }
 
             $this->authMethod = $connectParams['auth_method'];
@@ -218,7 +218,7 @@ class Client
     public function transport(): Http
     {
         if (!$this->transport) {
-            throw  new \InvalidArgumentException('Empty transport class');
+            throw new \InvalidArgumentException('Empty transport class');
         }
 
         return $this->transport;
@@ -612,7 +612,7 @@ class Client
 
         foreach ($fileNames as $fileName) {
             if (!is_file($fileName) || !is_readable($fileName)) {
-                throw  new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
+                throw new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
             if (empty($columns)) {
