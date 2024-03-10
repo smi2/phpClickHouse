@@ -241,11 +241,11 @@ class Client
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getConnectPort(): int
+    public function getConnectPort(): string
     {
-        return $this->connectPort;
+        return strval($this->connectPort);
     }
 
     /**
