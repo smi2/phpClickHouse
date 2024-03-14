@@ -618,7 +618,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function prepareWrite($sql, $bindings = []): CurlerRequest
+    private function prepareWrite($sql, $bindings = [], ?string $forceResponseFormat = null): CurlerRequest
     {
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
@@ -626,8 +626,8 @@ class Http
 
         $query = $this->prepareQuery($sql, $bindings);
 
-        if (strpos($sql, 'CREATE') === 0 || strpos($sql, 'DROP') === 0 || strpos($sql, 'ALTER') === 0) {
-            $query->setFormat('JSON');
+        if (null !== $forceResponseFormat) {
+            $query->setFormat($forceResponseFormat);
         }
 
         return $this->getRequestWrite($query);
@@ -689,9 +689,9 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function write($sql, array $bindings = [], $exception = true): Statement
+    public function write($sql, array $bindings = [], $exception = true, ?string $forceResponseFormat = null): Statement
     {
-        $request = $this->prepareWrite($sql, $bindings);
+        $request = $this->prepareWrite($sql, $bindings, $forceResponseFormat);
         $this->_curler->execOne($request);
         $response = new Statement($request);
         if ($exception) {
