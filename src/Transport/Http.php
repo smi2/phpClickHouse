@@ -626,6 +626,10 @@ class Http
 
         $query = $this->prepareQuery($sql, $bindings);
 
+        if (strpos($sql, 'ON CLUSTER') === false) {
+            return $this->getRequestWrite($query);
+        }
+
         if (strpos($sql, 'CREATE') === 0 || strpos($sql, 'DROP') === 0 || strpos($sql, 'ALTER') === 0) {
             $query->setFormat('JSON');
         }
