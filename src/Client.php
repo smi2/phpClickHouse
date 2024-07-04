@@ -52,7 +52,7 @@ class Client
     /** @var string */
     private $connectHost;
 
-    /** @var string */
+    /** @var int */
     private $connectPort;
 
     /** @var int */
@@ -97,7 +97,7 @@ class Client
 
         $this->connectUsername = $connectParams['username'];
         $this->connectPassword = $connectParams['password'];
-        $this->connectPort = $connectParams['port'];
+        $this->connectPort = intval($connectParams['port']);
         $this->connectHost = $connectParams['host'];
 
         // init transport class
@@ -245,7 +245,7 @@ class Client
      */
     public function getConnectPort(): string
     {
-        return $this->connectPort;
+        return strval($this->connectPort);
     }
 
     /**
