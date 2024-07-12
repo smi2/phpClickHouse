@@ -219,4 +219,9 @@ class Settings
 
         return $this->get($name);
     }
+
+    public function clear():void
+    {
+        $this->settings = [];
+    }
 }
