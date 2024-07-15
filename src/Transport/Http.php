@@ -95,6 +95,12 @@ class Http
      * @var null|resource
      */
     private $stdErrOut = null;
+
+    /**
+     * @var null|resource
+     */
+    private $handle = null;
+
     /**
      * Http constructor.
      * @param string $host
@@ -235,7 +241,7 @@ class Http
      */
     private function newRequest($extendinfo): CurlerRequest
     {
-        $new = new CurlerRequest();
+        $new = new CurlerRequest(false, $this->getHandle());
 
         switch ($this->_authMethod) {
             case self::AUTH_METHOD_QUERY_STRING:
@@ -266,7 +272,8 @@ class Http
         }
 
         $new->timeOut($this->settings()->getTimeOut());
-        $new->connectTimeOut($this->_connectTimeOut);//->keepAlive(); // one sec
+        $new->connectTimeOut($this->_connectTimeOut);
+        $new->keepAlive();
         $new->verbose(boolval($this->_verbose));
 
         return $new;
@@ -569,7 +576,7 @@ class Http
      */
     public function ping(): bool
     {
-        $request = new CurlerRequest();
+        $request = new CurlerRequest(false, $this->getHandle());
         $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
         $this->_curler->execOne($request);
 
@@ -802,4 +809,22 @@ class Http
         $request = $this->writeStreamData($sql);
         return $this->streaming($streamWrite, $request);
     }
+
+    public function __destruct()
+    {
+        if ($this->handle) {
+            curl_close($this->handle);
+        }
+    }
+
+
+    public function getHandle()
+    {
+        if (!$this->handle) {
+            $this->handle = curl_init();
+        }
+
+        return $this->handle;
+    }
+
 }
