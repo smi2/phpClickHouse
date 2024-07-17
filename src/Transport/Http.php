@@ -122,6 +122,7 @@ class Http
         $this->_settings = new Settings();
 
         $this->setCurler();
+        $this->setHandle();
     }
 
 
@@ -241,7 +242,7 @@ class Http
      */
     private function newRequest($extendinfo): CurlerRequest
     {
-        $new = new CurlerRequest(false, $this->getHandle());
+        $new = new CurlerRequest(false, $this->handle);
 
         switch ($this->_authMethod) {
             case self::AUTH_METHOD_QUERY_STRING:
@@ -576,7 +577,7 @@ class Http
      */
     public function ping(): bool
     {
-        $request = new CurlerRequest(false, $this->getHandle());
+        $request = new CurlerRequest(false, $this->handle);
         $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
         $this->_curler->execOne($request);
 
@@ -818,13 +819,9 @@ class Http
     }
 
 
-    public function getHandle()
+    public function setHandle()
     {
-        if (!$this->handle) {
-            $this->handle = curl_init();
-        }
-
-        return $this->handle;
+        $this->handle = curl_init();
     }
 
 }
