@@ -286,7 +286,7 @@ class Statement implements \Iterator
                 $r[] = $rows;
             } else {
                 foreach ($this->meta as $meta) {
-                    $r[$meta['name']] = ($meta['type'] === 'Int64')
+                    $r[$meta['name']] = $meta['type'] === 'Int64'
                         ? (int) $rows[$meta['name']]
                         : $rows[$meta['name']];
                 }
