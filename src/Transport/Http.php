@@ -756,18 +756,16 @@ class Http
 
             $request->header('Transfer-Encoding', 'chunked');
 
-
             if ($streamRW->isWrite()) {
                 $request->setReadFunction($callable);
             } else {
                 $request->setWriteFunction($callable);
 
-
 //                $request->setHeaderFunction($callableHead);
             }
 
 
-            $this->_curler->execOne($request, true);
+            $this->_curler->execOne($request);
             $response = new Statement($request);
             if ($response->isError()) {
                 $response->error();
@@ -817,7 +815,6 @@ class Http
             curl_close($this->handle);
         }
     }
-
 
     public function setHandle()
     {
