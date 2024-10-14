@@ -108,4 +108,6 @@ class Bindings implements Degeneration
 
         return $sql;
     }
+
+    
 }

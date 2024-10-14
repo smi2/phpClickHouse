@@ -396,6 +396,7 @@ class Client
         return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
     }
 
+
     /**
      * @return bool
      */

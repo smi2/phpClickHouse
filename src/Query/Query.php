@@ -64,6 +64,33 @@ class Query
         $this->format = $format;
     }
 
+    public function update(array $data, string $table, string $condition)
+    {
+        if (empty($data) || empty($table) || empty($condition)) {
+            throw new QueryException('Invalid parameters for update');
+        }
+
+        $setClause = [];
+        foreach ($data as $key => $value) {
+            $setClause[] = "$key = :$key"; 
+        }
+        $setClause = implode(', ', $setClause);
+        $sql = "UPDATE $table SET $setClause WHERE $condition";
+
+        return $sql; 
+    }
+
+    public function delete(string $table, string $condition)
+    {
+
+        if (empty($table) || empty($condition)) {
+            throw new QueryException('Invalid parameters for delete');
+        }
+
+        $sql = "DELETE FROM $table WHERE $condition";
+
+        return $sql; //
+    }
 
     private function applyFormatQuery()
     {
