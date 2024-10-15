@@ -415,7 +415,7 @@ class Http
     }
 
     /**
-     * set Connect TimeOut in seconds [CURLOPT_CONNECTTIMEOUT] ( int )
+     * set Connect TimeOut in seconds [CURLOPT_CONNECTTIMEOUT_MS] ( float ) ($seconds*1000.0)
      *
      * @param float $connectTimeOut
      */
@@ -425,7 +425,7 @@ class Http
     }
 
     /**
-     * get ConnectTimeOut in seconds
+     * get ConnectTimeOut in seconds,  CURLOPT_CONNECTTIMEOUT_MS
      *
      * @return float
      */
