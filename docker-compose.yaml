@@ -1,0 +1,40 @@
+
+services:
+  php:
+    image: php:8.1-cli  # Use the desired PHP version
+    container_name: php_app
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+    working_dir: /app
+    entrypoint: ["php", "./vendor/bin/phpunit"]  # Entry point to run PHPUnit tests
+    environment:
+      - CLICKHOUSE_HOST=clickhouse  # Hostname of the ClickHouse service
+      - CLICKHOUSE_PORT=8123  # Default HTTP port for ClickHouse
+      - CLICKHOUSE_USER=default  # Default username
+      - CLICKHOUSE_PASSWORD=  # Default password (set if needed)
+      - CLICKHOUSE_TMPPATH=/tmp/clickhouse  # Temporary path for ClickHouse
+    depends_on:
+      - composer
+      - clickhouse
+
+  composer:
+    image: composer:2.1  # Use the desired Composer version
+    container_name: composer
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+    working_dir: /app
+    command: ["install"]  # Install dependencies
+
+
+  clickhouse:
+    image: yandex/clickhouse-server:latest  # Use the latest ClickHouse image
+    container_name: clickhouse_server
+    ports:
+      - "8123:8123"  # HTTP port
+      - "9000:9000"  # TCP port
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse  # Persist data
+    restart: always
+  
+volumes:
+  clickhouse_data:

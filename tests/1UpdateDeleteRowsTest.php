@@ -5,7 +5,7 @@ use ClickHouseDB\Query\Query;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Client;
 
-class QueryTest extends TestCase
+class UpdateDeleteRowsTest extends TestCase
 {
     protected $query;
     protected $client;
@@ -14,7 +14,7 @@ class QueryTest extends TestCase
     {
         // Initialize ClickHouse client
         $this->client = new Client([
-            'host' => 'localhost',
+            'host' => getenv('CLICKHOUSE_HOST'),
             'port' => 8123,
             'username' => 'default',
             'password' => '',
@@ -22,9 +22,9 @@ class QueryTest extends TestCase
         ]);
 
         // Create a test table and insert initial data
-        $this->client->write('CREATE TABLE IF NOT EXISTS test_table (id UInt32, column1 String, column2 UInt32) ENGINE = MergeTree() ORDER BY id');
-        $this->client->write('INSERT INTO test_table (id, column1, column2) VALUES (1, "value1", 10)');
-
+        $this->createTestTable();
+        $this->insertTestData();
+        
         // Initialize the Query object
         $this->query = new Query('SELECT * FROM test_table');
     }
@@ -35,10 +35,28 @@ class QueryTest extends TestCase
         $this->client->write('DROP TABLE IF EXISTS test_table');
     }
 
+    private function createTestTable()
+    {
+        $this->client->write('CREATE TABLE IF NOT EXISTS test_table (id UInt32, column1 String, column2 UInt32) ENGINE = MergeTree() ORDER BY id');
+    }
+
+    private function insertTestData()
+    {
+        $data = [
+            [1, "value1", 10],
+            [2, "value2", 20],
+            [3, "value3", 30]
+        ];
+        
+        foreach ($data as $row) {
+            $this->client->write("INSERT INTO test_table (id, column1, column2) VALUES ({$row[0]}, '{$row[1]}', {$row[2]})");
+        }
+    }
+
     public function testUpdate()
     {
         // Arrange
-        $data = ['column1' => 'newValue', 'column2' => 42];
+        $data = ['column1' => 'updatedValue', 'column2' => 42];
         $table = 'test_table';
         $condition = 'id = 1';
 

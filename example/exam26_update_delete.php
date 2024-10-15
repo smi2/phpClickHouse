@@ -4,14 +4,15 @@ use ClickHouseDB\Query\Query;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Client;
 
-// Initialize ClickHouse client
-$client = new Client([
-    'host' => 'localhost',
-    'port' => 8123,
-    'username' => 'default',
-    'password' => '',
-    'database' => 'test_db'
-]);
+include_once __DIR__ . '/../include.php';
+//
+$config = include_once __DIR__ . '/00_config_connect.php';
+
+
+echo "\nPrepare....\n";
+$client = new ClickHouseDB\Client($config);
+$client->ping();
+echo "OK!\n";
 
 // Create a Query object
 $query = new Query('SELECT * FROM test_table');
