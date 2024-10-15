@@ -118,7 +118,7 @@ class CurlerRequest
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_TIMEOUT => 10,
-            CURLOPT_CONNECTTIMEOUT => 5, // Количество секунд ожидания при попытке соединения
+            // CURLOPT_CONNECTTIMEOUT => 5, // Количество секунд ожидания при попытке соединения
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_HEADER => TRUE,
@@ -487,6 +487,7 @@ class CurlerRequest
 
     /**
      * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
+     * CURLOPT_CONNECTTIMEOUT_MS
      *
      * @param float $seconds
      * @return $this
