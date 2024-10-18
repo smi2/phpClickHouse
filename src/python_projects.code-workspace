@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../../python_projects"
+		},
+		{
+			"name": "phpClickHouse",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"php.problems.scope": "all"
+	}
+}

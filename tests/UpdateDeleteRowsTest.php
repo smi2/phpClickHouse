@@ -3,7 +3,7 @@
 use PHPUnit\Framework\TestCase;
 use ClickHouseDB\Query\Query;
 use ClickHouseDB\Exception\QueryException;
-use ClickHouseDB\Client;
+use ClickHouseDB\NewClient;
 
 class UpdateDeleteRowsTest extends TestCase
 {
@@ -13,7 +13,7 @@ class UpdateDeleteRowsTest extends TestCase
     protected function setUp(): void
     {
         // Initialize ClickHouse client
-        $this->client = new Client([
+        $this->client = new NewClient([
             'host' => getenv('CLICKHOUSE_HOST'),
             'port' => 8123,
             'username' => 'default',
@@ -25,8 +25,6 @@ class UpdateDeleteRowsTest extends TestCase
         $this->createTestTable();
         $this->insertTestData();
         
-        // Initialize the Query object
-        $this->query = new Query('SELECT * FROM test_table');
     }
 
     protected function tearDown(): void
