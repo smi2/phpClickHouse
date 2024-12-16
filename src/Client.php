@@ -292,13 +292,13 @@ class Client
      * @param string|null $useSessionId
      * @return $this
      */
-    public function useSession(string $useSessionId = null)
+    public function useSession(string $useSessionId = '')
     {
         if (!$this->settings()->getSessionId()) {
             if (!$useSessionId) {
                 $this->settings()->makeSessionId();
             } else {
-                $this->settings()->session_id($useSessionId);
+                $this->settings()->swhereInFileession_id($useSessionId);
             }
         }
         return $this;
@@ -383,14 +383,15 @@ class Client
     }
 
     /**
-     * @param mixed[] $bindings
+     * @param string $sql
+     * @param array $bindings
      * @return Statement
      */
     public function select(
         string $sql,
         array $bindings = [],
-        WhereInFile $whereInFile = null,
-        WriteToFile $writeToFile = null
+        ?WhereInFile $whereInFile = null,
+        ?WriteToFile $writeToFile = null
     )
     {
         return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
@@ -437,8 +438,8 @@ class Client
     public function selectAsync(
         string $sql,
         array $bindings = [],
-        WhereInFile $whereInFile = null,
-        WriteToFile $writeToFile = null
+        ?WhereInFile $whereInFile = null,
+        ?WriteToFile $writeToFile = null
     )
     {
         return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
@@ -805,14 +806,14 @@ class Client
     /**
      * List of partitions
      *
-     * @return mixed[][]
+     * @return array
      * @throws \Exception
      */
-    public function partitions(string $table, int $limit = null, bool $active = null)
+    public function partitions(string $table, int $limit = 0, ?bool $active = null)
     {
         $database = $this->settings()->getDatabase();
         $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int)$active);
-        $limitClause = $limit !== null ? ' LIMIT ' . $limit : '';
+        $limitClause = $limit > 0 ? ' LIMIT ' . $limit : '';
 
         return $this->select(<<<CLICKHOUSE
 SELECT *

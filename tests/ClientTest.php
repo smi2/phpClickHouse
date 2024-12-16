@@ -118,7 +118,7 @@ class ClientTest extends TestCase
                             fwrite($handle, json_encode($j) . PHP_EOL);
                             break;
                         default:
-                            fputcsv($handle, $j);
+                            fputcsv($handle, $j,",",'"',"\\");
                     }
                     $rows++;
                 }
@@ -556,7 +556,7 @@ class ClientTest extends TestCase
 
         $handle = fopen($file_name, 'w');
         foreach ($array as $row) {
-            fputcsv($handle, $row);
+            fputcsv($handle, $row,",",'"',"\\");
         }
 
         fclose($handle);

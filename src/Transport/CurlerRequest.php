@@ -124,7 +124,6 @@ class CurlerRequest
             CURLOPT_HEADER => TRUE,
             CURLOPT_FOLLOWLOCATION => TRUE,
             CURLOPT_AUTOREFERER => 1, // при редиректе подставлять в «Referer:» значение из «Location:»
-            CURLOPT_BINARYTRANSFER => 1, // передавать в binary-safe
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_USERAGENT => 'smi2/PHPClickHouse/client',
         );
