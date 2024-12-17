@@ -152,9 +152,18 @@ class Statement implements \Iterator
         return false;
     }
 
-    private function hasErrorClickhouse(string $body): bool {
+    private function hasErrorClickhouse(string $body, string $contentType): bool {
+        if (false === stripos($contentType, 'application/json')) {
+            return preg_match(self::CLICKHOUSE_ERROR_REGEX, $body) === 1;
+        }
 
-        return preg_match(self::CLICKHOUSE_ERROR_REGEX, $body) === 1;
+        try {
+            json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -214,7 +223,7 @@ class Statement implements \Iterator
             return true;
         }
 
-        if ($this->hasErrorClickhouse($this->response()->body())) {
+        if ($this->hasErrorClickhouse($this->response()->body(), $this->response()->content_type())) {
             return true;
         }
 
