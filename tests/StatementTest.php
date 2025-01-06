@@ -51,6 +51,26 @@ final class StatementTest extends TestCase
     }
 
     /**
+     * @link https://github.com/smi2/phpClickHouse/issues/223
+     * @see src/Statement.php:14
+     *
+     * The response data may legitimately contain text that matches the
+     * CLICKHOUSE_ERROR_REGEX pattern. This is particularly common when querying
+     * system tables like system.mutations, where error messages are stored as data
+     */
+    public function testIsNotErrorWhenJsonBodyContainsDbExceptionMessage()
+    {
+        $result = $this->client->select(
+            "SELECT 
+                    'mutation_123456' AS mutation_id,
+                    'Code: 243. DB::Exception: Cannot reserve 61.64 GiB, not enough space. (NOT_ENOUGH_SPACE) (version 24.3.2.23 (official build))' AS latest_fail_reason"
+        );
+
+        $this->assertEquals(200, $result->getRequest()->response()->http_code());
+        $this->assertFalse($result->isError());
+    }
+
+    /**
      * @dataProvider dataProvider
      */
     public function testParseErrorClickHouse(
