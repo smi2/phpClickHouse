@@ -298,7 +298,7 @@ class Client
             if (!$useSessionId) {
                 $this->settings()->makeSessionId();
             } else {
-                $this->settings()->swhereInFileession_id($useSessionId);
+                $this->settings()->session_id($useSessionId);
             }
         }
         return $this;
