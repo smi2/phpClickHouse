@@ -61,7 +61,7 @@ class StreamInsert
             //
             $this->request->header('Transfer-Encoding', 'chunked');
             $this->request->setReadFunction($callback);
-            $this->curlerRolling->execOne($this->request);
+            $this->curlerRolling->execOne($this->request, true);
             $statement = new Statement($this->request);
             $statement->error();
             return $statement;

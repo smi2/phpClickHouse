@@ -106,7 +106,7 @@ class CurlerRequest
     /**
      * @param bool $id
      */
-    public function __construct($id = false, $handle = null)
+    public function __construct($id = false)
     {
         $this->id = $id;
 
@@ -127,7 +127,23 @@ class CurlerRequest
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_USERAGENT => 'smi2/PHPClickHouse/client',
         );
-        $this->handle = $handle;
+    }
+
+    /**
+     *
+     */
+    public function __destruct()
+    {
+        $this->close();
+    }
+
+
+    public function close()
+    {
+        if ($this->handle) {
+            curl_close($this->handle);
+        }
+        $this->handle = null;
     }
 
     /**
@@ -358,7 +374,10 @@ class CurlerRequest
      */
     public function keepAlive(int $sec = 60)
     {
-        $this->headers['Connection'] = 'keep-alive';
+        $this->options[CURLOPT_FORBID_REUSE] = TRUE;
+        $this->headers['Connection'] = 'Keep-Alive';
+        $this->headers['Keep-Alive'] = $sec;
+
         return $this;
     }
 

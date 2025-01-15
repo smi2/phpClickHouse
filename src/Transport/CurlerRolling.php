@@ -239,15 +239,20 @@ class CurlerRolling
 
     /**
      * @param CurlerRequest $request
+     * @param bool $auto_close
      * @return mixed
      * @throws TransportException
      */
-    public function execOne(CurlerRequest $request)
+    public function execOne(CurlerRequest $request, $auto_close = false)
     {
         $h = $request->handle();
         curl_exec($h);
 
         $request->setResponse($this->makeResponse($h));
+
+        if ($auto_close) {
+            $request->close();
+        }
 
         return $request->response()->http_code();
     }
