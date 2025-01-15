@@ -4,6 +4,28 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2025-01-14 [Release 1.6.0]
+* Support PHP 8.4
+
+### 2024-01-18 [Release 1.5.3]
+* Fix release 1.5.2
+* Support php 7
+* Update Statement.php #204
+* fix(#202): Fix converting boolean when inserting into int and fix(#194): Fix unexpected readonly mode with specific string in query #203
+* Update README.md #199
+* remove dev files for --prefer-dist #192
+
+
+
+### 2024-01-16 [Release 1.5.2]
+* Update Statement.php #204
+* fix(#202): Fix converting boolean when inserting into int and fix(#194): Fix unexpected readonly mode with specific string in query #203
+* Update README.md #199
+* remove dev files for --prefer-dist #192
+
+### May 25, 2023 [ 1.5.1 ]  
+* BREAKING CHANGES Post type bindings support
+
 ### 2022-12-20  [Release 1.5.0]
 
 * Change exceptionCode in Clickhouse version 22.8.3.13 (official build) #180 
