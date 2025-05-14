@@ -42,6 +42,10 @@ class ValueFormatter
             return $value->getValue();
         }
 
+        if (is_object($value) && property_exists($value, 'value')) {
+            return $value->value;
+        }
+
         if (is_object($value) && is_callable([$value, '__toString'])) {
             $value = (string) $value;
         }
