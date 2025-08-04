@@ -636,8 +636,12 @@ class Http
         if (strpos($sql, 'ON CLUSTER') === false) {
             return $this->getRequestWrite($query);
         }
-
-        if (strpos($sql, 'CREATE') === 0 || strpos($sql, 'DROP') === 0 || strpos($sql, 'ALTER') === 0) {
+        if (
+            str_starts_with($sql, 'CREATE')
+            || str_starts_with($sql, 'DROP')
+            || str_starts_with($sql, 'ALTER')
+            || str_starts_with($sql, 'RENAME')
+        ) {
             $query->setFormat('JSON');
         }
 
