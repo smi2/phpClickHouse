@@ -13,11 +13,13 @@ use const PHP_EOL;
 
 class Http
 {
+    const AUTH_METHOD_NONE         = 0;
     const AUTH_METHOD_HEADER       = 1;
     const AUTH_METHOD_QUERY_STRING = 2;
     const AUTH_METHOD_BASIC_AUTH   = 3;
 
     const AUTH_METHODS_LIST = [
+        self::AUTH_METHOD_NONE,
         self::AUTH_METHOD_HEADER,
         self::AUTH_METHOD_QUERY_STRING,
         self::AUTH_METHOD_BASIC_AUTH,
@@ -90,6 +92,11 @@ class Http
      * @var null|string
      */
     private $sslCA = null;
+
+    /**
+     * @var array
+     */
+    private $curlOptions = [];
 
     /**
      * @var null|resource
@@ -172,6 +179,16 @@ class Http
     }
 
     /**
+     * Sets additional curl options.
+     *
+     * @param array $options
+     */
+    public function setCurlOptions(array $options) : void
+    {
+        $this->curlOptions = $options;
+    }
+
+    /**
      * @return string
      */
     public function getUri(): string
@@ -180,13 +197,27 @@ class Http
         if ($this->settings()->isHttps()) {
             $proto = 'https';
         }
-        $uri = $proto . '://' . $this->_host;
-        if (stripos($this->_host, '/') !== false || stripos($this->_host, ':') !== false) {
+
+        $host = $this->_host;
+
+        $containsPort = false;
+        if (count(explode(":", $host)) > 1) {
+            $host = "[".$host."]";
+            $containsPort = stripos($host, ']:') !== false;
+        } else {
+            $containsPort = stripos($host, ':') !== false;
+        }
+
+        $uri = $proto . '://' . $host;
+
+        if (stripos($host, '/') !== false || $containsPort) {
             return $uri;
         }
+
         if (intval($this->_port) > 0) {
             return $uri . ':' . $this->_port;
         }
+
         return $uri;
     }
 
@@ -269,6 +300,16 @@ class Http
         }
         if ($this->sslCA) {
             $new->setSslCa($this->sslCA);
+        }
+
+        foreach ($this->curlOptions as $k => $v) {
+            if ($k == CURLOPT_HTTPHEADER && is_array($v)) {
+                foreach ($v as $hk => $hv) {
+                    $new->header($hk, $hv);
+                }
+            } else {
+                $new->option($k, $v);
+            }
         }
 
         $new->timeOut($this->settings()->getTimeOut());

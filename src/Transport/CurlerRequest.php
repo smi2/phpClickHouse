@@ -345,7 +345,7 @@ class CurlerRequest
      * @param mixed $value
      * @return $this
      */
-    private function option($key, $value)
+    public function option($key, $value)
     {
         $this->options[$key] = $value;
         return $this;
