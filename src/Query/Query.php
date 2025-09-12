@@ -13,6 +13,11 @@ class Query
     protected $sql;
 
     /**
+     * @var string
+     */
+    protected $originalSql;
+
+    /**
      * @var string|null
      */
     protected $format = null;
@@ -52,7 +57,7 @@ class Query
         {
             throw new QueryException('Empty Query');
         }
-        $this->sql = $sql;
+        $this->sql = $this->originalSql = $sql;
         $this->degenerations = $degenerations;
     }
 
@@ -110,7 +115,7 @@ class Query
     public function isUseInUrlBindingsParams():bool
     {
         //  'query=select {p1:UInt8} + {p2:UInt8}' -F "param_p1=3" -F "param_p2=4"
-        return preg_match('#{[\w+]+:[\w+()]+}#',$this->sql);
+        return preg_match('#{[\w+]+:[\w+()]+}#',$this->originalSql);
 
     }
     public function getUrlBindingsParams():array
