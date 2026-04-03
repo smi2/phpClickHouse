@@ -388,7 +388,7 @@ class Statement implements \Iterator
     }
 
     /**
-     * @param bool $key
+     * @param bool|string $key
      * @return array|mixed|null
      * @throws Exception\TransportException
      */
@@ -397,7 +397,8 @@ class Statement implements \Iterator
         $this->init();
 
         if (!is_array($this->statistics)) {
-            return null;
+            // Fallback to X-ClickHouse-Summary header (e.g. for INSERT queries)
+            return $this->summary($key);
         }
 
         if (!$key) return $this->statistics;
@@ -408,6 +409,36 @@ class Statement implements \Iterator
 
         return $this->statistics[$key];
 
+    }
+
+    /**
+     * Returns data from the X-ClickHouse-Summary response header.
+     *
+     * ClickHouse sends this header for INSERT/write queries with stats like
+     * written_rows, written_bytes, etc.
+     *
+     * @param bool|string $key
+     * @return array|mixed|null
+     */
+    public function summary($key = false)
+    {
+        $raw = $this->response()->headers('X-ClickHouse-Summary');
+
+        if (!$raw) {
+            return null;
+        }
+
+        $summary = json_decode($raw, true);
+
+        if (!is_array($summary)) {
+            return null;
+        }
+
+        if (!$key) {
+            return $summary;
+        }
+
+        return $summary[$key] ?? null;
     }
 
     /**
