@@ -1,10 +1,9 @@
-version: '3'
 services:
 
-    clickhouse-server:
+    clickhouse-21:
         image: clickhouse/clickhouse-server:21.9
-        hostname: clickhouse
-        container_name: clickhouse
+        hostname: clickhouse-21
+        container_name: clickhouse-21
         ports:
         - 19000:9000
         - 8123:8123
@@ -12,7 +11,28 @@ services:
             net.core.somaxconn: 1024
             net.ipv4.tcp_syncookies: 0
         volumes:
-            - "./docker-clickhouse:/var/lib/clickhouse"
+            - "./docker-clickhouse-21:/var/lib/clickhouse"
+        ulimits:
+            nofile:
+                soft: 262144
+                hard: 262144
+
+    clickhouse-latest:
+        image: clickhouse/clickhouse-server:26.3.3.20
+        hostname: clickhouse-latest
+        container_name: clickhouse-latest
+        environment:
+            CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+            CLICKHOUSE_PASSWORD: ""
+        ports:
+        - 19001:9000
+        - 8124:8123
+        sysctls:
+            net.core.somaxconn: 1024
+            net.ipv4.tcp_syncookies: 0
+        volumes:
+            - "./docker-clickhouse-latest:/var/lib/clickhouse"
+            - "./clickhouse-latest-config/allow_deprecated.xml:/etc/clickhouse-server/users.d/allow_deprecated.xml:ro"
         ulimits:
             nofile:
                 soft: 262144
