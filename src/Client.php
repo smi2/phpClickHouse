@@ -128,6 +128,10 @@ class Client
         if (isset($connectParams['sslCA'])) {
             $this->transport->setSslCa($connectParams['sslCA']);
         }
+
+        if (isset($connectParams['curl_options']) && is_array($connectParams['curl_options'])) {
+            $this->transport->setCurlOptions($connectParams['curl_options']);
+        }
     }
 
     /**

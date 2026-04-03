@@ -188,6 +188,8 @@ class CurlerResponse
         }
 
         echo $msg;
+
+        return '';
     }
 
     /**

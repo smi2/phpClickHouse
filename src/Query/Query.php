@@ -129,6 +129,7 @@ class Query
     public function getUrlBindingsParams():array
     {
         $out=[];
+        $params=[];
         if (sizeof($this->degenerations)) {
             foreach ($this->degenerations as $degeneration) {
                 if ($degeneration instanceof Degeneration) {
