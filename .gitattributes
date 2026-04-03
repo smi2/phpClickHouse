@@ -1,5 +1,7 @@
 .*                  export-ignore
+/doc                export-ignore
 /examples           export-ignore
 /tests              export-ignore
 *.dist              export-ignore
 include.php         export-ignore
+CLAUDE.md           export-ignore
