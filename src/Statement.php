@@ -152,8 +152,8 @@ class Statement implements \Iterator
         return false;
     }
 
-    private function hasErrorClickhouse(string $body, string $contentType): bool {
-        if (false === stripos($contentType, 'application/json')) {
+    private function hasErrorClickhouse(string $body, ?string $contentType): bool {
+        if ($contentType === null || false === stripos($contentType, 'application/json')) {
             return preg_match(self::CLICKHOUSE_ERROR_REGEX, $body) === 1;
         }
 
