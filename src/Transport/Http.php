@@ -637,10 +637,10 @@ class Http
             return $this->getRequestWrite($query);
         }
         if (
-            str_starts_with($sql, 'CREATE')
-            || str_starts_with($sql, 'DROP')
-            || str_starts_with($sql, 'ALTER')
-            || str_starts_with($sql, 'RENAME')
+            !str_starts_with($sql, 'CREATE')
+            && !str_starts_with($sql, 'DROP')
+            && !str_starts_with($sql, 'ALTER')
+            && !str_starts_with($sql, 'RENAME')
         ) {
             $query->setFormat('JSON');
         }
