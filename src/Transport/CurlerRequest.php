@@ -140,9 +140,6 @@ class CurlerRequest
 
     public function close()
     {
-        if ($this->handle) {
-            curl_close($this->handle);
-        }
         $this->handle = null;
     }
 
