@@ -577,7 +577,7 @@ class Http
     public function ping(): bool
     {
         $request = new CurlerRequest();
-        $request->url($this->getUri())->verbose(false)->GET()->connectTimeOut($this->getConnectTimeOut());
+        $request->url($this->getUri())->verbose(false)->GET()->timeOut($this->settings()->getTimeOut())->connectTimeOut($this->getConnectTimeOut());
         $this->_curler->execOne($request);
 
         return trim($request->response()->body()) === 'Ok.';
