@@ -672,7 +672,7 @@ class Client
     /**
      * stream Write
      *
-     * @param string[] $bind
+     * @param array<string, mixed> $bind
      * @return Statement
      * @throws Exception\TransportException
      */
@@ -688,7 +688,7 @@ class Client
     /**
      * stream Read
      *
-     * @param string[] $bind
+     * @param array<string, mixed> $bind
      * @return Statement
      */
     public function streamRead(Stream $streamRead, string $sql, array $bind = [])
