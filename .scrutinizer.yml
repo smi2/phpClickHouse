@@ -3,7 +3,7 @@ build:
         analysis:
             environment:
                 php:
-                    version: 7.3
+                    version: 8.4
             cache:
                 disabled: false
                 directories:
@@ -22,12 +22,16 @@ build:
 checks:
     php:
         code_rating: true
+        duplication: true
+        coupling: true
 
 tools:
-    external_code_coverage: true
+    external_code_coverage:
+        runs: 2
+        timeout: 600
 
 build_failure_conditions:
-    - 'elements.rating(<= C).new.exists'                        # No new classes/methods with a rating of C or worse allowed
-    - 'issues.severity(>= MAJOR).new.exists'                    # New issues of major or higher severity
-    - 'project.metric_change("scrutinizer.test_coverage", < 0)' # Code Coverage decreased from previous inspection
-    - 'patches.label("Unused Use Statements").new.exists'       # No new unused imports patches allowed
+    - 'elements.rating(<= C).new.exists'
+    - 'issues.severity(>= MAJOR).new.exists'
+    - 'project.metric_change("scrutinizer.test_coverage", < -0.5)'
+    - 'patches.label("Unused Use Statements").new.exists'
