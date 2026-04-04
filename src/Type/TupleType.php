@@ -6,8 +6,7 @@ namespace ClickHouseDB\Type;
 
 final class TupleType implements Type
 {
-    /** @var array */
-    public $value;
+    public array $value;
 
     private function __construct(array $value)
     {
@@ -19,7 +18,7 @@ final class TupleType implements Type
         return new self($elements);
     }
 
-    public function getValue()
+    public function getValue(): string
     {
         $parts = [];
         foreach ($this->value as $val) {

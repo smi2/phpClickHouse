@@ -9,64 +9,40 @@ class CurlerRolling
     const SLEEP_DELAY = 1000; // 1ms
 
     /**
-     * @var int
      *
      * Max number of simultaneous requests.
      */
-    private $simultaneousLimit = 10;
+    private int $simultaneousLimit = 10;
 
     /**
-     * @var array
      *
      * Requests currently being processed by curl
      */
-    private $activeRequests = [];
+    private array $activeRequests = [];
+
+    private int $runningRequests = 0;
 
     /**
-     * @var int
-     */
-    private $runningRequests = 0;
-
-    /**
-     * @var CurlerRequest[]
      *
      * Requests queued to be processed
      */
-    private $pendingRequests = [];
+    private array $pendingRequests = [];
 
-    /**
-     * @return int
-     */
-    private $completedRequestCount = 0;
+    private int $completedRequestCount = 0;
 
-    /**
-     * @var null|resource
-     */
-    private $_pool_master = null;
+    private ?\CurlMultiHandle $_pool_master = null;
 
-    /**
-     * @var int
-     */
-    private $waitRequests = 0;
+    private int $waitRequests = 0;
 
-    /**
-     * @var array
-     */
-    private $handleMapTasks = [];
+    private array $handleMapTasks = [];
 
-    /**
-     *
-     */
     public function __destruct()
     {
         $this->close();
     }
 
 
-    /**
-     * @return resource
-     */
-    private function handlerMulti()
+    private function handlerMulti(): \CurlMultiHandle
     {
         if (!$this->_pool_master) {
             $this->_pool_master = curl_multi_init();
@@ -79,10 +55,7 @@ class CurlerRolling
         return $this->_pool_master;
     }
 
-    /**
-     *
-     */
-    public function close()
+    public function close(): void
     {
         if ($this->_pool_master) {
             curl_multi_close($this->handlerMulti());
@@ -91,13 +64,9 @@ class CurlerRolling
 
 
     /**
-     * @param CurlerRequest $req
-     * @param bool $checkMultiAdd
-     * @param bool $force
-     * @return bool
      * @throws TransportException
      */
-    public function addQueLoop(CurlerRequest $req, $checkMultiAdd = true, $force = false)
+    public function addQueLoop(CurlerRequest $req, bool $checkMultiAdd = true, bool $force = false): bool
     {
         $id = $req->getId();
 
@@ -117,11 +86,7 @@ class CurlerRolling
         return true;
     }
 
-    /**
-     * @param resource $oneHandle
-     * @return CurlerResponse
-     */
-    private function makeResponse($oneHandle)
+    private function makeResponse(mixed $oneHandle): CurlerResponse
     {
         $response = curl_multi_getcontent($oneHandle);
         $header_size = curl_getinfo($oneHandle, CURLINFO_HEADER_SIZE);
@@ -140,10 +105,9 @@ class CurlerRolling
     }
 
     /**
-     * @return bool
      * @throws TransportException
      */
-    public function execLoopWait()
+    public function execLoopWait(): bool
     {
         do {
             $this->exec();
@@ -153,11 +117,7 @@ class CurlerRolling
         return true;
     }
 
-    /**
-     * @param string $response
-     * @return array
-     */
-    private function parse_headers_from_curl_response($response)
+    private function parse_headers_from_curl_response(string $response): array
     {
         $headers = [];
         $header_text = $response;
@@ -176,26 +136,17 @@ class CurlerRolling
         return $headers;
     }
 
-    /**
-     * @return int
-     */
-    public function countPending()
+    public function countPending(): int
     {
         return sizeof($this->pendingRequests);
     }
 
-    /**
-     * @return int
-     */
-    public function countActive()
+    public function countActive(): int
     {
         return count($this->activeRequests);
     }
 
-    /**
-     * @return int
-     */
-    public function countCompleted()
+    public function countCompleted(): int
     {
         return $this->completedRequestCount;
     }
@@ -207,11 +158,9 @@ class CurlerRolling
      * more frequently or automated software may perceive you as a DOS attack and
      * automatically block further requests.
      *
-     * @param int $count
      * @throws \InvalidArgumentException
-     * @return $this
      */
-    public function setSimultaneousLimit($count)
+    public function setSimultaneousLimit(int $count): static
     {
         if (!is_int($count) || $count < 2) {
             throw new \InvalidArgumentException("setSimultaneousLimit count must be an int >= 2");
@@ -221,29 +170,20 @@ class CurlerRolling
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getSimultaneousLimit()
+    public function getSimultaneousLimit(): int
     {
         return $this->simultaneousLimit;
     }
 
-    /**
-     * @return int
-     */
-    public function getRunningRequests()
+    public function getRunningRequests(): int
     {
         return $this->runningRequests;
     }
 
     /**
-     * @param CurlerRequest $request
-     * @param bool $auto_close
-     * @return mixed
      * @throws TransportException
      */
-    public function execOne(CurlerRequest $request, $auto_close = false)
+    public function execOne(CurlerRequest $request, bool $auto_close = false): int
     {
         $h = $request->handle();
         curl_exec($h);
@@ -257,10 +197,7 @@ class CurlerRolling
         return $request->response()->http_code();
     }
 
-    /**
-     * @return string
-     */
-    public function getInfo()
+    public function getInfo(): string
     {
         return "runningRequests = {$this->runningRequests} , pending=" . sizeof($this->pendingRequests) . " ";
     }
@@ -268,7 +205,7 @@ class CurlerRolling
     /**
      * @throws TransportException
      */
-    public function exec()
+    public function exec(): int
     {
         $this->makePendingRequestsQue();
 
@@ -323,7 +260,7 @@ class CurlerRolling
         return $this->countActive();
     }
 
-    public function makePendingRequestsQue()
+    public function makePendingRequestsQue(): void
     {
         $max = $this->getSimultaneousLimit();
         $active = $this->countActive();
@@ -360,10 +297,7 @@ class CurlerRolling
         }// if can add
     }
 
-    /**
-     * @param string $task_id
-     */
-    private function _prepareLoopQue($task_id)
+    private function _prepareLoopQue(string $task_id): void
     {
         $this->activeRequests[$task_id] = 1;
         $this->waitRequests++;

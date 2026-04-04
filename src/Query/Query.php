@@ -9,27 +9,15 @@ use function sizeof;
 
 class Query
 {
-    /**
-     * @var string
-     */
-    protected $sql;
+    protected string $sql = '';
 
-    /**
-     * @var string
-     */
-    protected $originalSql;
+    protected string $originalSql = '';
 
-    /**
-     * @var string|null
-     */
-    protected $format = null;
+    protected ?string $format = null;
 
-    /**
-     * @var array
-     */
-    private $degenerations = [];
+    private array $degenerations = [];
 
-    private $supportFormats=[
+    private array $supportFormats = [
         "FORMAT\\s+TSVRaw",
         "FORMAT\\s+TSVWithNamesAndTypes",
         "FORMAT\\s+TSVWithNames",
@@ -50,10 +38,8 @@ class Query
 
     /**
      * Query constructor.
-     * @param string $sql
-     * @param array $degenerations
      */
-    public function __construct($sql, $degenerations = [])
+    public function __construct(string $sql, array $degenerations = [])
     {
         if (!trim($sql))
         {
@@ -63,10 +49,7 @@ class Query
         $this->degenerations = $degenerations;
     }
 
-    /**
-     * @param string|null $format
-     */
-    public function setFormat($format)
+    public function setFormat(?string $format): void
     {
         $this->format = $format;
     }
@@ -106,10 +89,7 @@ class Query
 
     }
 
-    /**
-     * @return null|string
-     */
-    public function getFormat()
+    public function getFormat(): ?string
     {
         return $this->format;
     }
@@ -148,7 +128,7 @@ class Query
         return $out;
     }
 
-    public function toSql()
+    public function toSql(): string
     {
         if ($this->format !== null) {
             $this->applyFormatQuery();
@@ -167,9 +147,6 @@ class Query
         return $this->sql;
     }
 
-    /**
-     * @return string
-     */
     public function __toString()
     {
         return $this->toSql();

@@ -16,11 +16,11 @@ class StreamWrite extends Stream
 
     }
 
-    public function isWrite()
+    public function isWrite(): bool
     {
         return true;
     }
-    public function applyGzip()
+    public function applyGzip(): void
     {
         stream_filter_append($this->getStream(), 'zlib.deflate', STREAM_FILTER_READ, ['window' => 30]);
         $this->enableGzipHeader();

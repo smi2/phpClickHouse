@@ -4,120 +4,68 @@ namespace ClickHouseDB\Transport;
 
 class CurlerResponse
 {
-    /**
-     * @var mixed
-     */
-    public $_headers;
+    public array $_headers = [];
 
-    /**
-     * @var mixed
-     */
-    public $_info;
+    public array $_info = [];
 
-    /**
-     * @var mixed
-     */
-    public $_error;
+    public string $_error = '';
 
-    /**
-     * @var int
-     */
-    public $_errorNo = 0;
+    public int $_errorNo = 0;
 
-    /**
-     * @var float
-     */
-    public $_useTime;
+    public float $_useTime = 0.0;
 
-    /**
-     * @var string
-     */
-    public $_body;
+    public string $_body = '';
 
 
-    /**
-     * Response constructor.
-     */
     public function __construct() {}
 
 
-    /**
-     * @return int
-     */
-    public function error_no()
+    public function error_no(): int
     {
         return $this->_errorNo;
     }
 
-    /**
-     * @return mixed
-     */
-    public function error()
+    public function error(): string
     {
         return $this->_error;
     }
 
-    /**
-     * @return mixed
-     */
-    public function url()
+    public function url(): string
     {
         return $this->_info['url'];
     }
 
-    /**
-     * @return mixed
-     */
-    public function total_time()
+    public function total_time(): float
     {
         return round($this->_info['total_time'], 3);
     }
 
-    /**
-     * @return string
-     */
-    public function starttransfer_time()
+    public function starttransfer_time(): float
     {
         return round($this->_info['starttransfer_time'], 3);
     }
 
-    /**
-     * @return string
-     */
-    public function connect_time()
+    public function connect_time(): float
     {
         return round($this->_info['connect_time'], 3);
     }
 
-    /**
-     * @return string
-     */
-    public function pretransfer_time()
+    public function pretransfer_time(): float
     {
         return round($this->_info['pretransfer_time'], 3);
     }
 
-    /**
-     * @return mixed
-     */
-    public function content_type()
+    public function content_type(): ?string
     {
         return $this->_info['content_type'];
     }
 
-    /**
-     * @return mixed
-     */
-    public function http_code()
+    public function http_code(): int
     {
         return $this->_info['http_code'];
     }
 
-    /**
-     * @param string $name
-     * @return null|string
-     */
-    public function headers($name)
+    public function headers(string $name): ?string
     {
         if (isset($this->_headers[$name])) {
             return $this->_headers[$name];
@@ -126,34 +74,22 @@ class CurlerResponse
         return null;
     }
 
-    /**
-     * @return null|string
-     */
-    public function connection()
+    public function connection(): ?string
     {
         return $this->headers('Connection');
     }
 
-    /**
-     * @return mixed
-     */
-    public function body()
+    public function body(): string
     {
         return $this->_body;
     }
 
-    /**
-     * @return mixed
-     */
-    public function as_string()
+    public function as_string(): string
     {
         return $this->body();
     }
 
-    /**
-     *
-     */
-    public function dump_json()
+    public function dump_json(): void
     {
         print_r($this->json());
     }
@@ -168,11 +104,7 @@ class CurlerResponse
         ];
     }
 
-    /**
-     * @param bool $result
-     * @return string
-     */
-    public function dump($result = false)
+    public function dump(bool $result = false): string
     {
         $msg = "\n--------------------------- Response -------------------------------------\nBODY:\n";
         $msg .= print_r($this->_body, true);
@@ -192,12 +124,7 @@ class CurlerResponse
         return '';
     }
 
-    /**
-     * @param int $size
-     * @param string $unit
-     * @return string
-     */
-    private function humanFileSize($size, $unit = '')
+    private function humanFileSize(int $size, string $unit = ''): string
     {
         if ((!$unit && $size >= 1 << 30) || $unit == 'GB') {
             return number_format($size / (1 << 30), 2) . ' GB';
@@ -212,76 +139,49 @@ class CurlerResponse
         return number_format($size) . ' bytes';
     }
 
-    /**
-     * @return string
-     */
-    public function upload_content_length()
+    public function upload_content_length(): string
     {
         return $this->humanFileSize($this->_info['upload_content_length']);
     }
 
-    /**
-     * @return string
-     */
-    public function speed_upload()
+    public function speed_upload(): string
     {
         $SPEED_UPLOAD = $this->_info['speed_upload'];
         return round(($SPEED_UPLOAD * 8) / (1000 * 1000), 2) . ' Mbps';
     }
 
-    /**
-     * @return string
-     */
-    public function speed_download()
+    public function speed_download(): string
     {
         $SPEED_UPLOAD = $this->_info['speed_download'];
         return round(($SPEED_UPLOAD * 8) / (1000 * 1000), 2) . ' Mbps';
     }
 
-    /**
-     * @return string
-     */
-    public function size_upload()
+    public function size_upload(): string
     {
         return $this->humanFileSize($this->_info['size_upload']);
     }
 
-    /**
-     * @return string
-     */
-    public function request_size()
+    public function request_size(): string
     {
         return $this->humanFileSize($this->_info['request_size']);
     }
 
-    /**
-     * @return string
-     */
-    public function header_size()
+    public function header_size(): string
     {
         return $this->humanFileSize($this->_info['header_size']);
     }
 
-    /**
-     * @return string
-     */
-    public function size_download()
+    public function size_download(): string
     {
         return $this->humanFileSize($this->_info['size_download']);
     }
 
-    /**
-     * @return mixed
-     */
-    public function info()
+    public function info(): array
     {
         return $this->_info;
     }
-    /**
-     * @param string|null $key
-     * @return bool|mixed
-     */
-    public function json($key = null)
+
+    public function json(mixed $key = null): mixed
     {
         $d = json_decode($this->body(), true);
 
@@ -296,10 +196,7 @@ class CurlerResponse
         return $d[$key];
     }
 
-    /**
-     * @return mixed
-     */
-    public function rawDataOrJson($format)
+    public function rawDataOrJson(mixed $format): mixed
     {
         // JSONCompact // JSONEachRow
 

@@ -8,21 +8,9 @@ namespace ClickHouseDB\Transport;
  */
 abstract class Stream implements IStream
 {
-    /**
-     * @var resource
-     */
     private $source;
-    /**
-     * @var bool
-     */
-    private $gzip=false;
-    /**
-     * @var null|callable
-     */
-    private $callable=null;
-    /**
-     * @param resource $source
-     */
+    private bool $gzip = false;
+    private mixed $callable = null;
     public function __construct($source)
     {
         if (!is_resource($source)) {
@@ -31,42 +19,27 @@ abstract class Stream implements IStream
         $this->source = $source;
     }
 
-    /**
-     * @return bool
-     */
-    public function isGzipHeader()
+    public function isGzipHeader(): bool
     {
         return $this->gzip;
     }
 
-    /**
-     * @return callable|null
-     */
-    public function getClosure()
+    public function getClosure(): ?callable
     {
         return $this->callable;
     }
 
-    /**
-     * @return resource
-     */
     public function getStream()
     {
         return $this->source;
     }
 
-    /**
-     * @param callable $callable
-     */
-    public function closure(callable $callable)
+    public function closure(callable $callable): void
     {
         $this->callable=$callable;
     }
 
-    /**
-     *
-     */
-    public function enableGzipHeader()
+    public function enableGzipHeader(): void
     {
         $this->gzip=true;
     }

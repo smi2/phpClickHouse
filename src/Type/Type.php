@@ -6,8 +6,5 @@ namespace ClickHouseDB\Type;
 
 interface Type
 {
-    /**
-     * @return mixed
-     */
-    public function getValue();
+    public function getValue(): mixed;
 }

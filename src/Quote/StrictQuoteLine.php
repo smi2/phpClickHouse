@@ -14,7 +14,7 @@ use function str_replace;
 
 class StrictQuoteLine
 {
-    private $preset = [
+    private array $preset = [
         'CSV'=>[
             'EnclosureArray'=>'"',
             'EncodeEnclosure'=>'"',
@@ -40,9 +40,9 @@ class StrictQuoteLine
             'TabEncode'=>true,
         ],
     ];
-    private $settings = [];
+    private array $settings = [];
 
-    public function __construct($format)
+    public function __construct(string $format)
     {
         if (empty($this->preset[$format]))
         {
@@ -52,22 +52,12 @@ class StrictQuoteLine
         $this->settings = $this->preset[$format];
     }
 
-    /**
-     * @param $row
-     * @param bool $skipEncode
-     * @return string
-     */
-    public function quoteRow($row,bool $skipEncode=false )
+    public function quoteRow(array $row, bool $skipEncode = false): string
     {
         return implode($this->settings['Delimiter'], $this->quoteValue($row,$skipEncode));
     }
 
-    /**
-     * @param $row
-     * @param bool $skipEncode
-     * @return array
-     */
-    public function quoteValue($row,bool $skipEncode=false)
+    public function quoteValue(array $row, bool $skipEncode = false): array
     {
         $enclosure = $this->settings['Enclosure'];
         $delimiter = $this->settings['Delimiter'];
@@ -136,10 +126,7 @@ class StrictQuoteLine
         return array_map($quote, $row);
     }
 
-    /**
-     * @return string
-     */
-    public function encodeString(string $value, string $enclosureEsc, string $encodeEsc)
+    public function encodeString(string $value, string $enclosureEsc, string $encodeEsc): string|null
     {
         return preg_replace('/(' . $enclosureEsc . '|' . $encodeEsc . ')/', $encodeEsc . '\1', $value);
     }

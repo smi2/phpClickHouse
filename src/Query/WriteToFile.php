@@ -15,28 +15,16 @@ class WriteToFile
     const FORMAT_CSVWithNames          = 'CSVWithNames';
     const FORMAT_JSONEACHROW           = 'JSONEachRow';
 
-    private $support_format = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
-    /**
-     * @var string
-     */
-    private $file_name = null;
+    private array $support_format = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow'];
+    private ?string $file_name = null;
 
-    /**
-     * @var string
-     */
-    private $format = 'CSV';
+    private string $format = 'CSV';
 
-    /**
-     * @var bool
-     */
-    private $gzip = false;
+    private bool $gzip = false;
     /**
      * WriteToFile constructor.
-     * @param string $file_name
-     * @param bool $overwrite
-     * @param string|null $format
      */
-    public function __construct($file_name, $overwrite = true, $format = null) {
+    public function __construct(string $file_name, bool $overwrite = true, ?string $format = null) {
 
 
         if (!$file_name)
@@ -67,26 +55,17 @@ class WriteToFile
         $this->file_name = $file_name;
     }
 
-    /**
-     * @return bool
-     */
-    public function getGzip()
+    public function getGzip(): bool
     {
         return $this->gzip;
     }
 
-    /**
-     * @param bool $flag
-     */
-    public function setGzip($flag)
+    public function setGzip(bool $flag): void
     {
         $this->gzip = $flag;
     }
 
-    /**
-     * @param string $format
-     */
-    public function setFormat($format)
+    public function setFormat(string $format): void
     {
         if (!in_array($format, $this->support_format))
         {
@@ -94,26 +73,17 @@ class WriteToFile
         }
         $this->format = $format;
     }
-    /**
-     * @return int
-     */
-    public function size()
+    public function size(): int
     {
         return filesize($this->file_name);
     }
 
-    /**
-     * @return string
-     */
-    public function fetchFile()
+    public function fetchFile(): string
     {
         return $this->file_name;
     }
 
-    /**
-     * @return string
-     */
-    public function fetchFormat()
+    public function fetchFormat(): string
     {
         return $this->format;
     }

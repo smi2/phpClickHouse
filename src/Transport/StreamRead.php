@@ -8,11 +8,11 @@ namespace ClickHouseDB\Transport;
  */
 class StreamRead extends Stream
 {
-    public function isWrite()
+    public function isWrite(): bool
     {
         return false;
     }
-    public function applyGzip()
+    public function applyGzip(): void
     {
 //        stream_filter_append($this->source, 'zlib.deflate', STREAM_FILTER_READ, ['window' => 30]);
         $this->enableGzipHeader();

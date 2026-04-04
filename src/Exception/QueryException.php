@@ -8,8 +8,8 @@ use LogicException;
 
 class QueryException extends LogicException implements ClickHouseException
 {
-    protected $requestDetails = [];
-    protected $responseDetails = [];
+    protected array $requestDetails = [];
+    protected array $responseDetails = [];
 
     public static function cannotInsertEmptyValues() : self
     {
@@ -21,7 +21,7 @@ class QueryException extends LogicException implements ClickHouseException
         return new self('No response returned');
     }
 
-    public function setRequestDetails(array $requestDetails)
+    public function setRequestDetails(array $requestDetails): void
     {
         $this->requestDetails = $requestDetails;
     }
@@ -31,7 +31,7 @@ class QueryException extends LogicException implements ClickHouseException
         return $this->requestDetails;
     }
 
-    public function setResponseDetails(array $responseDetails)
+    public function setResponseDetails(array $responseDetails): void
     {
         $this->responseDetails = $responseDetails;
     }

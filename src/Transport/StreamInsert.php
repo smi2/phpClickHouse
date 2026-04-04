@@ -11,27 +11,13 @@ use ClickHouseDB\Statement;
  */
 class StreamInsert
 {
-    /**
-     * @var resource
-     */
     private $source;
 
-    /**
-     * @var CurlerRequest
-     */
     private $request;
 
-    /**
-     * @var CurlerRolling
-     */
     private $curlerRolling;
 
-    /**
-     * @param resource $source
-     * @param CurlerRequest $request
-     * @param CurlerRolling|null $curlerRolling
-     */
-    public function __construct($source, CurlerRequest $request, $curlerRolling=null)
+    public function __construct($source, CurlerRequest $request, ?CurlerRolling $curlerRolling = null)
     {
         if (!is_resource($source)) {
             throw new \InvalidArgumentException('Argument $source must be resource');
@@ -47,11 +33,9 @@ class StreamInsert
     }
 
     /**
-     * @param callable $callback function for stream read data
-     * @return \ClickHouseDB\Statement
      * @throws \Exception
      */
-    public function insert($callback)
+    public function insert(callable $callback): \ClickHouseDB\Statement
     {
         try {
             if (!is_callable($callback)) {

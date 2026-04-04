@@ -5,137 +5,79 @@ use ClickHouseDB\Exception\QueryException;
 
 class Cluster
 {
-    /**
-     * @var array
-     */
-    private $nodes = [];
+    private array $nodes = [];
 
 
-    /**
-     * @var Client[]
-     */
-    private $clients = [];
+    private array $clients = [];
 
-    /**
-     * @var Client
-     */
-    private $defaultClient;
+    private Client $defaultClient;
 
-    /**
-     * @var array
-     */
-    private $badNodes = [];
+    private array $badNodes = [];
 
-    /**
-     * @var array|bool
-     */
-    private $error = [];
-    /**
-     * @var array
-     */
-    private $resultScan = [];
-    /**
-     * @var string
-     */
-    private $defaultHostName;
+    private array|false $error = [];
+    private array $resultScan = [];
+    private string $defaultHostName;
 
-    /**
-     * @var int|float
-     */
-    private $scanTimeOut = 10;
+    private float|int $scanTimeOut = 10;
 
-    /**
-     * @var array
-     */
-    private $tables = [];
+    private array $tables = [];
 
-    /**
-     * @var array
-     */
-    private $hostsnames = [];
-    /**
-     * @var bool
-     */
-    private $isScaned = false;
+    private array $hostsnames = [];
+    private bool $isScaned = false;
 
 
     /**
      * A symptom of straining CH when checking a cluster request in Zookiper
      * false - send a request to ZK, do not do SELECT * FROM system.replicas
      *
-     * @var bool
      */
-    private $softCheck = true;
+    private bool $softCheck = true;
 
-    /**
-     * @var bool
-     */
-    private $replicasIsOk;
+    private bool $replicasIsOk = false;
 
     /**
      * Cache
      *
-     * @var array
      */
-    private $_table_size_cache = [];
+    private array $_table_size_cache = [];
 
     /**
      * Cluster constructor.
      *
-     * @param array $connect_params
-     * @param array $settings
      */
-    public function __construct($connect_params, $settings = [])
+    public function __construct(array $connect_params, array $settings = [])
     {
         $this->defaultClient = new Client($connect_params, $settings);
         $this->defaultHostName = $this->defaultClient->getConnectHost();
         $this->setNodes(gethostbynamel($this->defaultHostName));
     }
 
-    /**
-     * @return Client
-     */
-    private function defaultClient()
+    private function defaultClient(): Client
     {
         return $this->defaultClient;
     }
 
-    /**
-     * @param bool $softCheck
-     */
-    public function setSoftCheck($softCheck)
+    public function setSoftCheck(bool $softCheck): void
     {
         $this->softCheck = $softCheck;
     }
 
-    /**
-     * @param float|integer $scanTimeOut
-     */
-    public function setScanTimeOut($scanTimeOut)
+    public function setScanTimeOut(float|int $scanTimeOut): void
     {
         $this->scanTimeOut = $scanTimeOut;
     }
 
-    /**
-     * @param array $nodes
-     */
-    public function setNodes($nodes)
+    public function setNodes(array $nodes): void
     {
         $this->nodes = $nodes;
     }
 
-    /**
-     * @return array
-     */
-    public function getNodes()
+    public function getNodes(): array
     {
         return $this->nodes;
     }
 
-    /**
-     * @return array
-     */
-    public function getBadNodes()
+    public function getBadNodes(): array
     {
         return $this->badNodes;
     }
@@ -144,10 +86,9 @@ class Cluster
     /**
      * Connect all nodes and scan
      *
-     * @return $this
      * @throws Exception\TransportException
      */
-    public function connect()
+    public function connect(): static
     {
         if (!$this->isScaned) {
             $this->rescan();
@@ -157,13 +98,9 @@ class Cluster
 
     /**
      * Check the status of the cluster, the request is taken from the documentation for CH
-     * total_replicas <2 - not suitable for no replication clusters
-     *
-     *
-     * @param mixed $replicas
-     * @return bool
+     * total_replicas <2 - not suitable for no replication clusters
      */
-    private function isReplicasWork($replicas)
+    private function isReplicasWork(mixed $replicas): bool
     {
         $ok = true;
         if (!is_array($replicas)) {
@@ -218,7 +155,7 @@ class Cluster
         return $ok;
     }
 
-    private function getSelectSystemReplicas()
+    private function getSelectSystemReplicas(): string
     {
         // If you query all the columns, then the table may work slightly slow, since there are several readings from ZK per line.
         // If you do not query the last 4 columns (log_max_index, log_pointer, total_replicas, active_replicas), then the table works quickly.        if ($this->softCheck)
@@ -233,10 +170,9 @@ class Cluster
     }
 
     /**
-     * @return $this
      * @throws Exception\TransportException
      */
-    public function rescan()
+    public function rescan(): static
     {
         $this->error = [];
         /*
@@ -343,19 +279,14 @@ class Cluster
     }
 
     /**
-     * @return boolean
      * @throws Exception\TransportException
      */
-    public function isReplicasIsOk()
+    public function isReplicasIsOk(): bool
     {
         return $this->connect()->replicasIsOk;
     }
 
-    /**
-     * @param  string $node
-     * @return Client
-     */
-    public function client($node)
+    public function client(string $node): Client
     {
         // Создаем клиенты под каждый IP
         if (empty($this->clients[$node])) {
@@ -368,10 +299,9 @@ class Cluster
     }
 
     /**
-     * @return Client
      * @throws Exception\TransportException
      */
-    public function clientLike($cluster, $ip_addr_like)
+    public function clientLike(string $cluster, string $ip_addr_like): Client
     {
         $nodes_check = $this->nodes;
         $nodes = $this->getClusterNodes($cluster);
@@ -406,20 +336,15 @@ class Cluster
         }
         return $this->client($find);
     }
-    /**
-     * @return Client
-     */
-    public function activeClient()
+    public function activeClient(): Client
     {
         return $this->client($this->nodes[0]);
     }
 
     /**
-     * @paramstring $cluster
-     * @return int
      * @throws Exception\TransportException
      */
-    public function getClusterCountShard($cluster)
+    public function getClusterCountShard(string $cluster): int
     {
         $table = $this->getClusterInfoTable($cluster);
         $c = [];
@@ -430,11 +355,9 @@ class Cluster
     }
 
     /**
-     * @paramstring $cluster
-     * @return int
      * @throws Exception\TransportException
      */
-    public function getClusterCountReplica($cluster)
+    public function getClusterCountReplica(string $cluster): int
     {
         $table = $this->getClusterInfoTable($cluster);
         $c = [];
@@ -445,11 +368,9 @@ class Cluster
     }
 
     /**
-     * @paramstring $cluster
-     * @return mixed
      * @throws Exception\TransportException
      */
-    public function getClusterInfoTable($cluster)
+    public function getClusterInfoTable(string $cluster): array
     {
         $this->connect();
         if (empty($this->resultScan['cluster.list'][$cluster])) {
@@ -459,20 +380,17 @@ class Cluster
     }
 
     /**
-     * @paramstring $cluster
-     * @return array
      * @throws Exception\TransportException
      */
-    public function getClusterNodes($cluster)
+    public function getClusterNodes(string $cluster): array
     {
         return array_keys($this->getClusterInfoTable($cluster));
     }
 
     /**
-     * @return array
      * @throws Exception\TransportException
      */
-    public function getClusterList()
+    public function getClusterList(): array
     {
         $this->connect();
         return array_keys($this->resultScan['cluster.list']);
@@ -481,10 +399,9 @@ class Cluster
     /**
      * list all tables on all nodes
      *
-     * @return array
      * @throws Exception\TransportException
      */
-    public function getTables($resultDetail = false)
+    public function getTables(bool $resultDetail = false): array
     {
         $this->connect();
         $list = [];
@@ -508,12 +425,9 @@ class Cluster
     /**
      * Table size on cluster
      *
-     * @param string $database_table
-     * @return array|null
-     *
      * @throws Exception\TransportException
      */
-    public function getSizeTable($database_table)
+    public function getSizeTable(string $database_table): mixed
     {
         $nodes = $this->getNodesByTable($database_table);
         // scan need node`s
@@ -549,11 +463,9 @@ class Cluster
     /**
      * Truncate on all nodes
      * @deprecated
-     * @param string $database_table
-     * @return array
      * @throws Exception\TransportException
      */
-    public function truncateTable($database_table, $timeOut = 2000)
+    public function truncateTable(string $database_table, int $timeOut = 2000): array
     {
         $out = [];
         list($db, $table) = explode('.', $database_table);
@@ -572,11 +484,9 @@ class Cluster
     /**
      * is_leader node
      *
-     * @param string $database_table
-     * @return array
      * @throws Exception\TransportException
      */
-    public function getMasterNodeForTable($database_table)
+    public function getMasterNodeForTable(string $database_table): array
     {
         $list = $this->getTables(true);
 
@@ -597,11 +507,9 @@ class Cluster
     /**
      * Find nodes by : db_name.table_name
      *
-     * @param string $database_table
-     * @return array
      * @throws Exception\TransportException
      */
-    public function getNodesByTable($database_table)
+    public function getNodesByTable(string $database_table): array
     {
         $list = $this->getTables();
         if (empty($list[$database_table])) {
@@ -612,10 +520,8 @@ class Cluster
 
     /**
      * Error string
-     *
-     * @return string|bool
      */
-    public function getError()
+    public function getError(): string|false
     {
         if (is_array($this->error)) {
             return json_encode($this->error);

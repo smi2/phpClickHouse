@@ -4,16 +4,10 @@ namespace ClickHouseDB;
 
 class Settings
 {
-    /**
-     * @var array
-     */
-    private $settings = [];
+    private array $settings = [];
 
-    private $_ReadOnlyUser = false;
+    private bool $_ReadOnlyUser = false;
 
-    /**
-     * Settings constructor.
-     */
     public function __construct()
     {
         $default = [
@@ -27,11 +21,7 @@ class Settings
         $this->settings = $default;
     }
 
-    /**
-     * @param string|int $key
-     * @return mixed
-     */
-    public function get($key)
+    public function get(string|int $key): mixed
     {
         if (!$this->is($key)) {
             return null;
@@ -39,108 +29,71 @@ class Settings
         return $this->settings[$key];
     }
 
-    /**
-     * @param string|int $key
-     * @return bool
-     */
-    public function is($key)
+    public function is(string|int $key): bool
     {
         return isset($this->settings[$key]);
     }
 
 
-    /**
-     * @param string|int $key
-     * @param mixed $value
-     * @return $this
-     */
-    public function set($key, $value)
+    public function set(string|int $key, mixed $value): static
     {
         $this->settings[$key] = $value;
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDatabase()
+    public function getDatabase(): mixed
     {
         return $this->get('database');
     }
 
-    /**
-     * @param string $db
-     * @return $this
-     */
-    public function database($db)
+    public function database(string $db): static
     {
         $this->set('database', $db);
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getTimeOut(): int
     {
-        return intval($this->get('max_execution_time'));
+        return (int) $this->get('max_execution_time');
     }
 
-    /**
-     * @return mixed|null
-     */
-    public function isEnableHttpCompression()
+    public function isEnableHttpCompression(): mixed
     {
         return $this->getSetting('enable_http_compression');
     }
 
-    /**
-     * @param bool|int $flag
-     * @return $this
-     */
-    public function enableHttpCompression($flag)
+    public function enableHttpCompression(bool|int $flag): static
     {
         $this->set('enable_http_compression', intval($flag));
         return $this;
     }
 
 
-    public function https($flag = true)
+    public function https(bool $flag = true): static
     {
         $this->set('https', $flag);
         return $this;
     }
 
-    public function isHttps()
+    public function isHttps(): mixed
     {
         return $this->get('https');
     }
 
 
-    /**
-     * @param int|bool $flag
-     * @return $this
-     */
-    public function readonly($flag)
+    public function readonly(int|bool $flag): static
     {
         $this->set('readonly', $flag);
         return $this;
     }
 
-    /**
-     * @param string $session_id
-     * @return $this
-     */
-    public function session_id($session_id)
+    public function session_id(string $session_id): static
     {
         $this->set('session_id', $session_id);
         return $this;
     }
 
-    /**
-     * @return mixed|bool
-     */
-    public function getSessionId()
+    public function getSessionId(): string|false
     {
         if (empty($this->settings['session_id'])) {
             return false;
@@ -148,10 +101,7 @@ class Settings
         return $this->get('session_id');
     }
 
-    /**
-     * @return string|bool
-     */
-    public function makeSessionId()
+    public function makeSessionId(): string|false
     {
         $this->session_id(sha1(uniqid('', true)));
         return $this->getSessionId();
@@ -161,28 +111,19 @@ class Settings
      *
      * max_execution_time - is integer in Seconds clickhouse source
      *
-     * @param int $time
-     * @return $this
      */
-    public function max_execution_time(int $time)
+    public function max_execution_time(int $time): static
     {
         $this->set('max_execution_time',$time);
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getSettings()
+    public function getSettings(): array
     {
         return $this->settings;
     }
 
-    /**
-     * @param array $settings_array
-     * @return $this
-     */
-    public function apply(array $settings_array)
+    public function apply(array $settings_array): static
     {
         foreach ($settings_array as $key => $value) {
             $this->set($key, $value);
@@ -191,27 +132,17 @@ class Settings
         return $this;
     }
 
-    /**
-     * @param int|bool $flag
-     */
-    public function setReadOnlyUser($flag):void
+    public function setReadOnlyUser(bool $flag): void
     {
         $this->_ReadOnlyUser = $flag;
     }
 
-    /**
-     * @return bool
-     */
     public function isReadOnlyUser():bool
     {
         return $this->_ReadOnlyUser;
     }
 
-    /**
-     * @param string $name
-     * @return mixed|null
-     */
-    public function getSetting(string $name)
+    public function getSetting(string $name): mixed
     {
         if (!isset($this->settings[$name])) {
             return null;

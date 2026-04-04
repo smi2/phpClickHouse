@@ -7,10 +7,10 @@ namespace ClickHouseDB\Transport;
  */
 interface IStream
 {
-    public function isGzipHeader();
-    public function closure(callable $callable);
+    public function isGzipHeader(): bool;
+    public function closure(callable $callable): void;
     public function getStream();
-    public function getClosure();
-    public function isWrite();
-    public function applyGzip();
+    public function getClosure(): ?callable;
+    public function isWrite(): bool;
+    public function applyGzip(): void;
 }

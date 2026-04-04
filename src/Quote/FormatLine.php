@@ -4,19 +4,13 @@ namespace ClickHouseDB\Quote;
 
 class FormatLine
 {
-    /**
-     *
-     * @var array
-     */
     private static $strict = [];
 
     /**
      * Format
      *
-     * @param string $format
-     * @return StrictQuoteLine
      */
-    public static function strictQuote($format)
+    public static function strictQuote(string $format): StrictQuoteLine
     {
         if (empty(self::$strict[$format]))
         {
@@ -28,11 +22,8 @@ class FormatLine
     /**
      * Array in a string for a query Insert
      *
-     * @param mixed[] $row
-     * @param bool $skipEncode
-     * @return string
      */
-    public static function Insert(array $row,bool $skipEncode=false)
+    public static function Insert(array $row, bool $skipEncode = false): string
     {
         return self::strictQuote('Insert')->quoteRow($row,$skipEncode);
     }
@@ -40,10 +31,8 @@ class FormatLine
     /**
      * Array to TSV
      *
-     * @param array $row
-     * @return string
      */
-    public static function TSV(Array $row)
+    public static function TSV(array $row): string
     {
         return self::strictQuote('TSV')->quoteRow($row);
     }
@@ -51,10 +40,8 @@ class FormatLine
     /**
      * Array to CSV
      *
-     * @param array $row
-     * @return string
      */
-    public static function CSV(Array $row)
+    public static function CSV(array $row): string
     {
         return self::strictQuote('CSV')->quoteRow($row);
     }

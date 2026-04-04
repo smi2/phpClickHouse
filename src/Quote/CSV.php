@@ -7,7 +7,7 @@ namespace ClickHouseDB\Quote;
  */
 class CSV
 {
-    public static function quoteRow($row)
+    public static function quoteRow(array $row): string
     {
         return FormatLine::CSV($row);
     }

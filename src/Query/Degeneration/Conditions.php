@@ -7,15 +7,9 @@ use ClickHouseDB\Query\Degeneration;
 
 class Conditions implements Degeneration
 {
-    /**
-     * @var array
-     */
-    protected $bindings = [];
+    protected array $bindings = [];
 
-    /**
-     * @param array $bindings
-     */
-    public function bindParams(array $bindings)
+    public function bindParams(array $bindings): void
     {
         foreach ($bindings as $column => $value) {
             $this->bindings[$column] = $value;
@@ -27,7 +21,7 @@ class Conditions implements Degeneration
         return $this->bindings;
     }
 
-    static function __ifsets($matches, $markers)
+    static function __ifsets(array $matches, array $markers): string
     {
         $content_false = '';
         $condition = '';
@@ -70,11 +64,7 @@ class Conditions implements Degeneration
         return '';
     }
 
-    /**
-     * @param string $sql
-     * @return mixed
-     */
-    public function process($sql)
+    public function process(string $sql): string
     {
         $markers = $this->bindings;
 
