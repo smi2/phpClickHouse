@@ -10,103 +10,103 @@ class CurlerRequest
     /**
      * @var array
      */
-    public $extendinfo = [];
+    public array $extendinfo = [];
 
     /**
      * @var string|array
      */
-    private $parameters = '';
+    private string|array $parameters = '';
 
     /**
      * @var array
      */
-    private $options;
+    private array $options = [];
 
     /**
      * @var array
      */
-    private $headers; // Parsed reponse header object.
+    private array $headers = []; // Parsed reponse header object.
 
     /**
      * @var string
      */
-    private $url;
+    private string $url = '';
 
     /**
      * @var string
      */
-    private $method;
+    private string $method = '';
 
     /**
-     * @var bool
+     * @var mixed
      */
-    private $id;
+    private mixed $id = false;
 
     /**
-     * @var resource|null
+     * @var \CurlHandle|null
      */
-    private $handle;
+    private \CurlHandle|null $handle = null;
 
-    /** @var CurlerResponse */
-    private $response;
+    /** @var CurlerResponse|null */
+    private ?CurlerResponse $response = null;
 
     /** @var bool */
-    private $_persistent = false;
+    private bool $_persistent = false;
 
     /**
      * @var bool
      */
-    private $_attachFiles = false;
+    private bool $_attachFiles = false;
+
+    /**
+     * @var mixed
+     */
+    private mixed $callback_class = '';
 
     /**
      * @var string
      */
-    private $callback_class = '';
-
-    /**
-     * @var string
-     */
-    private $callback_functionName = '';
+    private string $callback_functionName = '';
 
     /**
      * @var bool
      */
-    private $_httpCompression = false;
+    private bool $_httpCompression = false;
 
     /**
-     * @var callable
+     * @var mixed
      */
-    private $callback_function = null;
+    private mixed $callback_function = null;
 
     /**
-     * @var bool|resource
+     * @var mixed
      */
-    private $infile_handle = false;
+    private mixed $infile_handle = false;
 
     /**
      * @var int
      */
-    private $_dns_cache = 120;
+    private int $_dns_cache = 120;
 
     /**
-     * @var resource
+     * @var mixed
      */
-    private $resultFileHandle = null;
+    private mixed $resultFileHandle = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private $sslCa = null;
+    private ?string $sslCa = null;
 
 
     /**
-     * @var null|resource
+     * @var mixed
      */
-    private $stdErrOut = null;
+    private mixed $stdErrOut = null;
     /**
-     * @param bool $id
+     * @param mixed $id
      */
-    public function __construct($id = false)
+    public function __construct(mixed $id = false)
     {
         $this->id = $id;
 
@@ -138,7 +138,7 @@ class CurlerRequest
     }
 
 
-    public function close()
+    public function close(): void
     {
         $this->handle = null;
     }
@@ -146,7 +146,7 @@ class CurlerRequest
     /**
      * @param array $attachFiles
      */
-    public function attachFiles($attachFiles)
+    public function attachFiles(array $attachFiles): void
     {
         $this->header("Content-Type", "multipart/form-data");
 
@@ -162,9 +162,9 @@ class CurlerRequest
 
     /**
      * @param bool $set
-     * @return $this
+     * @return static
      */
-    public function id($set = false)
+    public function id($set = false): static
     {
         if ($set) {
             $this->id = $set;
@@ -175,9 +175,9 @@ class CurlerRequest
 
     /**
      * @param array $params
-     * @return $this
+     * @return static
      */
-    public function setRequestExtendedInfo($params)
+    public function setRequestExtendedInfo($params): static
     {
         $this->extendinfo = $params;
         return $this;
@@ -187,7 +187,7 @@ class CurlerRequest
      * @param string|integer|null $key
      * @return mixed
      */
-    public function getRequestExtendedInfo($key = null)
+    public function getRequestExtendedInfo($key = null): mixed
     {
         if ($key) {
             return isset($this->extendinfo[$key]) ? $this->extendinfo[$key] : false;
@@ -197,18 +197,18 @@ class CurlerRequest
     }
 
     /**
-     * @return bool|resource
+     * @return mixed
      */
-    public function getInfileHandle()
+    public function getInfileHandle(): mixed
     {
         return $this->infile_handle;
     }
 
     /**
      * @param string $file_name
-     * @return bool|resource
+     * @return mixed
      */
-    public function setInfile($file_name)
+    public function setInfile($file_name): mixed
     {
         $this->header('Expect', '');
         $this->infile_handle = fopen($file_name, 'r');
@@ -234,7 +234,7 @@ class CurlerRequest
     /**
      * @param callable $callback
      */
-    public function setCallbackFunction($callback)
+    public function setCallbackFunction(callable $callback): void
     {
         $this->callback_function = $callback;
     }
@@ -242,7 +242,7 @@ class CurlerRequest
     /**
      * @param callable $callback
      */
-    public function setWriteFunction($callback)
+    public function setWriteFunction(callable $callback): void
     {
         $this->options[CURLOPT_WRITEFUNCTION] = $callback;
     }
@@ -250,12 +250,12 @@ class CurlerRequest
     /**
      * @param callable $callback
      */
-    public function setReadFunction($callback)
+    public function setReadFunction(callable $callback): void
     {
         $this->options[CURLOPT_READFUNCTION] = $callback;
     }
 
-    public function setHeaderFunction($callback)
+    public function setHeaderFunction(callable $callback): void
     {
         $this->options[CURLOPT_HEADERFUNCTION] = $callback;
     }
@@ -264,7 +264,7 @@ class CurlerRequest
      * @param string $classCallBack
      * @param string $functionName
      */
-    public function setCallback($classCallBack, $functionName)
+    public function setCallback($classCallBack, $functionName): void
     {
         $this->callback_class = $classCallBack;
         $this->callback_functionName = $functionName;
@@ -273,7 +273,7 @@ class CurlerRequest
     /**
      *
      */
-    public function onCallback()
+    public function onCallback(): void
     {
         if ($this->callback_function) {
             $x = $this->callback_function;
@@ -297,10 +297,10 @@ class CurlerRequest
     }
 
     /**
-     * @param resource $stream
+     * @param mixed $stream
      * @return void
      */
-    public function setStdErrOut($stream)
+    public function setStdErrOut(mixed $stream): void
     {
         if (is_resource($stream)) {
             $this->stdErrOut=$stream;
@@ -312,7 +312,7 @@ class CurlerRequest
      * @param bool $result
      * @return string
      */
-    public function dump($result = false)
+    public function dump(bool $result = false): string
     {
         $message = "\n------------  Request ------------\n";
         $message .= 'URL:' . $this->url . "\n\n";
@@ -330,9 +330,9 @@ class CurlerRequest
     }
 
     /**
-     * @return bool
+     * @return mixed
      */
-    public function getId()
+    public function getId(): mixed
     {
         return $this->id;
     }
@@ -340,18 +340,18 @@ class CurlerRequest
     /**
      * @param integer $key
      * @param mixed $value
-     * @return $this
+     * @return static
      */
-    public function option($key, $value)
+    public function option($key, $value): static
     {
         $this->options[$key] = $value;
         return $this;
     }
 
     /**
-     * @return $this
+     * @return static
      */
-    public function persistent()
+    public function persistent(): static
     {
         $this->_persistent = true;
         return $this;
@@ -360,16 +360,16 @@ class CurlerRequest
     /**
      * @return bool
      */
-    public function isPersistent()
+    public function isPersistent(): bool
     {
         return $this->_persistent;
     }
 
     /**
      * @param int $sec
-     * @return $this
+     * @return static
      */
-    public function keepAlive(int $sec = 60)
+    public function keepAlive(int $sec = 60): static
     {
         $this->options[CURLOPT_FORBID_REUSE] = TRUE;
         $this->headers['Connection'] = 'Keep-Alive';
@@ -380,9 +380,9 @@ class CurlerRequest
 
     /**
      * @param bool $flag
-     * @return $this
+     * @return static
      */
-    public function verbose(bool $flag = true)
+    public function verbose(bool $flag = true): static
     {
         $this->options[CURLOPT_VERBOSE] = $flag;
         return $this;
@@ -391,9 +391,9 @@ class CurlerRequest
     /**
      * @param string $key
      * @param string $value
-     * @return $this
+     * @return static
      */
-    public function header(string $key, string $value)
+    public function header(string $key, string $value): static
     {
         $this->headers[$key] = $value;
         return $this;
@@ -413,9 +413,9 @@ class CurlerRequest
 
     /**
      * @param string $url
-     * @return $this
+     * @return static
      */
-    public function url(string $url)
+    public function url(string $url): static
     {
         $this->url = $url;
         return $this;
@@ -456,15 +456,15 @@ class CurlerRequest
     /**
      * @param string $username
      * @param string $password
-     * @return $this
+     * @return static
      */
-    public function authByBasicAuth($username, $password)
+    public function authByBasicAuth($username, $password): static
     {
         $this->options[CURLOPT_USERPWD] = sprintf("%s:%s", $username, $password);
         return $this;
     }
 
-    public function authByHeaders($username, $password)
+    public function authByHeaders($username, $password): static
     {
         $this->headers['X-ClickHouse-User'] = $username;
         $this->headers['X-ClickHouse-Key'] = $password;
@@ -473,9 +473,9 @@ class CurlerRequest
 
     /**
      * @param array|string $data
-     * @return $this
+     * @return static
      */
-    public function parameters($data)
+    public function parameters($data): static
     {
         $this->parameters = $data;
         return $this;
@@ -485,9 +485,9 @@ class CurlerRequest
      * The number of seconds to wait when trying to connect. Use 0 for infinite waiting.
      *
      * @param float $seconds
-     * @return $this
+     * @return static
      */
-    public function connectTimeOut(float $seconds = 1.0)
+    public function connectTimeOut(float $seconds = 1.0): static
     {
         $this->options[CURLOPT_CONNECTTIMEOUT_MS] = (int) ($seconds*1000.0);
         return $this;
@@ -497,9 +497,9 @@ class CurlerRequest
      * The maximum number of seconds (float) allowed to execute cURL functions.
      *
      * @param float $seconds
-     * @return $this
+     * @return static
      */
-    public function timeOut(float $seconds = 10)
+    public function timeOut(float $seconds = 10): static
     {
         return $this->timeOutMs((int) ($seconds * 1000.0));
     }
@@ -508,9 +508,9 @@ class CurlerRequest
      * The maximum allowed number of milliseconds to perform cURL functions.
      *
      * @param int $ms millisecond
-     * @return $this
+     * @return static
      */
-    protected function timeOutMs(int $ms = 10000)
+    protected function timeOutMs(int $ms = 10000): static
     {
         $this->options[CURLOPT_TIMEOUT_MS] = $ms;
         return $this;
@@ -519,10 +519,10 @@ class CurlerRequest
 
     /**
      * @param array|mixed $data
-     * @return $this
+     * @return static
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function parameters_json($data)
+    public function parameters_json($data): static
     {
 
         $this->header("Content-Type", "application/json, text/javascript; charset=utf-8");
@@ -548,9 +548,9 @@ class CurlerRequest
     }
 
     /**
-     * @return resource
+     * @return mixed
      */
-    public function getResultFileHandle()
+    public function getResultFileHandle(): mixed
     {
         return $this->resultFileHandle;
     }
@@ -558,17 +558,17 @@ class CurlerRequest
     /**
      * @return bool
      */
-    public function isResultFile()
+    public function isResultFile(): bool
     {
         return ($this->resultFileHandle ? true : false);
     }
 
     /**
-     * @param resource $h resource
+     * @param mixed $h resource
      * @param bool $zlib
-     * @return $this
+     * @return static
      */
-    public function setResultFileHandle($h, $zlib = false)
+    public function setResultFileHandle($h, $zlib = false): static
     {
         $this->resultFileHandle = $h;
         if ($zlib) {
@@ -579,33 +579,33 @@ class CurlerRequest
     }
 
     /**
-     * @return CurlerRequest
+     * @return static
      */
-    public function PUT()
+    public function PUT(): static
     {
         return $this->execute('PUT');
     }
 
     /**
-     * @return CurlerRequest
+     * @return static
      */
-    public function POST()
+    public function POST(): static
     {
         return $this->execute('POST');
     }
 
     /**
-     * @return CurlerRequest
+     * @return static
      */
-    public function OPTIONS()
+    public function OPTIONS(): static
     {
         return $this->execute('OPTIONS');
     }
 
     /**
-     * @return CurlerRequest
+     * @return static
      */
-    public function GET()
+    public function GET(): static
     {
         return $this->execute('GET');
     }
@@ -614,9 +614,9 @@ class CurlerRequest
      * The number of seconds that DNS records are stored in memory. By default this parameter is 120 (2 minutes).
      *
      * @param integer $set
-     * @return $this
+     * @return static
      */
-    public function setDnsCache($set)
+    public function setDnsCache($set): static
     {
         $this->_dns_cache = $set;
         return $this;
@@ -627,7 +627,7 @@ class CurlerRequest
      *
      * @return int
      */
-    public function getDnsCache()
+    public function getDnsCache(): int
     {
         return $this->_dns_cache;
     }
@@ -637,7 +637,7 @@ class CurlerRequest
      *
      * @param string $filePath
      */
-    public function setSslCa($filePath)
+    public function setSslCa($filePath): void
     {
         $this->option(CURLOPT_SSL_VERIFYPEER, true);
         $this->option(CURLOPT_CAINFO, $filePath);
@@ -645,9 +645,9 @@ class CurlerRequest
 
     /**
      * @param string $method
-     * @return $this
+     * @return static
      */
-    private function execute($method)
+    private function execute($method): static
     {
         $this->method = $method;
         return $this;
@@ -657,7 +657,7 @@ class CurlerRequest
      * @return CurlerResponse
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function response()
+    public function response(): CurlerResponse
     {
         if (!$this->response) {
             throw new \ClickHouseDB\Exception\TransportException('Can`t fetch response - is empty');
@@ -679,7 +679,7 @@ class CurlerRequest
     /**
      * @return mixed
      */
-    public function handle()
+    public function handle(): mixed
     {
         $this->prepareRequest();
         return $this->handle;
@@ -689,7 +689,7 @@ class CurlerRequest
      * @param callable $callback
      * @throws \Exception
      */
-    public function setFunctionProgress(callable $callback)
+    public function setFunctionProgress(callable $callback): void
     {
         if (!is_callable($callback)) {
             throw new \Exception('setFunctionProgress not is_callable');
@@ -703,7 +703,7 @@ class CurlerRequest
     /**
      * @return bool
      */
-    private function prepareRequest()
+    private function prepareRequest(): bool
     {
         if (!$this->handle) {
             $this->handle = curl_init();

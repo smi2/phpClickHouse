@@ -6,34 +6,24 @@ namespace ClickHouseDB\Type;
 
 final class UInt64 implements NumericType
 {
-    /** @var string */
-    public $value;
+    public string $value;
 
     private function __construct(string $uint64Value)
     {
         $this->value = $uint64Value;
     }
 
-    /**
-     * @return self
-     */
-    public static function fromString(string $uint64Value)
+    public static function fromString(string $uint64Value): self
     {
         return new self($uint64Value);
     }
 
-    /**
-     * @return string
-     */
-    public function getValue()
+    public function getValue(): string
     {
         return $this->value;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->value;
     }

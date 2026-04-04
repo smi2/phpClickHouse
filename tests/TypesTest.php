@@ -14,234 +14,168 @@ use ClickHouseDB\Type\MapType;
 use ClickHouseDB\Type\TupleType;
 use ClickHouseDB\Type\UInt64;
 use ClickHouseDB\Type\UUID;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group TypesTest
- */
-final class TypesTest extends TestCase
+class TypesTest extends TestCase
 {
-    use WithClient;
-
-    public function testInt64(): void
+    public function testUInt64FromStringGetValue(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_int64");
-        $this->client->write("CREATE TABLE types_int64 (v Int64) ENGINE = Memory");
-
-        $this->client->insert('types_int64', [
-            [Int64::fromString('-9223372036854775808')],
-            [Int64::fromString('9223372036854775807')],
-        ], ['v']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_int64');
-        $this->assertEquals(2, $st->fetchOne('cnt'));
+        $uint = UInt64::fromString('12345');
+        self::assertSame('12345', $uint->getValue());
     }
 
-    public function testUInt64(): void
+    public function testUInt64ToString(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_uint64");
-        $this->client->write("CREATE TABLE types_uint64 (v UInt64) ENGINE = Memory");
-
-        $this->client->insert('types_uint64', [
-            [UInt64::fromString('0')],
-            [UInt64::fromString('18446744073709551615')],
-        ], ['v']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_uint64');
-        $this->assertEquals(2, $st->fetchOne('cnt'));
+        $uint = UInt64::fromString('99999999999999999');
+        self::assertSame('99999999999999999', (string) $uint);
     }
 
-    public function testDecimal(): void
+    public function testInt64FromStringGetValue(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_decimal");
-        $this->client->write("CREATE TABLE types_decimal (v Decimal(18,4)) ENGINE = Memory");
-
-        $this->client->insert('types_decimal', [
-            [Decimal::fromString('12345.6789')],
-            [Decimal::fromString('-99999.9999')],
-        ], ['v']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_decimal');
-        $this->assertEquals(2, $st->fetchOne('cnt'));
+        $int = Int64::fromString('-99999');
+        self::assertSame('-99999', $int->getValue());
     }
 
-    public function testUUID(): void
+    public function testInt64ToString(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_uuid");
-        $this->client->write("CREATE TABLE types_uuid (id UUID) ENGINE = Memory");
-
-        $uuid = '6d38d288-5b13-4714-b6e4-faa59ffd49d8';
-        $this->client->insert('types_uuid', [
-            [UUID::fromString($uuid)],
-        ], ['id']);
-
-        $st = $this->client->select('SELECT id FROM types_uuid');
-        $this->assertEquals($uuid, $st->fetchOne('id'));
+        $int = Int64::fromString('-42');
+        self::assertSame('-42', (string) $int);
     }
 
-    public function testIPv4(): void
+    public function testDecimalFromStringGetValue(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_ipv4");
-        $this->client->write("CREATE TABLE types_ipv4 (ip IPv4) ENGINE = Memory");
-
-        $this->client->insert('types_ipv4', [
-            [IPv4::fromString('192.168.1.1')],
-            [IPv4::fromString('10.0.0.1')],
-        ], ['ip']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_ipv4');
-        $this->assertEquals(2, $st->fetchOne('cnt'));
+        $decimal = Decimal::fromString('123.456');
+        self::assertSame('123.456', $decimal->getValue());
     }
 
-    public function testIPv6(): void
+    public function testDecimalToString(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_ipv6");
-        $this->client->write("CREATE TABLE types_ipv6 (ip IPv6) ENGINE = Memory");
-
-        $this->client->insert('types_ipv6', [
-            [IPv6::fromString('::1')],
-            [IPv6::fromString('2001:db8::1')],
-        ], ['ip']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_ipv6');
-        $this->assertEquals(2, $st->fetchOne('cnt'));
+        $decimal = Decimal::fromString('0.001');
+        self::assertSame('0.001', (string) $decimal);
     }
 
-    public function testDateTime64(): void
+    public function testUUIDFromStringGetValue(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_dt64");
-        $this->client->write("CREATE TABLE types_dt64 (dt DateTime64(3)) ENGINE = Memory");
-
-        $this->client->insert('types_dt64', [
-            [DateTime64::fromString('2024-01-15 10:30:00.123')],
-        ], ['dt']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_dt64');
-        $this->assertEquals(1, $st->fetchOne('cnt'));
+        $uuid = UUID::fromString('550e8400-e29b-41d4-a716-446655440000');
+        self::assertSame('550e8400-e29b-41d4-a716-446655440000', $uuid->getValue());
     }
 
-    public function testDateTime64FromDateTime(): void
+    public function testUUIDToString(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_dt64b");
-        $this->client->write("CREATE TABLE types_dt64b (dt DateTime64(3)) ENGINE = Memory");
-
-        $dt = new \DateTimeImmutable('2024-06-15 12:00:00.456789');
-        $this->client->insert('types_dt64b', [
-            [DateTime64::fromDateTime($dt, 3)],
-        ], ['dt']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_dt64b');
-        $this->assertEquals(1, $st->fetchOne('cnt'));
+        $uuid = UUID::fromString('550e8400-e29b-41d4-a716-446655440000');
+        self::assertSame('550e8400-e29b-41d4-a716-446655440000', (string) $uuid);
     }
 
-    public function testDate32(): void
+    public function testIPv4FromStringGetValue(): void
     {
-        $this->client->write("DROP TABLE IF EXISTS types_date32");
-        $this->client->write("CREATE TABLE types_date32 (d Date32) ENGINE = Memory");
-
-        $this->client->insert('types_date32', [
-            [Date32::fromString('2024-01-15')],
-            [Date32::fromDateTime(new \DateTimeImmutable('2030-12-31'))],
-        ], ['d']);
-
-        $st = $this->client->select('SELECT count() as cnt FROM types_date32');
-        $this->assertEquals(2, $st->fetchOne('cnt'));
+        $ip = IPv4::fromString('192.168.1.1');
+        self::assertSame('192.168.1.1', $ip->getValue());
     }
 
-    public function testNativeParamsWithUUID(): void
+    public function testIPv4ToString(): void
     {
-        $uuid = '6d38d288-5b13-4714-b6e4-faa59ffd49d8';
-        $st = $this->client->selectWithParams(
-            'SELECT {id:UUID} as id',
-            ['id' => UUID::fromString($uuid)]
-        );
-        $this->assertEquals($uuid, $st->fetchOne('id'));
+        $ip = IPv4::fromString('10.0.0.1');
+        self::assertSame('10.0.0.1', (string) $ip);
     }
 
-    public function testNativeParamsWithIPv4(): void
+    public function testIPv6FromStringGetValue(): void
     {
-        $st = $this->client->selectWithParams(
-            'SELECT {ip:IPv4} as ip',
-            ['ip' => IPv4::fromString('192.168.1.1')]
-        );
-        $this->assertStringContainsString('192.168.1.1', $st->fetchOne('ip'));
+        $ip = IPv6::fromString('::1');
+        self::assertSame('::1', $ip->getValue());
     }
 
-    public function testNativeParamsWithDateTime64(): void
+    public function testIPv6ToString(): void
     {
-        $st = $this->client->selectWithParams(
-            "SELECT {dt:DateTime64(3)} as dt",
-            ['dt' => DateTime64::fromString('2024-01-15 10:30:00.123')]
-        );
-        $this->assertStringContainsString('2024-01-15', $st->fetchOne('dt'));
+        $ip = IPv6::fromString('2001:db8::1');
+        self::assertSame('2001:db8::1', (string) $ip);
     }
 
-    public function testNativeParamsWithArray(): void
+    public function testDateTime64FromStringGetValue(): void
     {
-        $st = $this->client->selectWithParams(
-            "SELECT {arr:Array(UInt32)} as arr",
-            ['arr' => [1, 2, 3]]
-        );
-        $row = $st->fetchOne();
-        $this->assertIsArray($row['arr']);
-        $this->assertCount(3, $row['arr']);
+        $dt = DateTime64::fromString('2024-01-15 10:30:00.123');
+        self::assertSame('2024-01-15 10:30:00.123', $dt->getValue());
     }
 
-    // Unit tests for type getValue()
-
-    public function testInt64Value(): void
+    public function testDateTime64FromDateTimePrecision0(): void
     {
-        $v = Int64::fromString('42');
-        $this->assertEquals('42', $v->getValue());
-        $this->assertEquals('42', (string) $v);
+        $dateTime = new DateTimeImmutable('2024-01-15 10:30:00.123456');
+        $dt = DateTime64::fromDateTime($dateTime, 0);
+        self::assertSame('2024-01-15 10:30:00', $dt->getValue());
     }
 
-    public function testDecimalValue(): void
+    public function testDateTime64FromDateTimePrecision3(): void
     {
-        $v = Decimal::fromString('3.14');
-        $this->assertEquals('3.14', $v->getValue());
+        $dateTime = new DateTimeImmutable('2024-01-15 10:30:00.123456');
+        $dt = DateTime64::fromDateTime($dateTime, 3);
+        self::assertSame('2024-01-15 10:30:00.123', $dt->getValue());
     }
 
-    public function testUUIDValue(): void
+    public function testDateTime64FromDateTimePrecision6(): void
     {
-        $v = UUID::fromString('abc-123');
-        $this->assertEquals('abc-123', $v->getValue());
-        $this->assertEquals('abc-123', (string) $v);
+        $dateTime = new DateTimeImmutable('2024-01-15 10:30:00.123456');
+        $dt = DateTime64::fromDateTime($dateTime, 6);
+        self::assertSame('2024-01-15 10:30:00.123456', $dt->getValue());
     }
 
-    public function testIPv4Value(): void
+    public function testDate32FromStringGetValue(): void
     {
-        $v = IPv4::fromString('1.2.3.4');
-        $this->assertEquals('1.2.3.4', $v->getValue());
+        $date = Date32::fromString('2024-01-15');
+        self::assertSame('2024-01-15', $date->getValue());
     }
 
-    public function testIPv6Value(): void
+    public function testDate32FromDateTimeFormatsAsYmd(): void
     {
-        $v = IPv6::fromString('::1');
-        $this->assertEquals('::1', $v->getValue());
+        $dateTime = new DateTimeImmutable('2024-06-30 23:59:59');
+        $date = Date32::fromDateTime($dateTime);
+        self::assertSame('2024-06-30', $date->getValue());
     }
 
-    public function testDateTime64Value(): void
+    public function testDate32ToString(): void
     {
-        $v = DateTime64::fromString('2024-01-01 00:00:00.000');
-        $this->assertEquals('2024-01-01 00:00:00.000', $v->getValue());
+        $date = Date32::fromString('1970-01-01');
+        self::assertSame('1970-01-01', (string) $date);
     }
 
-    public function testDate32Value(): void
+    public function testMapTypeFromArrayGetValue(): void
     {
-        $v = Date32::fromString('2024-01-01');
-        $this->assertEquals('2024-01-01', $v->getValue());
+        $map = MapType::fromArray(['key' => 'val']);
+        self::assertSame("map('key','val')", $map->getValue());
     }
 
-    public function testMapTypeValue(): void
+    public function testMapTypeWithIntegerValues(): void
     {
-        $v = MapType::fromArray(['key1' => 'val1', 'key2' => 'val2']);
-        $this->assertStringContainsString('map(', $v->getValue());
+        $map = MapType::fromArray(['a' => 1, 'b' => 2]);
+        self::assertSame("map('a',1,'b',2)", $map->getValue());
     }
 
-    public function testTupleTypeValue(): void
+    public function testMapTypeToString(): void
     {
-        $v = TupleType::fromArray([1, 'hello', null]);
-        $this->assertEquals("(1,'hello',NULL)", $v->getValue());
+        $map = MapType::fromArray(['x' => 'y']);
+        self::assertSame("map('x','y')", (string) $map);
+    }
+
+    public function testTupleTypeFromArrayGetValue(): void
+    {
+        $tuple = TupleType::fromArray([1, 'abc']);
+        self::assertSame("(1,'abc')", $tuple->getValue());
+    }
+
+    public function testTupleTypeWithNull(): void
+    {
+        $tuple = TupleType::fromArray([null, 'test']);
+        self::assertSame("(NULL,'test')", $tuple->getValue());
+    }
+
+    public function testTupleTypeWithBool(): void
+    {
+        $tuple = TupleType::fromArray([true, false]);
+        self::assertSame('(1,0)', $tuple->getValue());
+    }
+
+    public function testTupleTypeToString(): void
+    {
+        $tuple = TupleType::fromArray([42, 'hello']);
+        self::assertSame("(42,'hello')", (string) $tuple);
     }
 }

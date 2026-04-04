@@ -8,8 +8,7 @@ use DateTimeInterface;
 
 final class Date32 implements Type
 {
-    /** @var string */
-    public $value;
+    public string $value;
 
     private function __construct(string $value)
     {
@@ -26,7 +25,7 @@ final class Date32 implements Type
         return new self($dateTime->format('Y-m-d'));
     }
 
-    public function getValue()
+    public function getValue(): string
     {
         return $this->value;
     }

@@ -6,8 +6,7 @@ namespace ClickHouseDB\Type;
 
 final class IPv6 implements Type
 {
-    /** @var string */
-    public $value;
+    public string $value;
 
     private function __construct(string $value)
     {
@@ -19,7 +18,7 @@ final class IPv6 implements Type
         return new self($value);
     }
 
-    public function getValue()
+    public function getValue(): string
     {
         return $this->value;
     }

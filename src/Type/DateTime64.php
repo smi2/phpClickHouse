@@ -8,32 +8,21 @@ use DateTimeInterface;
 
 final class DateTime64 implements Type
 {
-    /** @var string */
-    public $value;
+    public string $value;
 
     private function __construct(string $value)
     {
         $this->value = $value;
     }
 
-    /**
-     * @param string $value DateTime string with sub-second precision, e.g. '2024-01-15 10:30:00.123'
-     */
     public static function fromString(string $value): self
     {
         return new self($value);
     }
 
-    /**
-     * @param DateTimeInterface $dateTime
-     * @param int $precision Number of fractional digits (1-9), default 3 (milliseconds)
-     */
     public static function fromDateTime(DateTimeInterface $dateTime, int $precision = 3): self
     {
-        $format = 'Y-m-d H:i:s' . ($precision > 0 ? '.' . str_repeat('0', $precision) : '');
-        // Use microseconds from DateTime and trim to desired precision
         $formatted = $dateTime->format('Y-m-d H:i:s.u');
-        // Trim microseconds to desired precision
         $dotPos = strpos($formatted, '.');
         if ($dotPos !== false && $precision > 0) {
             $formatted = substr($formatted, 0, $dotPos + 1 + $precision);
@@ -43,7 +32,7 @@ final class DateTime64 implements Type
         return new self($formatted);
     }
 
-    public function getValue()
+    public function getValue(): string
     {
         return $this->value;
     }

@@ -12,10 +12,7 @@ use function is_array;
 
 class Bindings implements Degeneration
 {
-    /**
-     * @var array
-     */
-    protected $bindings = [];
+    protected array $bindings = [];
 
     /**
      * @param array $bindings
@@ -33,25 +30,12 @@ class Bindings implements Degeneration
         return $this->bindings;
     }
 
-    /**
-     * @param string $column
-     * @param mixed  $value
-     */
-    public function bindParam($column, $value)
+    public function bindParam(string $column, mixed $value): void
     {
         $this->bindings[$column] = $value;
     }
 
-    /**
-     * Binds a list of values to the corresponding parameters.
-     * This is similar to [[bindValue()]] except that it binds multiple values at a time.
-     *
-     * @param string $sql
-     * @param array $binds
-     * @param string $pattern
-     * @return string
-     */
-    public function compile_binds($sql, $binds,$pattern)
+    public function compile_binds(string $sql, array $binds, string $pattern): string
     {
         return preg_replace_callback($pattern, function($m) use ($binds){
             if(isset($binds[$m[1]])){ // If it exists in our array

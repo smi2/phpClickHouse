@@ -28,85 +28,85 @@ class Http
     /**
      * @var string
      */
-    private $_username = null;
+    private string $_username;
 
     /**
      * @var string
      */
-    private $_password = null;
+    private string $_password;
 
     /**
      * The username and password can be indicated in one of three ways:
      *  - Using HTTP Basic Authentication.
-     *  - In the ‘user’ and ‘password’ URL parameters.
-     *  - Using ‘X-ClickHouse-User’ and ‘X-ClickHouse-Key’ headers (by default)
+     *  - In the 'user' and 'password' URL parameters.
+     *  - Using 'X-ClickHouse-User' and 'X-ClickHouse-Key' headers (by default)
      *
      * @see https://clickhouse.tech/docs/en/interfaces/http/
      * @var int
      */
-    private $_authMethod = self::AUTH_METHOD_HEADER;
+    private int $_authMethod = self::AUTH_METHOD_HEADER;
 
     /**
      * @var string
      */
-    private $_host = '';
+    private string $_host = '';
 
     /**
      * @var int
      */
-    private $_port = 0;
+    private int $_port = 0;
 
     /**
-     * @var bool|int
+     * @var bool
      */
-    private $_verbose = false;
+    private bool $_verbose = false;
 
     /**
-     * @var CurlerRolling
+     * @var CurlerRolling|null
      */
-    private $_curler = null;
+    private ?CurlerRolling $_curler = null;
 
     /**
      * @var Settings
      */
-    private $_settings = null;
+    private Settings $_settings;
 
     /**
      * @var array
      */
-    private $_query_degenerations = [];
+    private array $_query_degenerations = [];
 
     /**
      * Count seconds (int)
      *
      * @var float
      */
-    private $_connectTimeOut = 5.0;
+    private float $_connectTimeOut = 5.0;
 
     /**
-     * @var callable
+     * @var mixed
      */
-    private $xClickHouseProgress = null;
+    private mixed $xClickHouseProgress = null;
 
     /**
      * @var null|string
      */
-    private $sslCA = null;
+    private ?string $sslCA = null;
 
     /**
      * @var array
      */
-    private $curlOptions = [];
+    private array $curlOptions = [];
 
     /**
-     * @var null|resource
+     * @var mixed
      */
-    private $stdErrOut = null;
+    private mixed $stdErrOut = null;
 
     /**
-     * @var null|resource
+     * @var mixed
      */
-    private $handle = null;
+    private mixed $handle = null;
 
     /**
      * Http constructor.
@@ -114,9 +114,9 @@ class Http
      * @param int $port
      * @param string $username
      * @param string $password
-     * @param int $authMethod
+     * @param int|null $authMethod
      */
-    public function __construct($host, $port, $username, $password, $authMethod = null)
+    public function __construct(string $host, int $port, string $username, string $password, ?int $authMethod = null)
     {
         $this->setHost($host, $port);
 
@@ -148,7 +148,7 @@ class Http
     }
 
     /**
-     * @return CurlerRolling
+     * @return CurlerRolling|null
      */
     public function getCurler(): ?CurlerRolling
     {
@@ -244,7 +244,7 @@ class Http
      * @param array $querySettings Per-query settings override
      * @return string
      */
-    private function getUrl($params = [], array $querySettings = []): string
+    private function getUrl(array $params = [], array $querySettings = []): string
     {
         $settings = $this->settings()->getSettings();
 
@@ -276,7 +276,7 @@ class Http
      * @param array $extendinfo
      * @return CurlerRequest
      */
-    private function newRequest($extendinfo): CurlerRequest
+    private function newRequest(array $extendinfo): CurlerRequest
     {
         $new = new CurlerRequest();
 
@@ -327,6 +327,7 @@ class Http
      * @param Query $query
      * @param array $urlParams
      * @param bool $query_as_string
+     * @param array $querySettings
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -367,10 +368,10 @@ class Http
     }
 
     /**
-     * @param resource $stream
+     * @param mixed $stream
      * @return void
      */
-    public function setStdErrOut($stream)
+    public function setStdErrOut(mixed $stream): void
     {
         if (is_resource($stream)) {
             $this->stdErrOut=$stream;
@@ -382,7 +383,7 @@ class Http
      * @param string|Query $sql
      * @return CurlerRequest
      */
-    public function writeStreamData($sql): CurlerRequest
+    public function writeStreamData(Query|string $sql): CurlerRequest
     {
 
         if ($sql instanceof Query) {
@@ -419,7 +420,7 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function writeAsyncCSV($sql, $file_name): Statement
+    public function writeAsyncCSV(string $sql, string $file_name): Statement
     {
         $query = new Query($sql);
 
@@ -470,7 +471,7 @@ class Http
      *
      * @param float $connectTimeOut
      */
-    public function setConnectTimeOut(float $connectTimeOut)
+    public function setConnectTimeOut(float $connectTimeOut): void
     {
         $this->_connectTimeOut = $connectTimeOut;
     }
@@ -524,6 +525,7 @@ class Http
      * @param Query $query
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
+     * @param array $querySettings
      * @return CurlerRequest
      * @throws \Exception
      */
@@ -606,6 +608,7 @@ class Http
 
     /**
      * @param Query $query
+     * @param array $querySettings
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -632,7 +635,7 @@ class Http
      * @param mixed[] $bindings
      * @return Query
      */
-    private function prepareQuery($sql, $bindings): Query
+    private function prepareQuery(string $sql, array $bindings): Query
     {
 
         // add Degeneration query
@@ -649,10 +652,11 @@ class Http
      * @param mixed[] $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
+     * @param array $querySettings
      * @return CurlerRequest
      * @throws \Exception
      */
-    private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null, array $querySettings = []): CurlerRequest
+    private function prepareSelect($sql, array $bindings, $whereInFile, $writeToFile = null, array $querySettings = []): CurlerRequest
     {
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
@@ -666,10 +670,11 @@ class Http
     /**
      * @param Query|string $sql
      * @param mixed[] $bindings
+     * @param array $querySettings
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function prepareWrite($sql, $bindings = [], array $querySettings = []): CurlerRequest
+    private function prepareWrite($sql, array $bindings = [], array $querySettings = []): CurlerRequest
     {
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql, $querySettings);
@@ -706,6 +711,7 @@ class Http
      * @param mixed[] $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
+     * @param array $querySettings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
@@ -722,6 +728,7 @@ class Http
      * @param mixed[] $bindings
      * @param null|WhereInFile $whereInFile
      * @param null|WriteToFile $writeToFile
+     * @param array $querySettings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
@@ -800,7 +807,7 @@ class Http
      * @param mixed $value
      * @return string
      */
-    private function convertParamValue($value): string
+    private function convertParamValue(mixed $value): string
     {
         if ($value instanceof \ClickHouseDB\Type\DateTime64) {
             return $value->value;
@@ -842,6 +849,7 @@ class Http
      * @param string $sql
      * @param mixed[] $bindings
      * @param bool $exception
+     * @param array $querySettings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
@@ -928,6 +936,7 @@ class Http
      * @param Stream $streamRead
      * @param string $sql
      * @param mixed[] $bindings
+     * @param array $querySettings
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */

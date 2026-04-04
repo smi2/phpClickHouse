@@ -12,22 +12,22 @@ use ClickHouseDB\Statement;
 class StreamInsert
 {
     /**
-     * @var resource
+     * @var mixed
      */
-    private $source;
+    private mixed $source;
 
     /**
      * @var CurlerRequest
      */
-    private $request;
+    private CurlerRequest $request;
 
     /**
      * @var CurlerRolling
      */
-    private $curlerRolling;
+    private CurlerRolling $curlerRolling;
 
     /**
-     * @param resource $source
+     * @param mixed $source
      * @param CurlerRequest $request
      * @param CurlerRolling|null $curlerRolling
      */
@@ -51,7 +51,7 @@ class StreamInsert
      * @return \ClickHouseDB\Statement
      * @throws \Exception
      */
-    public function insert($callback)
+    public function insert($callback): Statement
     {
         try {
             if (!is_callable($callback)) {

@@ -6,8 +6,7 @@ namespace ClickHouseDB\Type;
 
 final class MapType implements Type
 {
-    /** @var array */
-    public $value;
+    public array $value;
 
     private function __construct(array $value)
     {
@@ -19,7 +18,7 @@ final class MapType implements Type
         return new self($map);
     }
 
-    public function getValue()
+    public function getValue(): string
     {
         $pairs = [];
         foreach ($this->value as $key => $val) {
@@ -32,6 +31,6 @@ final class MapType implements Type
 
     public function __toString(): string
     {
-        return (string) $this->getValue();
+        return $this->getValue();
     }
 }

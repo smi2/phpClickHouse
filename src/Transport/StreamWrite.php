@@ -16,7 +16,7 @@ class StreamWrite extends Stream
 
     }
 
-    public function isWrite()
+    public function isWrite(): bool
     {
         return true;
     }
