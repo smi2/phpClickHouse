@@ -1,8 +1,121 @@
 PHP ClickHouse wrapper - Changelog
 
-
-
 ======================
+
+### 2026-04-04 [Release 1.26.4]
+
+#### New Features
+
+**Native Query Parameters** — server-side typed parameter binding, SQL injection impossible at protocol level:
+* `Client::selectWithParams()` — SELECT with `{name:Type}` placeholders
+* `Client::writeWithParams()` — INSERT/DDL with `{name:Type}` placeholders
+* Parameters passed as `param_*` in URL, server handles type conversion
+* Supports: int, float, string, bool, null, DateTime, arrays, and all custom Type classes
+
+**Per-Query Settings Override** — override ClickHouse settings for individual queries:
+* New `$querySettings` parameter (last, default `[]`) in `select()`, `selectAsync()`, `write()`
+* Also in `selectWithParams()`, `writeWithParams()`
+* Per-query settings merge with global; global settings stay unchanged after query
+
+**Generator Support** — memory-efficient iteration for large resultsets (#166):
+* `Client::selectGenerator()` — streams from ClickHouse via JSONEachRow, yields one row at a time
+* `Statement::rowsGenerator()` — yields rows from already-fetched data
+* Supports bindings and per-query settings
+
+**ClickHouse Type Classes** — 9 new types in `src/Type/`:
+* `Int64` — large signed integers (string-based, no PHP overflow)
+* `Decimal` — exact decimal numbers
+* `UUID` — UUID values
+* `IPv4`, `IPv6` — IP address types
+* `DateTime64` — sub-second precision (`fromString()`, `fromDateTime($dt, $precision)`)
+* `Date32` — extended date range (1900–2299)
+* `MapType` — `Map(K, V)` composite type
+* `TupleType` — `Tuple(T1, T2, ...)` composite type
+* All types work with `insert()`, bindings (`:param`), and native parameters (`{name:Type}`)
+
+**Structured Exceptions** — enriched error information from ClickHouse:
+* `DatabaseException::getClickHouseExceptionName()` — e.g. `UNKNOWN_TABLE`, `SYNTAX_ERROR` (CH 22+)
+* `DatabaseException::getQueryId()` — from `X-ClickHouse-Query-Id` response header
+* `DatabaseException::fromClickHouse()` — factory method
+* Parses both old (`e.what() = DB::Exception`) and new (`(EXCEPTION_NAME) (version ...)`) error formats
+
+**INSERT Statistics via X-ClickHouse-Summary** (#233):
+* `Statement::summary()` — reads `X-ClickHouse-Summary` response header (written_rows, written_bytes, etc.)
+* `Statement::statistics()` — falls back to summary for INSERT queries (was always null before)
+
+**IPv6 Support** — `getUri()` correctly wraps bare IPv6 addresses in brackets
+
+**AUTH_METHOD_NONE** (0) — skip authentication for trusted/proxy setups
+
+**Custom curl Options** — pass arbitrary `CURLOPT_*` via config `curl_options` or `Http::setCurlOptions()`
+
+**GitHub Actions CI** — replaces Travis CI (#176):
+* Matrix: PHP 8.0, 8.1, 8.2, 8.3, 8.4
+* Two ClickHouse versions: 21.9 + 26.3.3.20
+* PHPStan and PHPCS jobs
+
+#### Bug Fixes
+
+* **Fix streaming OOM** (#234) — `hasErrorClickhouse()` no longer calls `json_decode()` on large response bodies. Bodies > 4KB: only tail checked for error patterns. Prevents OOM when using `streamRead()` with large JSON resultsets
+* **Fix progressFunction for write/insert** (#191) — added `wait_end_of_query=1` setting, required for ClickHouse to send progress headers during write operations
+* **Fix null content_type** (#243) — `hasErrorClickhouse()` handles null content_type from curl without TypeError
+* **Fix FORMAT JSON in DDL** (#242) — FORMAT JSON no longer appended to CREATE, DROP, ALTER, RENAME statements
+* **Fix URL bindings with large inserts** (#240) — `isUseInUrlBindingsParams()` checks original SQL before degeneration, preventing false matches from data containing `{foo:bar}` patterns
+* **Fix ping() timeout** (#246) — `ping()` now respects `setTimeout()` value (was ignoring CURLOPT_TIMEOUT)
+* **Remove deprecated curl_close()** (#244) — no-op since PHP 8.0, deprecated in PHP 8.5
+* **Fix PHPStan errors** — `$params` undefined in `Query::getUrlBindingsParams()`, missing return in `CurlerResponse::dump()`
+* **Fix docblock** (#247) — `$bind` param type `string[]` → `array<string, mixed>` in `streamRead()`/`streamWrite()`
+
+#### Code Quality
+
+* **PHPStan level 1 → 5** — with baseline for 60 pre-existing errors in curl layer. All new code must pass level 5
+* **PHPStan upgraded** from 0.12 to 2.1 (supports PHP 8.4)
+* **phpVersion: 80406** set in PHPStan config
+
+#### Testing
+
+* **Two ClickHouse test targets**: 21.9 (port 8123) + 26.3.3.20 (port 8124)
+* **Two PHPUnit configs**: `phpunit-ch21.xml` (original tests) + `phpunit-ch26.xml` (adapted for CH 26 behavioral changes)
+* **CH 26 adapted tests** in `tests/ClickHouse26/`: ClientTest, SessionsTest, StatementTest, UInt64Test
+* **New test files**: NativeParamsTest, PerQuerySettingsTest, StructuredExceptionTest, GeneratorTest, LargeStreamTest, TypesTest, SummaryTest, NullContentTypeTest, IPv6UriTest, AuthMethodNoneTest, CurlOptionsTest, ProgressWriteTest, PingTimeoutTest, QueryTest
+* **160 tests (CH 21) + 146 tests (CH 26)** — all passing
+
+#### Documentation
+
+* **README.md** restructured — concise overview with links to doc/
+* **doc/** — 13 documentation files:
+  * `basics.md` — connection, select, insert, Statement API
+  * `async.md` — parallel queries, batch inserts
+  * `bindings.md` — parameter binding, SQL templates
+  * `settings.md` — timeouts, HTTPS, auth, sessions
+  * `streaming.md` — streamRead/Write, closures, gzip
+  * `cluster.md` — multi-node setup, replicas
+  * `advanced.md` — partitions, table sizes, progress, debug
+  * `types.md` — all 9 type classes with examples
+  * `native-params.md` — server-side `{name:Type}` parameters
+  * `per-query-settings.md` — per-query settings override
+  * `generators.md` — selectGenerator(), rowsGenerator()
+  * `progress.md` — progressFunction for SELECT and INSERT
+  * `exceptions.md` — structured exceptions
+  * `summary.md` — INSERT statistics via X-ClickHouse-Summary
+* **CLAUDE.md** — project guidelines, architecture, contribution rules
+* **todo.md** — development roadmap
+
+#### Merged PRs
+
+* #246 — fix: respect custom query timeout in ping() method (@abodnar)
+* #244 — remove deprecated curl_close() call (@yehezkel-fullpath)
+* #243 — fix: handle null content_type in hasErrorClickhouse() (@nzsakib)
+* #242 — fix: remove FORMAT JSON from DDL statements (@jspeedz)
+* #240 — fix: bindings in URL with large insert queries (@sniek-ie)
+* #238 — fix: metadata parsing for distributed RENAME queries (@iTearo)
+* #236 — support Enums in ValueFormatter.php (@wlkns)
+
+#### Closed Issues
+
+#234, #233, #227, #225, #223, #215, #209, #208, #201, #197, #196, #195, #194, #193, #191, #181, #176, #166, #150, #144, #136
+
+---
 
 ### 2025-01-14 [Release 1.6.0]
 * Support PHP 8.4
