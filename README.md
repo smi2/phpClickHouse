@@ -4,6 +4,8 @@
 [![Packagist](https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg)](https://packagist.org/packages/smi2/phpClickHouse)
 [![Licence](https://poser.pugx.org/smi2/phpClickHouse/license.svg)](https://packagist.org/packages/smi2/phpClickHouse)
 
+**[Documentation Site](https://smi2.github.io/phpClickHouse/)**
+
 PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, no dependencies beyond ext-curl.
 
 ## Features
