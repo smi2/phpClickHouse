@@ -163,6 +163,16 @@ class Statement implements \Iterator
             return preg_match(self::CLICKHOUSE_ERROR_REGEX, $body) === 1;
         }
 
+        // For large JSON responses (e.g. streaming), avoid json_decode on the entire
+        // body which causes OOM (#234). Instead, check only the tail for error patterns
+        // that ClickHouse appends at the end of streamed responses.
+        if (strlen($body) > 4096) {
+            $tail = substr($body, -4096);
+            return preg_match(self::CLICKHOUSE_ERROR_REGEX, $tail) === 1;
+        }
+
+        // For small JSON responses, validate JSON structure.
+        // Valid JSON means no error (even if data contains error-like strings, #223).
         try {
             json_decode($body, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
@@ -603,6 +613,21 @@ class Statement implements \Iterator
     {
         $this->init();
         return $this->array_data;
+    }
+
+    /**
+     * Iterate over rows using a generator (memory-efficient for large resultsets).
+     * Unlike rows(), this does not build the full array in memory.
+     *
+     * @return \Generator
+     * @throws Exception\TransportException
+     */
+    public function rowsGenerator(): \Generator
+    {
+        $this->init();
+        foreach ($this->array_data as $key => $row) {
+            yield $key => $row;
+        }
     }
 
     /**

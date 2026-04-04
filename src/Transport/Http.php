@@ -910,10 +910,10 @@ class Http
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function streamRead(Stream $streamRead, $sql, $bindings = []): Statement
+    public function streamRead(Stream $streamRead, $sql, $bindings = [], array $querySettings = []): Statement
     {
         $sql = $this->prepareQuery($sql, $bindings);
-        $request = $this->getRequestRead($sql);
+        $request = $this->getRequestRead($sql, null, null, $querySettings);
         return $this->streaming($streamRead, $request);
 
     }

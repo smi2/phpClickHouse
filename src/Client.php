@@ -482,6 +482,41 @@ class Client
     }
 
     /**
+     * Memory-efficient SELECT using a generator.
+     *
+     * Streams results from ClickHouse using JSONEachRow format and yields
+     * one row at a time. Unlike select()->rows(), this does not load
+     * the entire resultset into memory.
+     *
+     * @param string $sql
+     * @param array $bindings
+     * @param array $querySettings Per-query settings override
+     * @return \Generator yields associative arrays, one per row
+     */
+    public function selectGenerator(string $sql, array $bindings = [], array $querySettings = []): \Generator
+    {
+        $stream = fopen('php://temp', 'r+');
+        $streamRead = new Transport\StreamRead($stream);
+
+        $this->transport()->streamRead($streamRead, $sql . ' FORMAT JSONEachRow', $bindings, $querySettings);
+
+        rewind($stream);
+
+        while (($line = fgets($stream)) !== false) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            $row = json_decode($line, true);
+            if (is_array($row)) {
+                yield $row;
+            }
+        }
+
+        fclose($stream);
+    }
+
+    /**
      * SHOW PROCESSLIST
      *
      * @return array
