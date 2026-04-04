@@ -241,14 +241,20 @@ class Http
 
     /**
      * @param array $params
+     * @param array $querySettings Per-query settings override
      * @return string
      */
-    private function getUrl($params = []): string
+    private function getUrl($params = [], array $querySettings = []): string
     {
         $settings = $this->settings()->getSettings();
 
         if (is_array($params) && sizeof($params)) {
             $settings = array_merge($settings, $params);
+        }
+
+        // Per-query settings override global settings
+        if (!empty($querySettings)) {
+            $settings = array_merge($settings, $querySettings);
         }
 
 
@@ -324,7 +330,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function makeRequest(Query $query, array $urlParams = [], bool $query_as_string = false): CurlerRequest
+    private function makeRequest(Query $query, array $urlParams = [], bool $query_as_string = false, array $querySettings = []): CurlerRequest
     {
         $sql = $query->toSql();
 
@@ -349,7 +355,7 @@ class Http
             $urlParams = array_replace_recursive($urlParams, $query->getUrlBindingsParams());
         }
 
-        $url = $this->getUrl($urlParams);
+        $url = $this->getUrl($urlParams, $querySettings);
         $new->url($url);
 
         if (!$query_as_string) {
@@ -521,7 +527,7 @@ class Http
      * @return CurlerRequest
      * @throws \Exception
      */
-    public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null): CurlerRequest
+    public function getRequestRead(Query $query, $whereInFile = null, $writeToFile = null, array $querySettings = []): CurlerRequest
     {
         $urlParams = ['readonly' => 2];
         $query_as_string = false;
@@ -541,7 +547,7 @@ class Http
         }
         // ---------------------------------------------------------------------------------
         // makeRequest read
-        $request = $this->makeRequest($query, $urlParams, $query_as_string);
+        $request = $this->makeRequest($query, $urlParams, $query_as_string, $querySettings);
         // ---------------------------------------------------------------------------------
         // attach files
         if ($whereInFile instanceof WhereInFile && $whereInFile->size()) {
@@ -603,10 +609,10 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function getRequestWrite(Query $query): CurlerRequest
+    public function getRequestWrite(Query $query, array $querySettings = []): CurlerRequest
     {
         $urlParams = ['readonly' => 0];
-        return $this->makeRequest($query, $urlParams);
+        return $this->makeRequest($query, $urlParams, false, $querySettings);
     }
 
     /**
@@ -646,14 +652,14 @@ class Http
      * @return CurlerRequest
      * @throws \Exception
      */
-    private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null): CurlerRequest
+    private function prepareSelect($sql, $bindings, $whereInFile, $writeToFile = null, array $querySettings = []): CurlerRequest
     {
         if ($sql instanceof Query) {
             return $this->getRequestWrite($sql);
         }
         $query = $this->prepareQuery($sql, $bindings);
         $query->setFormat('JSON');
-        return $this->getRequestRead($query, $whereInFile, $writeToFile);
+        return $this->getRequestRead($query, $whereInFile, $writeToFile, $querySettings);
     }
 
 
@@ -663,16 +669,16 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function prepareWrite($sql, $bindings = []): CurlerRequest
+    private function prepareWrite($sql, $bindings = [], array $querySettings = []): CurlerRequest
     {
         if ($sql instanceof Query) {
-            return $this->getRequestWrite($sql);
+            return $this->getRequestWrite($sql, $querySettings);
         }
 
         $query = $this->prepareQuery($sql, $bindings);
 
         if (strpos($sql, 'ON CLUSTER') === false) {
-            return $this->getRequestWrite($query);
+            return $this->getRequestWrite($query, $querySettings);
         }
         if (
             !str_starts_with($sql, 'CREATE')
@@ -683,7 +689,7 @@ class Http
             $query->setFormat('JSON');
         }
 
-        return $this->getRequestWrite($query);
+        return $this->getRequestWrite($query, $querySettings);
     }
 
     /**
@@ -704,9 +710,9 @@ class Http
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
      */
-    public function select($sql, array $bindings = [], $whereInFile = null, $writeToFile = null): Statement
+    public function select($sql, array $bindings = [], $whereInFile = null, $writeToFile = null, array $querySettings = []): Statement
     {
-        $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
+        $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile, $querySettings);
         $this->_curler->execOne($request);
         return new Statement($request);
     }
@@ -720,9 +726,9 @@ class Http
      * @throws \ClickHouseDB\Exception\TransportException
      * @throws \Exception
      */
-    public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null): Statement
+    public function selectAsync($sql, array $bindings = [], $whereInFile = null, $writeToFile = null, array $querySettings = []): Statement
     {
-        $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile);
+        $request = $this->prepareSelect($sql, $bindings, $whereInFile, $writeToFile, $querySettings);
         $this->_curler->addQueLoop($request);
         return new Statement($request);
     }
@@ -736,15 +742,91 @@ class Http
     }
 
     /**
+     * SELECT with native ClickHouse typed parameters.
+     * SQL uses {name:Type} placeholders, values passed as param_name in URL.
+     *
+     * @param string $sql
+     * @param array<string, mixed> $params
+     * @param array $querySettings
+     * @return Statement
+     */
+    public function selectWithParams(string $sql, array $params, array $querySettings = []): Statement
+    {
+        $query = new Query($sql);
+        $query->setFormat('JSON');
+
+        $urlParams = ['readonly' => 2];
+        foreach ($params as $name => $value) {
+            $urlParams['param_' . $name] = $this->convertParamValue($value);
+        }
+
+        $request = $this->makeRequest($query, $urlParams, true, $querySettings);
+        $this->_curler->execOne($request);
+        return new Statement($request);
+    }
+
+    /**
+     * Write with native ClickHouse typed parameters.
+     *
+     * @param string $sql
+     * @param array<string, mixed> $params
+     * @param bool $exception
+     * @param array $querySettings
+     * @return Statement
+     */
+    public function writeWithParams(string $sql, array $params, bool $exception = true, array $querySettings = []): Statement
+    {
+        $query = new Query($sql);
+
+        $urlParams = ['readonly' => 0];
+        foreach ($params as $name => $value) {
+            $urlParams['param_' . $name] = $this->convertParamValue($value);
+        }
+
+        $request = $this->makeRequest($query, $urlParams, true, $querySettings);
+        $this->_curler->execOne($request);
+        $response = new Statement($request);
+        if ($exception) {
+            if ($response->isError()) {
+                $response->error();
+            }
+        }
+        return $response;
+    }
+
+    /**
+     * Convert PHP value to string for native ClickHouse parameter.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private function convertParamValue($value): string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d H:i:s');
+        }
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+        if (is_array($value)) {
+            return json_encode($value);
+        }
+        if ($value === null) {
+            return '\\N';
+        }
+        return (string) $value;
+    }
+
+    /**
      * @param string $sql
      * @param mixed[] $bindings
      * @param bool $exception
      * @return Statement
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    public function write($sql, array $bindings = [], $exception = true): Statement
+    public function write($sql, array $bindings = [], $exception = true, array $querySettings = []): Statement
     {
-        $request = $this->prepareWrite($sql, $bindings);
+        $request = $this->prepareWrite($sql, $bindings, $querySettings);
         $this->_curler->execOne($request);
         $response = new Statement($request);
         if ($exception) {

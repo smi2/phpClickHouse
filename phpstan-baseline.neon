@@ -1,0 +1,313 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Cluster.php
+
+		-
+			message: '#^Property ClickHouseDB\\Cluster\:\:\$hostsnames is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Cluster.php
+
+		-
+			message: '#^Property ClickHouseDB\\Statement\:\:\$_http_code is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Statement.php
+
+		-
+			message: '#^Property ClickHouseDB\\Statement\:\:\$query is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Statement.php
+
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 2
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Parameter \#1 \$handle of function curl_setopt_array expects CurlHandle, resource\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Parameter \#2 \$value of method ClickHouseDB\\Transport\\CurlerRequest\:\:header\(\) expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRequest\:\:\$handle \(resource\|null\) does not accept \(CurlHandle\|false\)\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRequest\:\:\$handle \(resource\|null\) is never assigned resource so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRequest\:\:\$sslCa is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Method ClickHouseDB\\Transport\\CurlerResponse\:\:connect_time\(\) should return string but returns float\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Transport/CurlerResponse.php
+
+		-
+			message: '#^Method ClickHouseDB\\Transport\\CurlerResponse\:\:pretransfer_time\(\) should return string but returns float\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Transport/CurlerResponse.php
+
+		-
+			message: '#^Method ClickHouseDB\\Transport\\CurlerResponse\:\:starttransfer_time\(\) should return string but returns float\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Transport/CurlerResponse.php
+
+		-
+			message: '#^Call to function is_int\(\) with int will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$handle of function curl_errno expects CurlHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$handle of function curl_error expects CurlHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$handle of function curl_getinfo expects CurlHandle, resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$handle of function curl_multi_getcontent expects CurlHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$multi_handle of function curl_multi_add_handle expects CurlMultiHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$multi_handle of function curl_multi_close expects CurlMultiHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$multi_handle of function curl_multi_exec expects CurlMultiHandle, resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$multi_handle of function curl_multi_info_read expects CurlMultiHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$multi_handle of function curl_multi_remove_handle expects CurlMultiHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$multi_handle of function curl_multi_select expects CurlMultiHandle, resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRolling\:\:\$_pool_master \(resource\|null\) does not accept CurlMultiHandle\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRolling\:\:\$_pool_master \(resource\|null\) is never assigned resource so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Instanceof between ClickHouseDB\\Transport\\CurlerRolling and ClickHouseDB\\Transport\\CurlerRolling will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\Http\:\:\$_verbose \(bool\|int\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\Http\:\:\$handle \(resource\|null\) is never assigned resource so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\Http\:\:\$handle is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/StreamInsert.php
+
+		-
+			message: '#^Comparison operation "\<" between 10 and 4 is always false\.$#'
+			identifier: smaller.alwaysFalse
+			count: 1
+			path: tests/BindingsPostTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/ClickHouse26/SessionsTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertIsString\(\) with string will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 3
+			path: tests/ClientAuthTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertIsArray\(\) with array will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/ClientTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNull\(\) with array will always evaluate to false\.$#'
+			identifier: method.impossibleType
+			count: 1
+			path: tests/ClientTest.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method ClickHouseDB\\Transport\\StreamInsert\:\:insert\(\) expects callable\(\)\: mixed, array\{\} given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/ClientTest.php
+
+		-
+			message: '#^Parameter \#3 \$structure of method ClickHouseDB\\Query\\WhereInFile\:\:attachFile\(\) expects string, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/ClientTest.php
+
+		-
+			message: '#^PHPDoc tag @throws with type ClickHouseDB\\Tests\\Exception is not subtype of Throwable$#'
+			identifier: throws.notThrowable
+			count: 1
+			path: tests/FormatQueryTest.php
+
+		-
+			message: '#^PHPDoc tag @throws with type ClickHouseDB\\Tests\\Exception is not subtype of Throwable$#'
+			identifier: throws.notThrowable
+			count: 1
+			path: tests/ProgressAndEscapeTest.php
+
+		-
+			message: '#^PHPDoc tag @throws with type ClickHouseDB\\Tests\\Exception is not subtype of Throwable$#'
+			identifier: throws.notThrowable
+			count: 1
+			path: tests/SessionsTest.php
+
+		-
+			message: '#^Dead catch \- ClickHouseDB\\Exception\\DatabaseException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 2
+			path: tests/StructuredExceptionTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNotNull\(\) with mixed will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/SummaryTest.php

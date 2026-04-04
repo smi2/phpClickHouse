@@ -293,7 +293,7 @@ class Client
     }
 
     /**
-     * @param string|null $useSessionId
+     * @param string $useSessionId
      * @return $this
      */
     public function useSession(string $useSessionId = '')
@@ -322,9 +322,9 @@ class Client
      * @param mixed[] $bindings
      * @return Statement
      */
-    public function write(string $sql, array $bindings = [], bool $exception = true)
+    public function write(string $sql, array $bindings = [], bool $exception = true, array $querySettings = [])
     {
-        return $this->transport()->write($sql, $bindings, $exception);
+        return $this->transport()->write($sql, $bindings, $exception, $querySettings);
     }
 
     /**
@@ -395,10 +395,11 @@ class Client
         string $sql,
         array $bindings = [],
         ?WhereInFile $whereInFile = null,
-        ?WriteToFile $writeToFile = null
+        ?WriteToFile $writeToFile = null,
+        array $querySettings = []
     )
     {
-        return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
+        return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile, $querySettings);
     }
 
     /**
@@ -443,10 +444,41 @@ class Client
         string $sql,
         array $bindings = [],
         ?WhereInFile $whereInFile = null,
-        ?WriteToFile $writeToFile = null
+        ?WriteToFile $writeToFile = null,
+        array $querySettings = []
     )
     {
-        return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
+        return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile, $querySettings);
+    }
+
+    /**
+     * Execute SELECT with native ClickHouse typed parameters.
+     *
+     * Uses server-side parameter binding: {name:Type} in SQL + param_name in URL.
+     * This is the safest way to pass parameters — SQL injection is impossible at protocol level.
+     *
+     * @param string $sql SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32}'
+     * @param array<string, mixed> $params Parameter values, e.g. ['id' => 42]
+     * @param array $querySettings Per-query settings override
+     * @return Statement
+     */
+    public function selectWithParams(string $sql, array $params, array $querySettings = [])
+    {
+        return $this->transport()->selectWithParams($sql, $params, $querySettings);
+    }
+
+    /**
+     * Execute write (DDL/DML) with native ClickHouse typed parameters.
+     *
+     * @param string $sql SQL with {name:Type} placeholders
+     * @param array<string, mixed> $params Parameter values
+     * @param bool $exception Throw on error
+     * @param array $querySettings Per-query settings override
+     * @return Statement
+     */
+    public function writeWithParams(string $sql, array $params, bool $exception = true, array $querySettings = [])
+    {
+        return $this->transport()->writeWithParams($sql, $params, $exception, $querySettings);
     }
 
     /**

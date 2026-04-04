@@ -12,6 +12,7 @@ use ClickHouseDB\Transport\CurlerResponse;
 class Statement implements \Iterator
 {
     private const CLICKHOUSE_ERROR_REGEX = "%Code:\s(\d+)\.\s*DB::Exception\s*:\s*(.*)(?:,\s*e\.what|\(version).*%ius";
+    private const CLICKHOUSE_EXCEPTION_NAME_REGEX = "%\(([A-Z_]+)\)\s*(?:\(version|$)%i";
 
     /**
      * @var string|mixed
@@ -146,7 +147,12 @@ class Statement implements \Iterator
         // Code: 516. DB::Exception: test_username: Authentication failed: password is incorrect or there is no user with such name. (AUTHENTICATION_FAILED) (version 22.8.3.13 (official build))
 
         if (preg_match(self::CLICKHOUSE_ERROR_REGEX, $body, $matches)) {
-            return ['code' => $matches[1], 'message' => $matches[2]];
+            $result = ['code' => $matches[1], 'message' => $matches[2], 'exception_name' => null];
+            // Parse exception name from CH 22+ format: (EXCEPTION_NAME) (version ...)
+            if (preg_match(self::CLICKHOUSE_EXCEPTION_NAME_REGEX, $body, $nameMatches)) {
+                $result['exception_name'] = $nameMatches[1];
+            }
+            return $result;
         }
 
         return false;
@@ -185,7 +191,13 @@ class Statement implements \Iterator
             $parse = $this->parseErrorClickHouse($body);
 
             if ($parse) {
-                throw new DatabaseException($parse['message'] . "\nIN:" . $this->sql(), $parse['code']);
+                $queryId = $this->response()->headers('X-ClickHouse-Query-Id');
+                throw DatabaseException::fromClickHouse(
+                    $parse['message'] . "\nIN:" . $this->sql(),
+                    $parse['code'],
+                    $parse['exception_name'] ?? null,
+                    $queryId
+                );
             } else {
                 $code = $this->response()->http_code();
                 $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
