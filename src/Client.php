@@ -430,6 +430,10 @@ class Client
         if (!$this->settings()->is('http_headers_progress_interval_ms')) {
             $this->settings()->set('http_headers_progress_interval_ms', 100);
         }
+        // Required for write operations to receive progress headers
+        if (!$this->settings()->is('wait_end_of_query')) {
+            $this->settings()->set('wait_end_of_query', 1);
+        }
 
         $this->transport()->setProgressFunction($callback);
     }
