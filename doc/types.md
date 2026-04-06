@@ -128,6 +128,27 @@ $st = $db->select('SELECT id FROM table');
 echo $st->fetchOne('id'); // '6d38d288-5b13-4714-b6e4-faa59ffd49d8'
 ```
 
+## Boolean Type
+
+### Boolean
+
+ClickHouse `Bool` columns. Stored as `1`/`0` strings internally.
+
+```php
+use ClickHouseDB\Type\Boolean;
+
+// From bool
+$db->insert('table', [
+    [Boolean::fromBool(true)],
+    [Boolean::fromBool(false)],
+], ['is_active']);
+
+// From string
+$db->insert('table', [
+    [Boolean::fromString('1')],
+], ['is_active']);
+```
+
 ## Composite Types
 
 ### MapType

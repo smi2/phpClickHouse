@@ -2,6 +2,36 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-04-06 [Release 1.24.406]
+
+#### New Features
+
+* **Boolean Type** (#251) — new `ClickHouseDB\Type\Boolean` class with `fromString()`, `fromBool()`, `getValue()`, `__toString()` (@sander-hash)
+
+#### Code Quality
+
+* **PHP 8.1+ native type declarations** — full migration across all 33 src/ files: property types, parameter types, return types. Interfaces (`Degeneration`, `IStream`, `Type`) unchanged for backward compatibility
+* **PR Security Review rules** — added supply-chain attack detection checklist to CLAUDE.md (outbound network calls, data exfiltration, obfuscation, credential leakage patterns)
+* **Security audit** — full code audit of src/, results saved in `secure-scan.md`. All clean: no backdoors, exfiltration, or obfuscation found
+
+#### Testing
+
+* **153 new static unit tests** — run without ClickHouse server:
+  * `ValueFormatterTest` (28) — SQL escaping, types, DateTimeInterface, Expression
+  * `StrictQuoteLineTest` (32) — CSV/TSV/Insert formatting, encodeString
+  * `SettingsTest` (24) — get/set/is, sessions, timeouts, readonly
+  * `WriteToFileTest` (15) — file validation, formats, gzip
+  * `TypesTest` (26+5) — UInt64, DateTime64, MapType, TupleType, Boolean and more
+  * `BindingsUnitTest` (16) — compile_binds, Conditions {if}/{else}
+  * `CurlerRequestResponseTest` (35) — headers, auth, URL, JSON, dump
+* **Total: 313+ tests** (CH 21.9 + CH 26.3 + static), all passing
+
+#### Merged PRs
+
+* #251 — feat: Add Boolean type (@sander-hash)
+
+---
+
 ### 2026-04-04 [Release 1.26.4]
 
 #### New Features

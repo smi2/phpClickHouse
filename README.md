@@ -12,7 +12,7 @@ PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, no de
 
 - Sync & async (parallel) SELECT queries
 - [Native query parameters](doc/native-params.md) — server-side `{name:Type}` binding, SQL injection impossible
-- [Rich type system](doc/types.md) — Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
+- [Rich type system](doc/types.md) — Boolean, Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
 - Bulk inserts: arrays, CSV files, streams
 - [Generators](doc/generators.md) — memory-efficient iteration for large resultsets
 - HTTP compression (gzip) for inserts
@@ -123,7 +123,7 @@ Detailed guides with examples are available in the [doc/](doc/) directory:
 
 ### Advanced
 - **[Native Query Parameters](doc/native-params.md)** — server-side `{name:Type}` binding
-- **[ClickHouse Types](doc/types.md)** — Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
+- **[ClickHouse Types](doc/types.md)** — Boolean, Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
 - **[Generators](doc/generators.md)** — memory-efficient `selectGenerator()` for large resultsets
 - **[Per-Query Settings](doc/per-query-settings.md)** — override settings per request
 - **[Streaming](doc/streaming.md)** — streamRead, streamWrite, closures, gzip

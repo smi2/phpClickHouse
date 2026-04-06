@@ -15,7 +15,7 @@ PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, zero 
 
 - Sync & async (parallel) SELECT queries
 - [Native query parameters](native-params) — server-side `{name:Type}` binding, SQL injection impossible
-- [Rich type system](types) — Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
+- [Rich type system](types) — Boolean, Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
 - Bulk inserts: arrays, CSV files, streams
 - [Generators](generators) — memory-efficient iteration for large resultsets
 - HTTP compression (gzip) for inserts
@@ -108,7 +108,7 @@ foreach ($db->selectGenerator('SELECT * FROM huge_table') as $row) {
 | Guide | Description |
 |-------|-------------|
 | [Native Query Parameters](native-params) | Server-side `{name:Type}` binding |
-| [ClickHouse Types](types) | Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple |
+| [ClickHouse Types](types) | Boolean, Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple |
 | [Generators](generators) | Memory-efficient `selectGenerator()` for large resultsets |
 | [Per-Query Settings](per-query-settings) | Override settings per request |
 | [Streaming](streaming) | streamRead, streamWrite, closures, gzip |
@@ -130,7 +130,8 @@ foreach ($db->selectGenerator('SELECT * FROM huge_table') as $row) {
 | 5.6 | `<= 1.1.2` |
 | 7.2 | `<= 1.3.10` |
 | 7.3 | `1.4.x – 1.5.x` |
-| 8.0+ | `>= 1.6.0` |
+| 8.0+ | `1.6.0 – 1.26.4` |
+| 8.1+ | `>= 1.24.406` |
 
 ## Links
 
