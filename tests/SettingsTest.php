@@ -251,7 +251,6 @@ class SettingsTest extends TestCase
 
         $all = $settings->getSettings();
 
-        self::assertIsArray($all);
         self::assertArrayHasKey('extremes', $all);
         self::assertArrayHasKey('readonly', $all);
         self::assertArrayHasKey('max_execution_time', $all);
