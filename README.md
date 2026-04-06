@@ -39,7 +39,8 @@ PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, no de
 | 5.6 | `<= 1.1.2` |
 | 7.2 | `<= 1.3.10` |
 | 7.3 | `1.4.x – 1.5.x` |
-| 8.0+ | `>= 1.6.0` |
+| 8.0+ | `1.6.0 – 1.26.4` |
+| 8.1+ | `>= 1.24.406` |
 
 ## Installation
 
