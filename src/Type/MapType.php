@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
-final class MapType implements Type
+use Stringable;
+
+final class MapType implements Type, Stringable
 {
     public array $value;
 

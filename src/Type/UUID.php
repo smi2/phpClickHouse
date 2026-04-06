@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
-final class UUID implements Type
+use Stringable;
+
+final class UUID implements Type, Stringable
 {
     public string $value;
 
