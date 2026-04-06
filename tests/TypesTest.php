@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Tests;
 
+use ClickHouseDB\Type\Boolean;
 use ClickHouseDB\Type\Date32;
 use ClickHouseDB\Type\DateTime64;
 use ClickHouseDB\Type\Decimal;
@@ -19,6 +20,36 @@ use PHPUnit\Framework\TestCase;
 
 class TypesTest extends TestCase
 {
+    public function testBooleanFromStringGetValue(): void
+    {
+        $bool = Boolean::fromString('1');
+        self::assertSame('1', $bool->getValue());
+    }
+
+    public function testBooleanFromBoolTrue(): void
+    {
+        $bool = Boolean::fromBool(true);
+        self::assertSame('1', $bool->getValue());
+    }
+
+    public function testBooleanFromBoolFalse(): void
+    {
+        $bool = Boolean::fromBool(false);
+        self::assertSame('0', $bool->getValue());
+    }
+
+    public function testBooleanToString(): void
+    {
+        self::assertSame('1', (string) Boolean::fromBool(true));
+        self::assertSame('0', (string) Boolean::fromBool(false));
+    }
+
+    public function testBooleanPublicValueProperty(): void
+    {
+        $bool = Boolean::fromBool(true);
+        self::assertSame('1', $bool->value);
+    }
+
     public function testUInt64FromStringGetValue(): void
     {
         $uint = UInt64::fromString('12345');
