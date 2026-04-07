@@ -397,6 +397,22 @@ class Client
     }
 
     /**
+     * Stream query results using native ClickHouse typed parameters.
+     *
+     * Combines server-side parameter binding ({name:Type} syntax) with streaming output.
+     * SQL injection is impossible at the protocol level.
+     *
+     * @param Stream $streamRead Stream to write results into (use StreamRead)
+     * @param string $sql SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32} FORMAT JSONEachRow'
+     * @param array<string, mixed> $params Parameter values, e.g. ['id' => 42]
+     * @param array $querySettings Per-query settings override
+     */
+    public function readWithParams(Stream $streamRead, string $sql, array $params, array $querySettings = []): Statement
+    {
+        return $this->transport()->readWithParams($streamRead, $sql, $params, $querySettings);
+    }
+
+    /**
      * Memory-efficient SELECT using a generator.
      *
      * Streams results from ClickHouse using JSONEachRow format and yields
