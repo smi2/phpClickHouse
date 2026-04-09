@@ -44,6 +44,9 @@ $db->selectWithParams($sql, $params, $querySettings);
 
 // writeWithParams()
 $db->writeWithParams($sql, $params, $exception, $querySettings);
+
+// readWithParams()
+$db->readWithParams($streamRead, $sql, $params, $querySettings);
 ```
 
 ## Examples

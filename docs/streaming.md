@@ -95,6 +95,30 @@ $r = $client->streamRead(
 );
 ```
 
+## readWithParams
+
+Stream query results using native ClickHouse typed parameters (`{name:Type}` syntax). Combines the safety of server-side parameter binding with streaming output:
+
+```php
+$stream = fopen('php://memory', 'r+');
+$streamRead = new ClickHouseDB\Transport\StreamRead($stream);
+
+$client->readWithParams(
+    $streamRead,
+    'SELECT id, name FROM users WHERE id = {id:UInt32} FORMAT JSONEachRow',
+    ['id' => 1]
+);
+
+rewind($stream);
+while (($line = fgets($stream)) !== false) {
+    $row = json_decode(trim($line), true);
+    echo $row['name'];
+}
+fclose($stream);
+```
+
+The FORMAT clause must be specified in the SQL. See [native-params](native-params) for supported parameter types.
+
 ## Direct write to file
 
 Send ClickHouse results directly to a file without JSON parsing:

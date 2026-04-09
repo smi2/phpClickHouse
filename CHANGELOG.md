@@ -2,6 +2,26 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-04-10 [Release 1.26.410]
+
+#### New Features
+
+* **`readWithParams()`** (#254) — stream query results with native ClickHouse typed parameters (`{name:Type}` syntax), combining server-side parameter binding with streaming output (@sander-hash)
+
+#### Code Quality
+
+* **Stringable interfaces** (#252) — all Type classes now explicitly implement `Stringable` for consistency (@sander-hash)
+* **PHPStan test fixes** (#253) — removed redundant assertions in static tests, improved assertion quality (@sander-hash)
+* **Documentation sync** — updated GitHub Pages (docs/) with `readWithParams()` in native-params, streaming, and per-query-settings guides
+
+#### Merged PRs
+
+* #252 — Add Stringable interfaces for types (@sander-hash)
+* #253 — Fix phpstan errors in test files (@sander-hash)
+* #254 — Added native params for read function (@sander-hash)
+
+---
+
 ### 2026-04-06 [Release 1.24.406]
 
 #### New Features
