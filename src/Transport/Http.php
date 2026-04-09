@@ -772,6 +772,20 @@ class Http
         return new Statement($request);
     }
 
+    public function readWithParams(Stream $streamRead, string $sql, array $params, array $querySettings = []): Statement
+    {
+        $query = new Query($sql);
+
+        $urlParams = ['readonly' => 2];
+        foreach ($params as $name => $value) {
+            $urlParams['param_' . $name] = $this->convertParamValue($value);
+        }
+
+        $request = $this->makeRequest($query, $urlParams, true, $querySettings);
+
+        return $this->streaming($streamRead, $request);
+    }
+
     /**
      * Write with native ClickHouse typed parameters.
      *

@@ -71,9 +71,33 @@ $db->selectWithParams(
 );
 ```
 
+## Streaming with Native Parameters
+
+Use `readWithParams()` to stream query results while still using server-side typed parameters:
+
+```php
+$stream = fopen('php://memory', 'r+');
+$streamRead = new ClickHouseDB\Transport\StreamRead($stream);
+
+$db->readWithParams(
+    $streamRead,
+    'SELECT id, name FROM users WHERE id = {id:UInt32} FORMAT JSONEachRow',
+    ['id' => 1]
+);
+
+rewind($stream);
+while (($line = fgets($stream)) !== false) {
+    $row = json_decode(trim($line), true);
+    echo $row['name'];
+}
+fclose($stream);
+```
+
+The FORMAT clause must be included in the SQL string — unlike `selectWithParams()`, no default format is applied.
+
 ## Per-Query Settings
 
-Both methods accept optional settings override:
+All three methods accept an optional settings override:
 
 ```php
 $result = $db->selectWithParams(
@@ -88,6 +112,14 @@ $db->writeWithParams(
     true,
     ['async_insert' => 1, 'wait_for_async_insert' => 0]
 );
+
+$stream = fopen('php://memory', 'r+');
+$db->readWithParams(
+    new ClickHouseDB\Transport\StreamRead($stream),
+    'SELECT id FROM t WHERE id = {id:UInt32} FORMAT JSONEachRow',
+    ['id' => 1],
+    ['max_execution_time' => 300]
+);
 ```
 
 ## Native Params vs Bindings
@@ -97,7 +129,7 @@ $db->writeWithParams(
 | SQL injection protection | Server-side (protocol level) | Client-side (escaping) |
 | Type validation | Server validates types | No validation |
 | Syntax | `{name:Type}` in SQL | `:name` or `{name}` in SQL |
-| Method | `selectWithParams()` | `select()` |
+| Method | `selectWithParams()`, `writeWithParams()`, `readWithParams()` | `select()` |
 | Large values | Passed in URL params | Embedded in SQL body |
 
 **Recommendation:** Use native parameters for new code. They are safer and let the server handle type conversion.

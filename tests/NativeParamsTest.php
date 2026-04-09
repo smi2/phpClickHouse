@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Tests;
 
+use ClickHouseDB\Transport\StreamRead;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -103,5 +104,35 @@ final class NativeParamsTest extends TestCase
         );
 
         $this->assertEquals(1, $result->fetchOne('n'));
+    }
+
+    public function testReadWithParams(): void
+    {
+        $this->client->write("DROP TABLE IF EXISTS read_with_params_test");
+        $this->client->write('CREATE TABLE IF NOT EXISTS read_with_params_test (id UInt32, name String) ENGINE = Memory');
+
+        $this->client->writeWithParams(
+            'INSERT INTO read_with_params_test VALUES ({id:UInt32}, {name:String})',
+            ['id' => 1, 'name' => 'Alice']
+        );
+
+        $stream = fopen('php://memory', 'r+');
+        $streamRead = new StreamRead($stream);
+
+        $this->client->readWithParams(
+            $streamRead,
+            'SELECT id, name FROM read_with_params_test WHERE id = {id:UInt32} FORMAT JSONEachRow',
+            ['id' => 1]
+        );
+
+        rewind($stream);
+        $output = stream_get_contents($stream);
+        fclose($stream);
+
+        $row = json_decode(trim($output), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals(1, $row['id']);
+        $this->assertEquals('Alice', $row['name']);
+
+        $this->client->write("DROP TABLE IF EXISTS read_with_params_test");
     }
 }
