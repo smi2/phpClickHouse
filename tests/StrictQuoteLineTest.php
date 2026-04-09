@@ -110,7 +110,6 @@ class StrictQuoteLineTest extends TestCase
     {
         $quoter = new StrictQuoteLine('CSV');
         $result = $quoter->quoteValue(['a', 1, null]);
-        self::assertIsArray($result);
         self::assertCount(3, $result);
         self::assertSame('"a"', $result[0]);
         self::assertSame('1', $result[1]);

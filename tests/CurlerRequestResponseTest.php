@@ -139,7 +139,6 @@ class CurlerRequestResponseTest extends TestCase
 
         $output = $request->dump(true);
 
-        self::assertIsString($output);
         self::assertStringContainsString('Request', $output);
         self::assertStringContainsString('http://localhost:8123', $output);
         self::assertStringContainsString('SELECT 1', $output);
@@ -168,7 +167,7 @@ class CurlerRequestResponseTest extends TestCase
         // but we can verify the method doesn't throw and the object is consistent
         // Disabling should also work
         $request->httpCompression(false);
-        self::assertTrue(true); // No exception means success
+        self::assertInstanceOf(CurlerRequest::class, $request); // No exception means success
     }
 
     public function testAuthByHeadersSetsClickHouseHeaders(): void
@@ -311,7 +310,6 @@ class CurlerRequestResponseTest extends TestCase
 
         $output = $response->dump(true);
 
-        self::assertIsString($output);
         self::assertStringContainsString('Response', $output);
         self::assertStringContainsString('test body content', $output);
         self::assertStringContainsString('some error', $output);
