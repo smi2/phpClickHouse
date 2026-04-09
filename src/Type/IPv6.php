@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
-final class IPv6 implements Type
+use Stringable;
+
+final class IPv6 implements Type, Stringable
 {
     public string $value;
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
-final class UInt64 implements NumericType
+use Stringable;
+
+final class UInt64 implements NumericType, Stringable
 {
     public string $value;
 

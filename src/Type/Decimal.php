@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
-final class Decimal implements NumericType
+use Stringable;
+
+final class Decimal implements NumericType, Stringable
 {
     public string $value;
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
-final class TupleType implements Type
+use Stringable;
+
+final class TupleType implements Type, Stringable
 {
     public array $value;
 
