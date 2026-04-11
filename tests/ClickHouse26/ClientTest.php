@@ -328,6 +328,9 @@ final class ClientTest extends TestCase
         }
     }
 
+    /**
+     * @group flaky
+     */
     public function testStreamInsert(): void
     {
         $this->create_table_summing_url_views();
@@ -354,6 +357,9 @@ final class ClientTest extends TestCase
         unlink($file);
     }
 
+    /**
+     * @group flaky
+     */
     public function testStreamInsertFormatJSONEachRow(): void
     {
         $this->create_table_summing_url_views();

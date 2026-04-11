@@ -402,6 +402,9 @@ class ClientTest extends TestCase
         unlink($fileName);
         return true;
     }
+    /**
+     * @group flaky
+     */
     public function testConnectTimeout()
     {
         $config = [

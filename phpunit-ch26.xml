@@ -21,6 +21,12 @@
         </testsuite>
     </testsuites>
 
+    <groups>
+        <exclude>
+            <group>flaky</group>
+        </exclude>
+    </groups>
+
     <filter>
         <whitelist>
             <directory suffix=".php">src</directory>

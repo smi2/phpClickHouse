@@ -83,6 +83,28 @@ class BindingsUnitTest extends TestCase
         self::assertSame('SELECT * FROM users', $result);
     }
 
+    /**
+     * @see https://github.com/smi2/phpClickHouse/issues/256
+     */
+    public function testBindParamsWithNumericKeys(): void
+    {
+        $bindings = new Bindings();
+        $bindings->bindParams(['value1', 'value2']);
+        $bind = $bindings->getBind();
+        self::assertSame(['0' => 'value1', '1' => 'value2'], $bind);
+    }
+
+    /**
+     * @see https://github.com/smi2/phpClickHouse/issues/256
+     */
+    public function testBindParamsWithMixedKeys(): void
+    {
+        $bindings = new Bindings();
+        $bindings->bindParams([0 => 'first', 'name' => 'Alice', 1 => 'second']);
+        $bind = $bindings->getBind();
+        self::assertSame(['0' => 'first', 'name' => 'Alice', '1' => 'second'], $bind);
+    }
+
     public function testConditionsProcessIfBlockWithTruthyMarker(): void
     {
         $conditions = new Conditions();
