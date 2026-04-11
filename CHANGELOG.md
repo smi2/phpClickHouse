@@ -2,6 +2,23 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-04-12 [Release 1.26.412]
+
+#### Bug Fixes
+
+* **Fix bindParams() TypeError with numeric keys** (#256) — `bindParams()` now casts integer array keys to string before passing to `bindParam(string $column)`, restoring backward compatibility with numerically-indexed arrays. Affected downstream packages like `phpclickhouse-laravel` (@yehezkel-fullpath)
+
+#### Testing
+
+* **Flaky tests excluded from default runs** — `testConnectTimeout`, `testStreamInsert`, `testStreamInsertFormatJSONEachRow` marked `@group flaky` and excluded via PHPUnit config. Run separately with `./vendor/bin/phpunit --group flaky`
+* **2 new binding tests** — `testBindParamsWithNumericKeys`, `testBindParamsWithMixedKeys` covering #256 regression
+
+#### Closed Issues
+
+* #256 — Breaking change: strict string type on `Bindings::bindParam()` rejects integer keys
+
+---
+
 ### 2026-04-10 [Release 1.26.410]
 
 #### New Features
