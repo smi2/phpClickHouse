@@ -150,6 +150,23 @@ Memory-efficient iteration for large resultsets:
 foreach ($db->selectGenerator('SELECT * FROM huge_table') as $row) { ... }
 ```
 
+### Releases
+
+Version format: `MAJOR.YY.MDD` — example `1.26.412`
+
+| Segment | Meaning | Example |
+|---------|---------|---------|
+| `MAJOR` | Critical API changes. Currently always `1` | `1` |
+| `YY` | Year (last two digits) | `26` = 2026 |
+| `MDD` | Month + day or version within month | `412` = April 12 |
+
+How to release:
+
+1. Add entry to `CHANGELOG.md` with date and version: `### YYYY-MM-DD [Release X.YY.MDD]`
+2. Commit and push to master
+3. Create GitHub Release: `gh release create X.YY.MDD --title "X.YY.MDD" --notes "..."` — body is the CHANGELOG section for this version
+4. Tag is created automatically by `gh release create`
+
 ### CI
 
 GitHub Actions (`.github/workflows/tests.yml`): PHP 8.0–8.4 × ClickHouse 21.9 + 26.3, PHPStan, PHPCS.
