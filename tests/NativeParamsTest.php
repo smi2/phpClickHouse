@@ -94,6 +94,36 @@ final class NativeParamsTest extends TestCase
         $this->assertNull($result->fetchOne('val'));
     }
 
+    public function testSelectWithUInt32ArrayParam(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(UInt32)} as arr',
+            ['arr' => [1, 2, 3]]
+        );
+
+        $this->assertEquals([1, 2, 3], $result->fetchOne('arr'));
+    }
+
+    public function testSelectWithStringArrayParam(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(String)} as arr',
+            ['arr' => ['foo', 'bar', 'baz']]
+        );
+
+        $this->assertEquals(['foo', 'bar', 'baz'], $result->fetchOne('arr'));
+    }
+
+    public function testSelectWithEmptyArrayParam(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(UInt32)} as arr',
+            ['arr' => []]
+        );
+
+        $this->assertEquals([], $result->fetchOne('arr'));
+    }
+
     public function testSelectWithPerQuerySettings(): void
     {
         $result = $this->client->selectWithParams(

@@ -65,10 +65,22 @@ $db->selectWithParams(
     ['id' => UUID::fromString('6d38d288-5b13-4714-b6e4-faa59ffd49d8')]
 );
 
-// Array
+// Array of integers
 $db->selectWithParams(
     'SELECT {arr:Array(UInt32)} as arr',
     ['arr' => [1, 2, 3]]
+);
+
+// Array of strings — encoded as ['val1','val2'] (single-quoted, not JSON double-quoted)
+$db->selectWithParams(
+    'SELECT {arr:Array(String)} as arr',
+    ['arr' => ['foo', 'bar', 'baz']]
+);
+
+// Nested arrays
+$db->selectWithParams(
+    'SELECT {arr:Array(Array(UInt32))} as arr',
+    ['arr' => [[1, 2], [3, 4]]]
 );
 
 // IPv4 / IPv6
