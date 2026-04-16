@@ -851,7 +851,15 @@ class Http
             return $value ? '1' : '0';
         }
         if (is_array($value)) {
-            return json_encode($value);
+            $arrayValues = [];
+            foreach ($value as $val) {
+                if (is_string($val)) {
+                    $arrayValues[] = sprintf("'%s'", $val);
+                    continue;
+                }
+                $arrayValues[] = $this->convertParamValue($val);
+            }
+            return sprintf('[%s]', implode(',', $arrayValues));
         }
         if ($value === null) {
             return '\\N';
