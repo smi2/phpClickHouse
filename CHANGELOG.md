@@ -2,6 +2,23 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-04-17 [Release 1.26.417]
+
+#### Bug Fixes
+
+* **Correctly encode arrays for native param binding** (#257) — `convertParamValue()` now produces ClickHouse-compatible array literals `['foo','bar']` (single quotes) instead of JSON format `["foo","bar"]`. Previously any `Array(String)` parameter in `selectWithParams()` / `writeWithParams()` failed with a parse error (@sander-hash)
+* **Escape single quotes and backslashes in array strings** — follow-up to #257. Strings containing `'` or `\` are now properly escaped (e.g. `"it's"` → `'it\'s'`), preventing query errors and array-element injection
+
+#### Testing
+
+* **6 new native-params tests** — cover `Array(UInt32)`, `Array(String)`, empty arrays, strings with single quotes, strings with backslashes, and injection attempts
+
+#### Merged PRs
+
+* #257 — Correctly encode array for native param binding (@sander-hash)
+
+---
+
 ### 2026-04-12 [Release 1.26.412]
 
 #### Bug Fixes

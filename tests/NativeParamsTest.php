@@ -125,6 +125,36 @@ final class NativeParamsTest extends TestCase
         $this->assertEquals([], $result->fetchOne('arr'));
     }
 
+    public function testSelectWithStringArrayParamSingleQuote(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(String)} as arr',
+            ['arr' => ["it's", "O'Brien"]]
+        );
+
+        $this->assertEquals(["it's", "O'Brien"], $result->fetchOne('arr'));
+    }
+
+    public function testSelectWithStringArrayParamBackslash(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(String)} as arr',
+            ['arr' => ['a\\b', 'c\\\\d']]
+        );
+
+        $this->assertEquals(['a\\b', 'c\\\\d'], $result->fetchOne('arr'));
+    }
+
+    public function testSelectWithStringArrayParamInjectionAttempt(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(String)} as arr',
+            ['arr' => ["x','injected','y"]]
+        );
+
+        $this->assertEquals(["x','injected','y"], $result->fetchOne('arr'));
+    }
+
     public function testSelectWithPerQuerySettings(): void
     {
         $result = $this->client->selectWithParams(

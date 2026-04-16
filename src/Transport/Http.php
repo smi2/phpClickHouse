@@ -854,7 +854,8 @@ class Http
             $arrayValues = [];
             foreach ($value as $val) {
                 if (is_string($val)) {
-                    $arrayValues[] = sprintf("'%s'", $val);
+                    $escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $val);
+                    $arrayValues[] = sprintf("'%s'", $escaped);
                     continue;
                 }
                 $arrayValues[] = $this->convertParamValue($val);
