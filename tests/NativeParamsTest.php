@@ -155,6 +155,62 @@ final class NativeParamsTest extends TestCase
         $this->assertEquals(["x','injected','y"], $result->fetchOne('arr'));
     }
 
+    public function testSelectWithStringParamTrailingBackslash(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {search:String} as search',
+            ['search' => 'hello\\']
+        );
+
+        $this->assertEquals('hello\\', $result->fetchOne('search'));
+    }
+
+    public function testSelectWithStringParamEmbeddedBackslash(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {search:String} as search',
+            ['search' => 'a\\b\\c']
+        );
+
+        $this->assertEquals('a\\b\\c', $result->fetchOne('search'));
+    }
+
+    public function testSelectWithStringParamSingleQuote(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {name:String} as name',
+            ['name' => "O'Brien"]
+        );
+
+        $this->assertEquals("O'Brien", $result->fetchOne('name'));
+    }
+
+    public function testSelectWithStringParamInjectionAttempt(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {val:String} as val',
+            ['val' => "x','injected','y"]
+        );
+
+        $this->assertEquals("x','injected','y", $result->fetchOne('val'));
+    }
+
+    public function testWriteWithStringParamTrailingBackslash(): void
+    {
+        $this->client->write("DROP TABLE IF EXISTS string_param_escape_test");
+        $this->client->write('CREATE TABLE IF NOT EXISTS string_param_escape_test (id UInt32, val String) ENGINE = Memory');
+
+        $this->client->writeWithParams(
+            'INSERT INTO string_param_escape_test VALUES ({id:UInt32}, {val:String})',
+            ['id' => 1, 'val' => 'hello\\']
+        );
+
+        $st = $this->client->select('SELECT val FROM string_param_escape_test WHERE id = 1');
+        $this->assertEquals('hello\\', $st->fetchOne('val'));
+
+        $this->client->write("DROP TABLE IF EXISTS string_param_escape_test");
+    }
+
     public function testSelectWithPerQuerySettings(): void
     {
         $result = $this->client->selectWithParams(

@@ -865,6 +865,9 @@ class Http
         if ($value === null) {
             return '\\N';
         }
+        if (is_string($value)) {
+            return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+        }
         return (string) $value;
     }
 
