@@ -2,6 +2,26 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-04-23 [Release 1.26.423]
+
+#### Bug Fixes
+
+* **Escape single quotes and backslashes in scalar string native params** (#258, #259) — `convertParamValue()` now escapes `\` → `\\` and `'` → `\'` for scalar `String` params in `selectWithParams()` / `writeWithParams()`. Previously strings like `hello\` caused `CANNOT_PARSE_ESCAPE_SEQUENCE` in ClickHouse (@sander-hash, @tom-on-the-internet)
+
+#### Testing
+
+* **5 new native-params tests** — scalar strings with trailing backslash, embedded backslash, single quote, injection attempt, and `writeWithParams` with backslash
+
+#### Merged PRs
+
+* #259 — Added escape for scalar string (@sander-hash)
+
+#### Closed Issues
+
+* #258 — Scalar string params are not escaped, causing `CANNOT_PARSE_ESCAPE_SEQUENCE`
+
+---
+
 ### 2026-04-17 [Release 1.26.417]
 
 #### Bug Fixes
