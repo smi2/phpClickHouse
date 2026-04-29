@@ -21,6 +21,9 @@ services:
         image: clickhouse/clickhouse-server:26.3.3.20
         hostname: clickhouse-latest
         container_name: clickhouse-latest
+        environment:
+            CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+            CLICKHOUSE_PASSWORD: ""
         ports:
         - 19001:9000
         - 8124:8123
