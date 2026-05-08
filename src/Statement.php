@@ -111,7 +111,15 @@ class Statement implements \Iterator
 
         if (strlen($body) > 4096) {
             $tail = substr($body, -4096);
-            return preg_match(self::CLICKHOUSE_ERROR_REGEX, $tail) === 1;
+            if (preg_match(self::CLICKHOUSE_ERROR_REGEX, $tail) === 1) {
+                // Regex also matches if the actual data contains a ClickHouse error
+                // string. Use json_validate() to confirm the response is truly broken.
+                if (function_exists('json_validate')) {
+                    return !json_validate($body);
+                }
+                return true;
+            }
+            return false;
         }
 
         try {
