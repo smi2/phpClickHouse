@@ -682,9 +682,15 @@ class Http
 
         $query = $this->prepareQuery($sql, $bindings);
 
-        if (strpos($sql, 'ON CLUSTER') === false) {
+        // strpos acts as a fast filter (cheap substring check)
+        // preg_match is used only for strict SQL keyword validation (word-boundary safe)
+        if (
+            strpos($sql, 'ON CLUSTER') === false
+            || !preg_match("/\\bON\\s+CLUSTER\\b/i", $sql)
+        ) {
             return $this->getRequestWrite($query, $querySettings);
         }
+
         if (
             !str_starts_with($sql, 'CREATE')
             && !str_starts_with($sql, 'DROP')

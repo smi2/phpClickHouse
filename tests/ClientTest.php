@@ -1096,4 +1096,22 @@ class ClientTest extends TestCase
         $this->assertEquals(count(file($file_name)), $statement->count());
     }
 
+    public function testInsertWithOnClusterInData()
+    {
+        $this->client->write('DROP TABLE IF EXISTS `test`');
+        $this->client->write('CREATE TABLE `test` (
+                place String
+        ) ENGINE = TinyLog()');
+        $this->client->insert(
+            'test',
+            [
+                ['REGION CLUSTER'],
+            ],
+            ['place']
+        );
+
+        $statement = $this->client->select('SELECT place FROM `test`');
+        $this->assertCount(1, $statement->rows());
+        $this->assertEquals('REGION CLUSTER', $statement->fetchOne('place'));
+    }
 }
