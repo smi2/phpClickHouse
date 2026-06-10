@@ -20,8 +20,11 @@ jobs:
         image: clickhouse/clickhouse-server:21.9
         ports:
           - 8123:8123
+        # The clickhouse-server image ships wget but NOT curl, so the health check
+        # must use wget — otherwise the service container never becomes healthy and
+        # GitHub Actions reports "container failed to start".
         options: >-
-          --health-cmd "curl -f http://localhost:8123/ping"
+          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:8123/ping || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -61,8 +64,9 @@ jobs:
         env:
           CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
           CLICKHOUSE_PASSWORD: ""
+        # See the CH21 service above: the image has wget but not curl.
         options: >-
-          --health-cmd "curl -f http://localhost:8123/ping"
+          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:8123/ping || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
