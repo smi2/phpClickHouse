@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-PHP client library for ClickHouse (`smi2/phpclickhouse`). Pure PHP, no dependencies beyond ext-curl and ext-json. Supports PHP 8.0+.
+PHP client library for ClickHouse (`smi2/phpclickhouse`). Pure PHP, no dependencies beyond ext-curl and ext-json. Supports PHP 8.1+.
 
 ## Principles
 
@@ -169,7 +169,7 @@ How to release:
 
 ### CI
 
-GitHub Actions (`.github/workflows/tests.yml`): PHP 8.0–8.4 × ClickHouse 21.9 + 26.3, PHPStan, PHPCS.
+GitHub Actions (`.github/workflows/tests.yml`): PHP 8.1–8.4 × ClickHouse 21.9 + 26.3, PHPStan, PHPCS.
 
 Legacy Travis CI config (`.travis.yml`) still present.
 

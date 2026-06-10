@@ -2,6 +2,18 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### Unreleased
+
+#### Breaking Changes
+
+* **Minimum PHP raised to 8.1** — `composer.json` now requires `php: ^8.1` and the CI matrix drops 8.0. PHP 8.0 users should pin `1.26.4` (last 8.0-compatible release); the typed `>= 1.24.406` line already targets 8.1+
+
+#### Documentation
+
+* **Fixed the version-compatibility table** in `README.md` and the Pages site (`docs/index.md`) — the `8.0+` row was contradictory (it implied 8.0 supports the latest release while `>= 1.24.406` requires 8.1+). Now `8.0 → 1.6.0 – 1.26.4` and `8.1+ → >= 1.24.406 (current)`
+
+---
+
 ### 2026-06-10 [Release 1.26.610]
 
 #### Bug Fixes
