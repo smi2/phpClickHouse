@@ -33,6 +33,7 @@ services:
         volumes:
             - "./docker-clickhouse-latest:/var/lib/clickhouse"
             - "./clickhouse-latest-config/allow_deprecated.xml:/etc/clickhouse-server/users.d/allow_deprecated.xml:ro"
+            - "./clickhouse-latest-config/keeper.xml:/etc/clickhouse-server/config.d/keeper.xml:ro"
         ulimits:
             nofile:
                 soft: 262144

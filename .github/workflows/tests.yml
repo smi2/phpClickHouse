@@ -80,10 +80,22 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist
 
-      - name: Copy ClickHouse config for deprecated syntax
+      - name: Copy ClickHouse config (deprecated syntax + embedded Keeper for ON CLUSTER)
         run: |
-          docker cp tests/clickhouse-latest-config/allow_deprecated.xml $(docker ps -q --filter "ancestor=clickhouse/clickhouse-server:26.3.3.20"):/etc/clickhouse-server/users.d/allow_deprecated.xml
-          sleep 2
+          CONTAINER_ID=$(docker ps -q --filter "ancestor=clickhouse/clickhouse-server:26.3.3.20")
+          docker cp tests/clickhouse-latest-config/allow_deprecated.xml "$CONTAINER_ID":/etc/clickhouse-server/users.d/allow_deprecated.xml
+          docker cp tests/clickhouse-latest-config/keeper.xml "$CONTAINER_ID":/etc/clickhouse-server/config.d/keeper.xml
+          docker restart "$CONTAINER_ID"
+          for i in $(seq 1 30); do
+            if curl -fs http://127.0.0.1:8124/ping > /dev/null; then
+              echo "ClickHouse ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "ClickHouse failed to become ready"
+          docker logs "$CONTAINER_ID"
+          exit 1
 
       - name: Run tests (ClickHouse 26.3)
         run: ./vendor/bin/phpunit -c phpunit-ch26.xml

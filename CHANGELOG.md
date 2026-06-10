@@ -2,6 +2,34 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-06-10 [Release 1.26.610]
+
+#### Bug Fixes
+
+* **Distributed DDL (`ON CLUSTER`) formatting reworked** (#241, #263, #262) — `Http::prepareWrite()` no longer appends `FORMAT JSON` to the SQL of `ON CLUSTER` queries. Instead the response format is requested via the `default_format=JSON` query setting:
+  * `CREATE USER / GRANT / ALTER ... ON CLUSTER` no longer fail with `SYNTAX_ERROR` from a stray `FORMAT JSON` (#241)
+  * `CREATE / ALTER ... ON CLUSTER` results are now parseable JSON again — no more `Can't find meta` when reading the per-host execution status (#263)
+  * a bare `ON CLUSTER` substring inside `INSERT` data (e.g. `'REGION CLUSTER'`) is no longer mistaken for the keyword — `\b` word boundaries match the real keyword only (#262)
+* **False-positive error detection on large JSON responses** (#261) — `Statement::hasErrorClickhouse()` now confirms a tail-regex match with `json_validate()` (PHP 8.3+) before flagging an error, so valid JSON whose data legitimately contains ClickHouse exception text is not reported as a failure (@jradtilbrook)
+
+#### Testing
+
+* **New `tests/ClickHouse26/OnClusterTest.php`** — distributed DDL regression tests (`CREATE` / `ALTER` / `CREATE USER ... ON CLUSTER`); skips gracefully when no Keeper/ZooKeeper backend is configured
+* **Embedded ClickHouse Keeper** added to the test environment (`tests/clickhouse-latest-config/keeper.xml`, mounted in `docker-compose.yaml` and copied in CI) so the single-node `default` cluster can execute `ON CLUSTER` queries
+* **`testInsertWithOnClusterInData`** added to both CH 21 and CH 26 client tests (#262)
+
+#### Merged PRs
+
+* #261 — Fix false positive error detection when JSON data contains ClickHouse exception text (@jradtilbrook)
+
+#### Closed Issues
+
+* #241 — ALTER / CREATE / DROP / RENAME queries fail when using ON CLUSTER
+* #262 — extra `FORMAT JSON` in the query when inserting a record (superseded by the `default_format` fix)
+* #263 — "Can't find meta" error since 1.24.406
+
+---
+
 ### 2026-04-23 [Release 1.26.423]
 
 #### Bug Fixes

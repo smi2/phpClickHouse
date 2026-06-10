@@ -682,16 +682,23 @@ class Http
 
         $query = $this->prepareQuery($sql, $bindings);
 
-        if (strpos($sql, 'ON CLUSTER') === false) {
-            return $this->getRequestWrite($query, $querySettings);
-        }
-        if (
-            !str_starts_with($sql, 'CREATE')
-            && !str_starts_with($sql, 'DROP')
-            && !str_starts_with($sql, 'ALTER')
-            && !str_starts_with($sql, 'RENAME')
-        ) {
-            $query->setFormat('JSON');
+        // Distributed DDL (`... ON CLUSTER ...`) returns a per-host execution status
+        // result set. We request it as JSON via the `default_format` query setting
+        // instead of appending `FORMAT JSON` to the SQL text. Appending breaks
+        // statements such as `CREATE USER ... ON CLUSTER` / `GRANT` / `ALTER` with a
+        // SYNTAX_ERROR (#241), while `default_format` leaves the SQL untouched and still
+        // lets ClickHouse format the response — and the Statement parse it (#263).
+        // The `\b` word boundaries match only the real keyword, so a bare "ON CLUSTER"
+        // substring inside INSERT data (e.g. 'REGION CLUSTER') never triggers it (#262).
+        if (preg_match('/\bON\s+CLUSTER\b/i', $sql) === 1) {
+            $querySettings['default_format'] = 'JSON';
+            $request = $this->getRequestWrite($query, $querySettings);
+            // Tell the Statement to parse the JSON response without mutating the SQL.
+            $request->setRequestExtendedInfo(
+                array_merge($request->getRequestExtendedInfo(), ['format' => 'JSON'])
+            );
+
+            return $request;
         }
 
         return $this->getRequestWrite($query, $querySettings);

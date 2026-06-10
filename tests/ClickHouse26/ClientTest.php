@@ -397,4 +397,29 @@ final class ClientTest extends TestCase
         $st = $this->client->getServerVersion();
         $this->assertStringStartsWith('26.', $st);
     }
+
+    /**
+     * #262 — a bare "ON CLUSTER" substring inside INSERT data (e.g. 'REGION CLUSTER'
+     * contains "regiON CLUSTER") must not be treated as a distributed DDL keyword,
+     * so no `FORMAT JSON` / `default_format` is applied and the INSERT succeeds.
+     */
+    public function testInsertWithOnClusterInData(): void
+    {
+        $this->client->write('DROP TABLE IF EXISTS `test_on_cluster_data`');
+        $this->client->write('CREATE TABLE `test_on_cluster_data` (
+                place String
+        ) ENGINE = TinyLog()');
+
+        $this->client->insert(
+            'test_on_cluster_data',
+            [
+                ['REGION CLUSTER'],
+            ],
+            ['place']
+        );
+
+        $statement = $this->client->select('SELECT place FROM `test_on_cluster_data`');
+        $this->assertCount(1, $statement->rows());
+        $this->assertEquals('REGION CLUSTER', $statement->fetchOne('place'));
+    }
 }
