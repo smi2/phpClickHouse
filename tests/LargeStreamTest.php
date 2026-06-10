@@ -66,6 +66,42 @@ final class LargeStreamTest extends TestCase
     }
 
     /**
+     * Large body with valid JSON containing ClickHouse error text as data.
+     */
+    public function testLargeJsonWithErrorPatternInDataIsNotError(): void
+    {
+        if (!function_exists('json_validate')) {
+            $this->markTestSkipped('json_validate() not available');
+        }
+
+        $rows = [];
+        for ($i = 0; $i < 100; $i++) {
+            $rows[] = '{"id":' . $i . ',"message":"Code: 60. DB::Exception: Table default.xxx doesn\'t exist. (UNKNOWN_TABLE) (version 24.3.2.23 (official build))"}';
+        }
+        $body = '{"meta":[{"name":"id","type":"UInt64"},{"name":"message","type":"String"}],'
+            . '"data":[' . implode(',', $rows) . '],'
+            . '"rows":100,'
+            . '"statistics":{"elapsed":0.001,"rows_read":100,"bytes_read":4096}}';
+
+        // Ensure body exceeds the 4096-byte threshold
+        $this->assertGreaterThan(4096, strlen($body));
+
+        $responseMock = $this->createMock(CurlerResponse::class);
+        $responseMock->method('http_code')->willReturn(200);
+        $responseMock->method('error_no')->willReturn(0);
+        $responseMock->method('content_type')->willReturn('application/json; charset=UTF-8');
+        $responseMock->method('body')->willReturn($body);
+
+        $requestMock = $this->createMock(CurlerRequest::class);
+        $requestMock->method('response')->willReturn($responseMock);
+        $requestMock->method('isResponseExists')->willReturn(true);
+
+        $statement = new Statement($requestMock);
+
+        $this->assertFalse($statement->isError());
+    }
+
+    /**
      * Small body with valid JSON should still be checked for JSON validity.
      */
     public function testSmallInvalidJsonDetected(): void
