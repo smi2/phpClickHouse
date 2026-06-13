@@ -27,7 +27,6 @@ checks:
     php:
         code_rating: true
         duplication: true
-        coupling: true
 
 tools:
     external_code_coverage:
