@@ -8,7 +8,7 @@ namespace ClickHouseDB\Transport;
  */
 class StreamRead extends Stream
 {
-    public function isWrite()
+    public function isWrite(): bool
     {
         return false;
     }

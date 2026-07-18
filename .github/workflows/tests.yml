@@ -1,0 +1,148 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests-ch21:
+    name: PHP ${{ matrix.php }} / ClickHouse 21.9
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:21.9
+        ports:
+          - 8123:8123
+        # The clickhouse-server image ships wget but NOT curl, so the health check
+        # must use wget — otherwise the service container never becomes healthy and
+        # GitHub Actions reports "container failed to start".
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:8123/ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Run tests (ClickHouse 21.9)
+        run: ./vendor/bin/phpunit -c phpunit-ch21.xml
+        env:
+          CLICKHOUSE_HOST: 127.0.0.1
+          CLICKHOUSE_PORT: 8123
+
+  tests-ch26:
+    name: PHP ${{ matrix.php }} / ClickHouse 26.3
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:26.3.3.20
+        ports:
+          - 8124:8123
+        env:
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+          CLICKHOUSE_PASSWORD: ""
+        # See the CH21 service above: the image has wget but not curl.
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:8123/ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Copy ClickHouse config (deprecated syntax + embedded Keeper for ON CLUSTER)
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "ancestor=clickhouse/clickhouse-server:26.3.3.20")
+          docker cp tests/clickhouse-latest-config/allow_deprecated.xml "$CONTAINER_ID":/etc/clickhouse-server/users.d/allow_deprecated.xml
+          docker cp tests/clickhouse-latest-config/keeper.xml "$CONTAINER_ID":/etc/clickhouse-server/config.d/keeper.xml
+          docker restart "$CONTAINER_ID"
+          for i in $(seq 1 30); do
+            if curl -fs http://127.0.0.1:8124/ping > /dev/null; then
+              echo "ClickHouse ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "ClickHouse failed to become ready"
+          docker logs "$CONTAINER_ID"
+          exit 1
+
+      - name: Run tests (ClickHouse 26.3)
+        run: ./vendor/bin/phpunit -c phpunit-ch26.xml
+        env:
+          CLICKHOUSE_HOST: 127.0.0.1
+          CLICKHOUSE_PORT: 8124
+
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl, json
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --memory-limit=512M
+
+  phpcs:
+    name: Code Style
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl, json
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Run PHPCS
+        run: ./vendor/bin/phpcs || true

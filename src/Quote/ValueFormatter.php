@@ -19,12 +19,7 @@ use function sprintf;
 
 class ValueFormatter
 {
-    /**
-     * @param mixed $value
-     * @param bool $addQuotes
-     * @return mixed
-     */
-    public static function formatValue($value, bool $addQuotes = true)
+    public static function formatValue(mixed $value, bool $addQuotes = true): mixed
     {
         if ($value instanceof DateTimeInterface) {
             $value = $value->format('Y-m-d H:i:s');
@@ -61,21 +56,12 @@ class ValueFormatter
         throw UnsupportedValueType::new($value);
     }
 
-    /**
-     * Escape an string
-     *
-     * @param string $value
-     * @return string
-     */
-    private static function escapeString($value)
+    private static function escapeString(string $value): string
     {
         return addslashes($value);
     }
 
-    /**
-     * @return string
-     */
-    private static function formatStringParameter($value)
+    private static function formatStringParameter(string $value): string
     {
         return sprintf("'%s'", $value);
     }
