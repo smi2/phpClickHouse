@@ -84,9 +84,7 @@ class CurlerRolling
      */
     public function close(): void
     {
-        if ($this->_pool_master) {
-            curl_multi_close($this->handlerMulti());
-        }
+        $this->_pool_master = null;
     }
 
 
