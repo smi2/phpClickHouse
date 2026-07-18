@@ -1,0 +1,32 @@
+<clickhouse>
+    <!--
+      Embedded ClickHouse Keeper so the single-node `default` cluster can run
+      distributed DDL (`... ON CLUSTER ...`). Without a ZooKeeper/Keeper backend
+      ClickHouse rejects ON CLUSTER queries with NO_ELEMENTS_IN_CONFIG (code 139),
+      which is what the OnClusterTest exercises.
+    -->
+    <keeper_server>
+        <tcp_port>9181</tcp_port>
+        <server_id>1</server_id>
+        <log_storage_path>/var/lib/clickhouse/coordination/log</log_storage_path>
+        <snapshot_storage_path>/var/lib/clickhouse/coordination/snapshots</snapshot_storage_path>
+        <coordination_settings>
+            <operation_timeout_ms>10000</operation_timeout_ms>
+            <session_timeout_ms>30000</session_timeout_ms>
+        </coordination_settings>
+        <raft_configuration>
+            <server>
+                <id>1</id>
+                <hostname>localhost</hostname>
+                <port>9234</port>
+            </server>
+        </raft_configuration>
+    </keeper_server>
+
+    <zookeeper>
+        <node>
+            <host>localhost</host>
+            <port>9181</port>
+        </node>
+    </zookeeper>
+</clickhouse>

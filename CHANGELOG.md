@@ -1,8 +1,265 @@
 PHP ClickHouse wrapper - Changelog
 
-
-
 ======================
+
+### Unreleased
+
+#### Breaking Changes
+
+* **Minimum PHP raised to 8.1** — `composer.json` now requires `php: ^8.1` and the CI matrix drops 8.0. PHP 8.0 users should pin `1.26.4` (last 8.0-compatible release); the typed `>= 1.24.406` line already targets 8.1+
+
+#### Documentation
+
+* **Fixed the version-compatibility table** in `README.md` and the Pages site (`docs/index.md`) — the `8.0+` row was contradictory (it implied 8.0 supports the latest release while `>= 1.24.406` requires 8.1+). Now `8.0 → 1.6.0 – 1.26.4` and `8.1+ → >= 1.24.406 (current)`
+
+---
+
+### 2026-06-10 [Release 1.26.610]
+
+#### Bug Fixes
+
+* **Distributed DDL (`ON CLUSTER`) formatting reworked** (#241, #263, #262) — `Http::prepareWrite()` no longer appends `FORMAT JSON` to the SQL of `ON CLUSTER` queries. Instead the response format is requested via the `default_format=JSON` query setting:
+  * `CREATE USER / GRANT / ALTER ... ON CLUSTER` no longer fail with `SYNTAX_ERROR` from a stray `FORMAT JSON` (#241)
+  * `CREATE / ALTER ... ON CLUSTER` results are now parseable JSON again — no more `Can't find meta` when reading the per-host execution status (#263)
+  * a bare `ON CLUSTER` substring inside `INSERT` data (e.g. `'REGION CLUSTER'`) is no longer mistaken for the keyword — `\b` word boundaries match the real keyword only (#262)
+* **False-positive error detection on large JSON responses** (#261) — `Statement::hasErrorClickhouse()` now confirms a tail-regex match with `json_validate()` (PHP 8.3+) before flagging an error, so valid JSON whose data legitimately contains ClickHouse exception text is not reported as a failure (@jradtilbrook)
+
+#### Testing
+
+* **New `tests/ClickHouse26/OnClusterTest.php`** — distributed DDL regression tests (`CREATE` / `ALTER` / `CREATE USER ... ON CLUSTER`); skips gracefully when no Keeper/ZooKeeper backend is configured
+* **Embedded ClickHouse Keeper** added to the test environment (`tests/clickhouse-latest-config/keeper.xml`, mounted in `docker-compose.yaml` and copied in CI) so the single-node `default` cluster can execute `ON CLUSTER` queries
+* **`testInsertWithOnClusterInData`** added to both CH 21 and CH 26 client tests (#262)
+
+#### Merged PRs
+
+* #261 — Fix false positive error detection when JSON data contains ClickHouse exception text (@jradtilbrook)
+
+#### Closed Issues
+
+* #241 — ALTER / CREATE / DROP / RENAME queries fail when using ON CLUSTER
+* #262 — extra `FORMAT JSON` in the query when inserting a record (superseded by the `default_format` fix)
+* #263 — "Can't find meta" error since 1.24.406
+
+---
+
+### 2026-04-23 [Release 1.26.423]
+
+#### Bug Fixes
+
+* **Escape single quotes and backslashes in scalar string native params** (#258, #259) — `convertParamValue()` now escapes `\` → `\\` and `'` → `\'` for scalar `String` params in `selectWithParams()` / `writeWithParams()`. Previously strings like `hello\` caused `CANNOT_PARSE_ESCAPE_SEQUENCE` in ClickHouse (@sander-hash, @tom-on-the-internet)
+
+#### Testing
+
+* **5 new native-params tests** — scalar strings with trailing backslash, embedded backslash, single quote, injection attempt, and `writeWithParams` with backslash
+
+#### Merged PRs
+
+* #259 — Added escape for scalar string (@sander-hash)
+
+#### Closed Issues
+
+* #258 — Scalar string params are not escaped, causing `CANNOT_PARSE_ESCAPE_SEQUENCE`
+
+---
+
+### 2026-04-17 [Release 1.26.417]
+
+#### Bug Fixes
+
+* **Correctly encode arrays for native param binding** (#257) — `convertParamValue()` now produces ClickHouse-compatible array literals `['foo','bar']` (single quotes) instead of JSON format `["foo","bar"]`. Previously any `Array(String)` parameter in `selectWithParams()` / `writeWithParams()` failed with a parse error (@sander-hash)
+* **Escape single quotes and backslashes in array strings** — follow-up to #257. Strings containing `'` or `\` are now properly escaped (e.g. `"it's"` → `'it\'s'`), preventing query errors and array-element injection
+
+#### Testing
+
+* **6 new native-params tests** — cover `Array(UInt32)`, `Array(String)`, empty arrays, strings with single quotes, strings with backslashes, and injection attempts
+
+#### Merged PRs
+
+* #257 — Correctly encode array for native param binding (@sander-hash)
+
+---
+
+### 2026-04-12 [Release 1.26.412]
+
+#### Bug Fixes
+
+* **Fix bindParams() TypeError with numeric keys** (#256) — `bindParams()` now casts integer array keys to string before passing to `bindParam(string $column)`, restoring backward compatibility with numerically-indexed arrays. Affected downstream packages like `phpclickhouse-laravel` (@yehezkel-fullpath)
+
+#### Testing
+
+* **Flaky tests excluded from default runs** — `testConnectTimeout`, `testStreamInsert`, `testStreamInsertFormatJSONEachRow` marked `@group flaky` and excluded via PHPUnit config. Run separately with `./vendor/bin/phpunit --group flaky`
+* **2 new binding tests** — `testBindParamsWithNumericKeys`, `testBindParamsWithMixedKeys` covering #256 regression
+
+#### Closed Issues
+
+* #256 — Breaking change: strict string type on `Bindings::bindParam()` rejects integer keys
+
+---
+
+### 2026-04-10 [Release 1.26.410]
+
+#### New Features
+
+* **`readWithParams()`** (#254) — stream query results with native ClickHouse typed parameters (`{name:Type}` syntax), combining server-side parameter binding with streaming output (@sander-hash)
+
+#### Code Quality
+
+* **Stringable interfaces** (#252) — all Type classes now explicitly implement `Stringable` for consistency (@sander-hash)
+* **PHPStan test fixes** (#253) — removed redundant assertions in static tests, improved assertion quality (@sander-hash)
+* **Documentation sync** — updated GitHub Pages (docs/) with `readWithParams()` in native-params, streaming, and per-query-settings guides
+
+#### Merged PRs
+
+* #252 — Add Stringable interfaces for types (@sander-hash)
+* #253 — Fix phpstan errors in test files (@sander-hash)
+* #254 — Added native params for read function (@sander-hash)
+
+---
+
+### 2026-04-06 [Release 1.24.406]
+
+#### New Features
+
+* **Boolean Type** (#251) — new `ClickHouseDB\Type\Boolean` class with `fromString()`, `fromBool()`, `getValue()`, `__toString()` (@sander-hash)
+
+#### Code Quality
+
+* **PHP 8.1+ native type declarations** — full migration across all 33 src/ files: property types, parameter types, return types. Interfaces (`Degeneration`, `IStream`, `Type`) unchanged for backward compatibility
+* **PR Security Review rules** — added supply-chain attack detection checklist to CLAUDE.md (outbound network calls, data exfiltration, obfuscation, credential leakage patterns)
+* **Security audit** — full code audit of src/, results saved in `secure-scan.md`. All clean: no backdoors, exfiltration, or obfuscation found
+
+#### Testing
+
+* **153 new static unit tests** — run without ClickHouse server:
+  * `ValueFormatterTest` (28) — SQL escaping, types, DateTimeInterface, Expression
+  * `StrictQuoteLineTest` (32) — CSV/TSV/Insert formatting, encodeString
+  * `SettingsTest` (24) — get/set/is, sessions, timeouts, readonly
+  * `WriteToFileTest` (15) — file validation, formats, gzip
+  * `TypesTest` (26+5) — UInt64, DateTime64, MapType, TupleType, Boolean and more
+  * `BindingsUnitTest` (16) — compile_binds, Conditions {if}/{else}
+  * `CurlerRequestResponseTest` (35) — headers, auth, URL, JSON, dump
+* **Total: 313+ tests** (CH 21.9 + CH 26.3 + static), all passing
+
+#### Merged PRs
+
+* #251 — feat: Add Boolean type (@sander-hash)
+
+---
+
+### 2026-04-04 [Release 1.26.4]
+
+#### New Features
+
+**Native Query Parameters** — server-side typed parameter binding, SQL injection impossible at protocol level:
+* `Client::selectWithParams()` — SELECT with `{name:Type}` placeholders
+* `Client::writeWithParams()` — INSERT/DDL with `{name:Type}` placeholders
+* Parameters passed as `param_*` in URL, server handles type conversion
+* Supports: int, float, string, bool, null, DateTime, arrays, and all custom Type classes
+
+**Per-Query Settings Override** — override ClickHouse settings for individual queries:
+* New `$querySettings` parameter (last, default `[]`) in `select()`, `selectAsync()`, `write()`
+* Also in `selectWithParams()`, `writeWithParams()`
+* Per-query settings merge with global; global settings stay unchanged after query
+
+**Generator Support** — memory-efficient iteration for large resultsets (#166):
+* `Client::selectGenerator()` — streams from ClickHouse via JSONEachRow, yields one row at a time
+* `Statement::rowsGenerator()` — yields rows from already-fetched data
+* Supports bindings and per-query settings
+
+**ClickHouse Type Classes** — 9 new types in `src/Type/`:
+* `Int64` — large signed integers (string-based, no PHP overflow)
+* `Decimal` — exact decimal numbers
+* `UUID` — UUID values
+* `IPv4`, `IPv6` — IP address types
+* `DateTime64` — sub-second precision (`fromString()`, `fromDateTime($dt, $precision)`)
+* `Date32` — extended date range (1900–2299)
+* `MapType` — `Map(K, V)` composite type
+* `TupleType` — `Tuple(T1, T2, ...)` composite type
+* All types work with `insert()`, bindings (`:param`), and native parameters (`{name:Type}`)
+
+**Structured Exceptions** — enriched error information from ClickHouse:
+* `DatabaseException::getClickHouseExceptionName()` — e.g. `UNKNOWN_TABLE`, `SYNTAX_ERROR` (CH 22+)
+* `DatabaseException::getQueryId()` — from `X-ClickHouse-Query-Id` response header
+* `DatabaseException::fromClickHouse()` — factory method
+* Parses both old (`e.what() = DB::Exception`) and new (`(EXCEPTION_NAME) (version ...)`) error formats
+
+**INSERT Statistics via X-ClickHouse-Summary** (#233):
+* `Statement::summary()` — reads `X-ClickHouse-Summary` response header (written_rows, written_bytes, etc.)
+* `Statement::statistics()` — falls back to summary for INSERT queries (was always null before)
+
+**IPv6 Support** — `getUri()` correctly wraps bare IPv6 addresses in brackets
+
+**AUTH_METHOD_NONE** (0) — skip authentication for trusted/proxy setups
+
+**Custom curl Options** — pass arbitrary `CURLOPT_*` via config `curl_options` or `Http::setCurlOptions()`
+
+**GitHub Actions CI** — replaces Travis CI (#176):
+* Matrix: PHP 8.0, 8.1, 8.2, 8.3, 8.4
+* Two ClickHouse versions: 21.9 + 26.3.3.20
+* PHPStan and PHPCS jobs
+
+#### Bug Fixes
+
+* **Fix streaming OOM** (#234) — `hasErrorClickhouse()` no longer calls `json_decode()` on large response bodies. Bodies > 4KB: only tail checked for error patterns. Prevents OOM when using `streamRead()` with large JSON resultsets
+* **Fix progressFunction for write/insert** (#191) — added `wait_end_of_query=1` setting, required for ClickHouse to send progress headers during write operations
+* **Fix null content_type** (#243) — `hasErrorClickhouse()` handles null content_type from curl without TypeError
+* **Fix FORMAT JSON in DDL** (#242) — FORMAT JSON no longer appended to CREATE, DROP, ALTER, RENAME statements
+* **Fix URL bindings with large inserts** (#240) — `isUseInUrlBindingsParams()` checks original SQL before degeneration, preventing false matches from data containing `{foo:bar}` patterns
+* **Fix ping() timeout** (#246) — `ping()` now respects `setTimeout()` value (was ignoring CURLOPT_TIMEOUT)
+* **Remove deprecated curl_close()** (#244) — no-op since PHP 8.0, deprecated in PHP 8.5
+* **Fix PHPStan errors** — `$params` undefined in `Query::getUrlBindingsParams()`, missing return in `CurlerResponse::dump()`
+* **Fix docblock** (#247) — `$bind` param type `string[]` → `array<string, mixed>` in `streamRead()`/`streamWrite()`
+
+#### Code Quality
+
+* **PHPStan level 1 → 5** — with baseline for 60 pre-existing errors in curl layer. All new code must pass level 5
+* **PHPStan upgraded** from 0.12 to 2.1 (supports PHP 8.4)
+* **phpVersion: 80406** set in PHPStan config
+
+#### Testing
+
+* **Two ClickHouse test targets**: 21.9 (port 8123) + 26.3.3.20 (port 8124)
+* **Two PHPUnit configs**: `phpunit-ch21.xml` (original tests) + `phpunit-ch26.xml` (adapted for CH 26 behavioral changes)
+* **CH 26 adapted tests** in `tests/ClickHouse26/`: ClientTest, SessionsTest, StatementTest, UInt64Test
+* **New test files**: NativeParamsTest, PerQuerySettingsTest, StructuredExceptionTest, GeneratorTest, LargeStreamTest, TypesTest, SummaryTest, NullContentTypeTest, IPv6UriTest, AuthMethodNoneTest, CurlOptionsTest, ProgressWriteTest, PingTimeoutTest, QueryTest
+* **160 tests (CH 21) + 146 tests (CH 26)** — all passing
+
+#### Documentation
+
+* **README.md** restructured — concise overview with links to doc/
+* **doc/** — 13 documentation files:
+  * `basics.md` — connection, select, insert, Statement API
+  * `async.md` — parallel queries, batch inserts
+  * `bindings.md` — parameter binding, SQL templates
+  * `settings.md` — timeouts, HTTPS, auth, sessions
+  * `streaming.md` — streamRead/Write, closures, gzip
+  * `cluster.md` — multi-node setup, replicas
+  * `advanced.md` — partitions, table sizes, progress, debug
+  * `types.md` — all 9 type classes with examples
+  * `native-params.md` — server-side `{name:Type}` parameters
+  * `per-query-settings.md` — per-query settings override
+  * `generators.md` — selectGenerator(), rowsGenerator()
+  * `progress.md` — progressFunction for SELECT and INSERT
+  * `exceptions.md` — structured exceptions
+  * `summary.md` — INSERT statistics via X-ClickHouse-Summary
+* **CLAUDE.md** — project guidelines, architecture, contribution rules
+* **todo.md** — development roadmap
+
+#### Merged PRs
+
+* #246 — fix: respect custom query timeout in ping() method (@abodnar)
+* #244 — remove deprecated curl_close() call (@yehezkel-fullpath)
+* #243 — fix: handle null content_type in hasErrorClickhouse() (@nzsakib)
+* #242 — fix: remove FORMAT JSON from DDL statements (@jspeedz)
+* #240 — fix: bindings in URL with large insert queries (@sniek-ie)
+* #238 — fix: metadata parsing for distributed RENAME queries (@iTearo)
+* #236 — support Enums in ValueFormatter.php (@wlkns)
+
+#### Closed Issues
+
+#234, #233, #227, #225, #223, #215, #209, #208, #201, #197, #196, #195, #194, #193, #191, #181, #176, #166, #150, #144, #136
+
+---
 
 ### 2025-01-14 [Release 1.6.0]
 * Support PHP 8.4

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Query\Degeneration;
 
 use ClickHouseDB\Exception\QueryException;
@@ -7,10 +9,7 @@ use ClickHouseDB\Query\Degeneration;
 
 class Conditions implements Degeneration
 {
-    /**
-     * @var array
-     */
-    protected $bindings = [];
+    protected array $bindings = [];
 
     /**
      * @param array $bindings
@@ -27,7 +26,7 @@ class Conditions implements Degeneration
         return $this->bindings;
     }
 
-    static function __ifsets($matches, $markers)
+    static function __ifsets(array $matches, array $markers): string
     {
         $content_false = '';
         $condition = '';

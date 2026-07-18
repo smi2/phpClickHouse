@@ -1,5 +1,9 @@
+includes:
+    - phpstan-baseline.neon
+
 parameters:
-    level: 1
+    phpVersion: 80406
+    level: 5
 
     paths:
         - %currentWorkingDirectory%/src

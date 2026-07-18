@@ -1,0 +1,175 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Cluster.php
+
+		-
+			message: '#^Property ClickHouseDB\\Cluster\:\:\$hostsnames is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Cluster.php
+
+		-
+			message: '#^Property ClickHouseDB\\Statement\:\:\$_http_code is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Statement.php
+
+		-
+			message: '#^Property ClickHouseDB\\Statement\:\:\$query is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Statement.php
+
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Parameter \#2 \$value of method ClickHouseDB\\Transport\\CurlerRequest\:\:header\(\) expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRequest\:\:\$sslCa \(string\|null\) is never assigned string so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\CurlerRequest\:\:\$sslCa is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: src/Transport/CurlerRequest.php
+
+		-
+			message: '#^Call to function is_int\(\) with int will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Parameter \#1 \$id of method ClickHouseDB\\Transport\\CurlerRequest\:\:getUniqHash\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Transport/CurlerRolling.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Instanceof between ClickHouseDB\\Transport\\CurlerRolling and ClickHouseDB\\Transport\\CurlerRolling will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Property ClickHouseDB\\Transport\\Http\:\:\$handle is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Transport/Http.php
+
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Transport/StreamInsert.php
+
+		-
+			message: '#^Comparison operation "\<" between 10 and 4 is always false\.$#'
+			identifier: smaller.alwaysFalse
+			count: 1
+			path: tests/BindingsPostTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/ClickHouse26/SessionsTest.php
+
+		-
+			message: '#^Parameter \#2 \$string of method PHPUnit\\Framework\\Assert\:\:assertStringMatchesFormat\(\) expects string, false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/ClickHouse26/SessionsTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertIsString\(\) with string will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 3
+			path: tests/ClientAuthTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertIsArray\(\) with array will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/ClientTest.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method ClickHouseDB\\Transport\\StreamInsert\:\:insert\(\) expects callable\(\)\: mixed, array\{\} given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/ClientTest.php
+
+		-
+			message: '#^PHPDoc tag @throws with type ClickHouseDB\\Tests\\Exception is not subtype of Throwable$#'
+			identifier: throws.notThrowable
+			count: 1
+			path: tests/FormatQueryTest.php
+
+		-
+			message: '#^PHPDoc tag @throws with type ClickHouseDB\\Tests\\Exception is not subtype of Throwable$#'
+			identifier: throws.notThrowable
+			count: 1
+			path: tests/ProgressAndEscapeTest.php
+
+		-
+			message: '#^PHPDoc tag @throws with type ClickHouseDB\\Tests\\Exception is not subtype of Throwable$#'
+			identifier: throws.notThrowable
+			count: 1
+			path: tests/SessionsTest.php
+
+		-
+			message: '#^Parameter \#2 \$string of method PHPUnit\\Framework\\Assert\:\:assertStringMatchesFormat\(\) expects string, false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/SessionsTest.php
+
+		-
+			message: '#^Dead catch \- ClickHouseDB\\Exception\\DatabaseException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 2
+			path: tests/StructuredExceptionTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNotNull\(\) with mixed will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/SummaryTest.php

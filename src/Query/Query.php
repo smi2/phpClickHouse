@@ -1,28 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ClickHouseDB\Query;
 
 use ClickHouseDB\Exception\QueryException;
+use ClickHouseDB\Query\Degeneration\Bindings;
+use ClickHouseDB\Query\Degeneration\Conditions;
 use function sizeof;
 
 class Query
 {
-    /**
-     * @var string
-     */
-    protected $sql;
+    protected string $sql = '';
 
-    /**
-     * @var string|null
-     */
-    protected $format = null;
+    protected string $originalSql = '';
 
-    /**
-     * @var array
-     */
-    private $degenerations = [];
+    protected ?string $format = null;
 
-    private $supportFormats=[
+    private array $degenerations = [];
+
+    private array $supportFormats = [
         "FORMAT\\s+TSVRaw",
         "FORMAT\\s+TSVWithNamesAndTypes",
         "FORMAT\\s+TSVWithNames",
@@ -41,25 +38,17 @@ class Query
         "FORMAT\\s+TabSeparated"
     ];
 
-    /**
-     * Query constructor.
-     * @param string $sql
-     * @param array $degenerations
-     */
-    public function __construct($sql, $degenerations = [])
+    public function __construct(string $sql, array $degenerations = [])
     {
         if (!trim($sql))
         {
             throw new QueryException('Empty Query');
         }
-        $this->sql = $sql;
+        $this->sql = $this->originalSql = $sql;
         $this->degenerations = $degenerations;
     }
 
-    /**
-     * @param string|null $format
-     */
-    public function setFormat($format)
+    public function setFormat(?string $format): void
     {
         $this->format = $format;
     }
@@ -91,31 +80,29 @@ class Query
         } else {
             $this->sql = $this->sql . ' FORMAT ' . $this->format;
         }
-
-
-
-
-
-
     }
 
-    /**
-     * @return null|string
-     */
-    public function getFormat()
+    public function getFormat(): ?string
     {
         return $this->format;
     }
 
+    /**
+     * Check if the sql contains bindings like {p1:UInt8}.
+     *
+     * Check the original SQL before degeneration to prevent data that matches the same regex by accident causing adding bindings to the url
+     * For backwards compatibility use the degenerated sql when custom degenerations are found
+     */
     public function isUseInUrlBindingsParams():bool
     {
         //  'query=select {p1:UInt8} + {p2:UInt8}' -F "param_p1=3" -F "param_p2=4"
-        return preg_match('#{[\w+]+:[\w+()]+}#',$this->sql);
+        return preg_match('#{[\w+]+:[\w+()]+}#', $this->hasCustomDegenerations() ? $this->sql : $this->originalSql) === 1;
 
     }
     public function getUrlBindingsParams():array
     {
         $out=[];
+        $params=[];
         if (sizeof($this->degenerations)) {
             foreach ($this->degenerations as $degeneration) {
                 if ($degeneration instanceof Degeneration) {
@@ -134,7 +121,7 @@ class Query
         return $out;
     }
 
-    public function toSql()
+    public function toSql(): string
     {
         if ($this->format !== null) {
             $this->applyFormatQuery();
@@ -153,11 +140,15 @@ class Query
         return $this->sql;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toSql();
+    }
+
+    private function hasCustomDegenerations(): bool
+    {
+        return count(array_filter($this->degenerations, function (Degeneration $degeneration) {
+            return !in_array($degeneration::class, [Conditions::class, Bindings::class]);
+        })) > 0;
     }
 }
