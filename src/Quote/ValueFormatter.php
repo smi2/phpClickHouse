@@ -58,7 +58,7 @@ class ValueFormatter
 
     private static function escapeString(string $value): string
     {
-        return addslashes($value);
+        return str_replace('\"', '"', addslashes($value));
     }
 
     private static function formatStringParameter(string $value): string
