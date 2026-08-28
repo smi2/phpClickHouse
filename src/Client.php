@@ -422,12 +422,12 @@ class Client
      * @param array $querySettings Per-query settings override
      * @return \Generator yields associative arrays, one per row
      */
-    public function selectGenerator(string $sql, array $bindings = [], array $querySettings = []): \Generator
+    public function selectGenerator(string $sql, array $bindings = [], array $querySettings = [], ?WhereInFile $whereInFile = null): \Generator
     {
         $stream = fopen('php://temp', 'r+');
         $streamRead = new Transport\StreamRead($stream);
 
-        $this->transport()->streamRead($streamRead, $sql . ' FORMAT JSONEachRow', $bindings, $querySettings);
+        $this->transport()->streamRead($streamRead, $sql . ' FORMAT JSONEachRow', $bindings, $querySettings, $whereInFile);
 
         rewind($stream);
 
