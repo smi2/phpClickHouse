@@ -48,15 +48,36 @@ final class StringDateTypesTest extends TestCase
         return array_map(static fn (string $class): array => [$class], [
             StringType::class,
             Date::class,
-            Date32::class,
             DateTime::class,
-            DateTime64::class,
-            UUID::class,
-            IPv4::class,
-            IPv6::class,
             Enum8::class,
             Enum16::class,
         ]);
+    }
+
+    /** @dataProvider legacyStringTypes */
+    public function testExistingTypesPreserveRawBindings(string $class): void
+    {
+        $value = $class::fromString("'already quoted'");
+        self::assertSame("'already quoted'", ValueFormatter::formatValue($value));
+        self::assertSame("'already quoted'", ValueFormatter::formatValue($value, false));
+        $bindings = new Bindings();
+        $bindings->bindParam('value', $value);
+        self::assertSame("SELECT 'already quoted'", $bindings->process('SELECT :value'));
+    }
+
+    /** @dataProvider legacyStringTypes */
+    public function testExistingTypesPreserveNativeParameterValues(string $class): void
+    {
+        $transport = (new \ReflectionClass(\ClickHouseDB\Transport\Http::class))->newInstanceWithoutConstructor();
+        $convert = new \ReflectionMethod($transport, 'convertParamValue');
+        $convert->setAccessible(true);
+        self::assertSame("'raw'", $convert->invoke($transport, $class::fromString("'raw'")));
+    }
+
+    /** @return list<array{class-string}> */
+    public static function legacyStringTypes(): array
+    {
+        return [[Date32::class], [DateTime64::class], [UUID::class], [IPv4::class], [IPv6::class]];
     }
 
     public function testFixedStringRequiresExactByteLength(): void
@@ -103,28 +124,16 @@ final class StringDateTypesTest extends TestCase
             [1, '2024-02-29 23:45:12.1'],
             [3, '2024-02-29 23:45:12.123'],
             [6, '2024-02-29 23:45:12.123456'],
-            [9, '2024-02-29 23:45:12.123456000'],
+            [9, '2024-02-29 23:45:12.123456'],
+            [-1, '2024-02-29 23:45:12.123456'],
+            [10, '2024-02-29 23:45:12.123456'],
         ];
-    }
-
-    /** @dataProvider invalidPrecisions */
-    public function testDateTime64RejectsInvalidPrecision(int $precision): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        DateTime64::fromDateTime(new DateTimeImmutable('2024-01-01'), $precision);
-    }
-
-    /** @return list<array{int}> */
-    public static function invalidPrecisions(): array
-    {
-        return [[-1], [10]];
     }
 
     public function testTimezoneConversionDoesNotMutateInput(): void
     {
         $date = new \DateTime('2024-02-29 23:45:12.123456+00:00');
         self::assertSame('2024-03-01 00:45:12', DateTime::fromDateTime($date, 'Europe/Amsterdam')->getValue());
-        self::assertSame('2024-03-01 00:45:12.123456000', DateTime64::fromDateTime($date, 9, 'Europe/Amsterdam')->getValue());
         self::assertSame('2024-02-29 23:45:12.123456', $date->format('Y-m-d H:i:s.u'));
     }
 

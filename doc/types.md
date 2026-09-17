@@ -83,10 +83,8 @@ $db->insert('table', [
 
 // Precision options: 0-9 (1=tenths, 3=ms, 6=μs, 9=ns)
 DateTime64::fromDateTime($dt, 6);  // → '2024-06-15 12:00:00.456789'
-DateTime64::fromDateTime($dt, 9, 'UTC');
-// PHP has microsecond precision; digits 7-9 are padded with zeros.
+// PHP date/time objects provide at most 6 fractional digits.
 // Use fromString() to preserve an existing nanosecond timestamp.
-// Precision outside 0-9 throws InvalidArgumentException.
 ```
 
 ### Date32

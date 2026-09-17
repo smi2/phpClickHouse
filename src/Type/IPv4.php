@@ -6,7 +6,7 @@ namespace ClickHouseDB\Type;
 
 use Stringable;
 
-final class IPv4 implements StringValue, Stringable
+final class IPv4 implements Type, Stringable
 {
     public string $value;
 

@@ -6,7 +6,7 @@ namespace ClickHouseDB\Type;
 
 use Stringable;
 
-final class UUID implements StringValue, Stringable
+final class UUID implements Type, Stringable
 {
     public string $value;
 

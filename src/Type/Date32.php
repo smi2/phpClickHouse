@@ -7,7 +7,7 @@ namespace ClickHouseDB\Type;
 use DateTimeInterface;
 use Stringable;
 
-final class Date32 implements DateType, Stringable
+final class Date32 implements Type, Stringable
 {
     public string $value;
 
