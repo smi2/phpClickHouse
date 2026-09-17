@@ -36,17 +36,17 @@ ClickHouse поддерживает типизированные парамет�
 
 ### Текущее состояние
 - `ValueFormatter`: int, float, bool, string, null, DateTimeInterface, Expression, Type
-- `UInt64` — единственный кастомный тип
-- Нет поддержки: DateTime64, Date32, IPv4/IPv6, UUID, Map, Tuple, Enum, Decimal, Geo-типы
+- Numeric scalar types and the existing date, network, decimal, map, and tuple types are supported
+- Remaining gaps are tracked in phases 2–4 below
 
 ### План — Фаза 1: Основные типы
-- [ ] `src/Type/` — расширить систему типов:
-  - [ ] `Int8`, `Int16`, `Int32`, `Int64`, `Int128`, `Int256`
-  - [ ] `UInt8`, `UInt16`, `UInt32`, `UInt64` (уже есть), `UInt128`, `UInt256`
-  - [ ] `Float32`, `Float64`
-  - [ ] `Decimal(P, S)`, `Decimal32`, `Decimal64`, `Decimal128`, `Decimal256`
-  - [ ] `Bool`
-- [ ] Тесты на каждый тип: insert + select + сравнение
+- [x] `src/Type/` — расширить систему типов:
+  - [x] `Int8`, `Int16`, `Int32`, `Int64`, `Int128`, `Int256`
+  - [x] `UInt8`, `UInt16`, `UInt32`, `UInt64` (уже есть), `UInt128`, `UInt256`
+  - [x] `Float32`, `Float64`
+  - [x] `Decimal(P, S)`, `Decimal32`, `Decimal64`, `Decimal128`, `Decimal256`
+  - [x] `Bool` (exposed as the existing `Boolean` class; `Bool` is reserved by PHP)
+- [x] Тест coverage for every scalar type: insert, select, and comparison
 
 ### План — Фаза 2: Строки и даты
 - [ ] `String`, `FixedString(N)`

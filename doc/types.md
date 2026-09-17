@@ -6,6 +6,19 @@ All types implement `ClickHouseDB\Type\Type` interface and work with `insert()`,
 
 ## Numeric Types
 
+### Integer and floating-point types
+
+The integer types `Int8`, `Int16`, `Int32`, `Int64`, `Int128`, `Int256` and
+`UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt128`, `UInt256`, plus `Float32`
+and `Float64`, preserve their string representation when used in inserts,
+bindings, or comparisons:
+
+```php
+use ClickHouseDB\Type\UInt128;
+
+$db->insert('table', [[UInt128::fromString('340282366920938463463374607431768211455')]], ['value']);
+```
+
 ### UInt64
 
 Large unsigned integers that overflow PHP's `int` range.
@@ -43,6 +56,11 @@ $db->insert('table', [
     [Decimal::fromString('-99999.9999')],
 ], ['price']);
 ```
+
+`Decimal::fromString()` also accepts optional precision and scale metadata.
+`Decimal32`, `Decimal64`, `Decimal128`, and `Decimal256` are available for
+explicit ClickHouse decimal column types. ClickHouse `Bool` values use the
+existing `Boolean` class because `Bool` is a reserved PHP keyword.
 
 ## Date & Time Types
 

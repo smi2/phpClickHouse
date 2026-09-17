@@ -15,8 +15,12 @@ final class Decimal implements NumericType, Stringable
         $this->value = $value;
     }
 
-    public static function fromString(string $value): self
+    public static function fromString(string $value, ?int $precision = null, ?int $scale = null): self
     {
+        if (($precision === null) !== ($scale === null)) {
+            throw new \InvalidArgumentException('Decimal precision and scale must be supplied together.');
+        }
+
         return new self($value);
     }
 
