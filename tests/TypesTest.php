@@ -27,6 +27,7 @@ use ClickHouseDB\Type\TupleType;
 use ClickHouseDB\Type\UInt128;
 use ClickHouseDB\Type\UInt16;
 use ClickHouseDB\Type\UInt256;
+use ClickHouseDB\Type\UInt32;
 use ClickHouseDB\Type\UInt8;
 use ClickHouseDB\Type\UInt64;
 use ClickHouseDB\Type\UUID;
@@ -115,6 +116,7 @@ class TypesTest extends TestCase
             'UInt16' => ['class' => UInt16::class, 'value' => '65535'],
             'UInt128' => ['class' => UInt128::class, 'value' => '340282366920938463463374607431768211455'],
             'UInt256' => ['class' => UInt256::class, 'value' => '1'],
+            'UInt32' => ['class' => UInt32::class, 'value' => '4294967295'],
             'Float32' => ['class' => Float32::class, 'value' => '1.25'],
             'Float64' => ['class' => Float64::class, 'value' => '1.234567890123'],
             'Decimal32' => ['class' => Decimal32::class, 'value' => '12.34'],
