@@ -36,8 +36,9 @@ ClickHouse поддерживает типизированные парамет�
 
 ### Текущее состояние
 - `ValueFormatter`: int, float, bool, string, null, DateTimeInterface, Expression, Type
-- `UInt64` — единственный кастомный тип
-- Нет поддержки: DateTime64, Date32, IPv4/IPv6, UUID, Map, Tuple, Enum, Decimal, Geo-типы
+- Реализованы строковые типы `String` (`StringType`), `FixedString(N)`, даты `Date`, `Date32`, `DateTime`, `DateTime64`, а также `UUID`, `IPv4`, `IPv6`, `Enum8`, `Enum16`
+- Для строк и дат добавлены модульные тесты и интеграционные тесты для CH 21 и CH 26
+- Остальные задачи по типам перечислены в фазах ниже
 
 ### План — Фаза 1: Основные типы
 - [ ] `src/Type/` — расширить систему типов:
@@ -47,15 +48,6 @@ ClickHouse поддерживает типизированные парамет�
   - [ ] `Decimal(P, S)`, `Decimal32`, `Decimal64`, `Decimal128`, `Decimal256`
   - [ ] `Bool`
 - [ ] Тесты на каждый тип: insert + select + сравнение
-
-### План — Фаза 2: Строки и даты
-- [ ] `String`, `FixedString(N)`
-- [ ] `Date`, `Date32`
-- [ ] `DateTime`, `DateTime64(precision, timezone)`
-- [ ] `UUID`
-- [ ] `IPv4`, `IPv6`
-- [ ] `Enum8`, `Enum16`
-- [ ] Тесты
 
 ### План — Фаза 3: Составные типы
 - [ ] `Array(T)` — уже частично работает, формализовать
@@ -211,7 +203,7 @@ $db->select('SELECT 1');
 | 3 | Structured exceptions | Низкая | Нулевой | **P0** |
 | 1 | Native Query Parameters | Средняя | Нулевой (новые методы) | **P1** |
 | 4 | PHPStan level max | Средняя | Нулевой | **P1** |
-| 2 | 60+ типов (фаза 1-2) | Средняя | Нулевой | **P2** |
+| 2 | 60+ типов (фаза 1) | Средняя | Нулевой | **P2** |
 | 2 | 60+ типов (фаза 3-4) | Высокая | Нулевой | **P3** |
 
 ## Ограничения

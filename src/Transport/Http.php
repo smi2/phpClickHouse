@@ -830,17 +830,8 @@ class Http
      */
     private function convertParamValue(mixed $value): string
     {
-        if ($value instanceof \ClickHouseDB\Type\DateTime64) {
-            return $value->value;
-        }
-        if ($value instanceof \ClickHouseDB\Type\Date32) {
-            return $value->value;
-        }
-        if ($value instanceof \ClickHouseDB\Type\UUID) {
-            return $value->value;
-        }
-        if ($value instanceof \ClickHouseDB\Type\IPv4 || $value instanceof \ClickHouseDB\Type\IPv6) {
-            return $value->value;
+        if ($value instanceof \ClickHouseDB\Type\StringValue) {
+            return $this->convertParamValue($value->getValue());
         }
         if ($value instanceof \ClickHouseDB\Type\MapType) {
             return json_encode($value->value);

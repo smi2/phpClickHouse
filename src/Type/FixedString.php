@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
+use InvalidArgumentException;
 use Stringable;
 
-final class IPv6 implements StringValue, Stringable
+use function strlen;
+
+final class FixedString implements StringValue, Stringable
 {
     public string $value;
 
@@ -15,8 +18,12 @@ final class IPv6 implements StringValue, Stringable
         $this->value = $value;
     }
 
-    public static function fromString(string $value): self
+    public static function fromString(string $value, int $length): self
     {
+        if ($length < 1 || strlen($value) !== $length) {
+            throw new InvalidArgumentException('FixedString requires a positive byte length equal to the value length.');
+        }
+
         return new self($value);
     }
 

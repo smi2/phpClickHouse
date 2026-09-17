@@ -6,7 +6,7 @@ namespace ClickHouseDB\Type;
 
 use Stringable;
 
-final class IPv6 implements StringValue, Stringable
+final class Enum16 implements EnumType, Stringable
 {
     public string $value;
 

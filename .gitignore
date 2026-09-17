@@ -7,3 +7,6 @@ vendor/
 var/
 phpunit
 temp/
+/.phpunit.result.cache
+/tests/docker-clickhouse-21/
+/tests/docker-clickhouse-latest/

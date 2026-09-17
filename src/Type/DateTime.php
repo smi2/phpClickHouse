@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
+use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use Stringable;
 
-final class IPv6 implements StringValue, Stringable
+final class DateTime implements DateType, Stringable
 {
     public string $value;
 
@@ -18,6 +21,15 @@ final class IPv6 implements StringValue, Stringable
     public static function fromString(string $value): self
     {
         return new self($value);
+    }
+
+    public static function fromDateTime(DateTimeInterface $dateTime, ?string $timezone = null): self
+    {
+        if ($timezone !== null) {
+            $dateTime = DateTimeImmutable::createFromInterface($dateTime)->setTimezone(new DateTimeZone($timezone));
+        }
+
+        return new self($dateTime->format('Y-m-d H:i:s'));
     }
 
     public function getValue(): string
