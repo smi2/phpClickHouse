@@ -9,7 +9,7 @@ use Stringable;
 
 use function strlen;
 
-final class FixedString implements StringValue, Stringable
+final class FixedString implements StringableType, Stringable
 {
     public string $value;
 

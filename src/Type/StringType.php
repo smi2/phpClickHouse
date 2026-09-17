@@ -6,7 +6,7 @@ namespace ClickHouseDB\Type;
 
 use Stringable;
 
-final class StringType implements StringValue, Stringable
+final class StringType implements StringableType, Stringable
 {
     public string $value;
 

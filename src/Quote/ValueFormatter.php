@@ -6,7 +6,7 @@ namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\UnsupportedValueType;
 use ClickHouseDB\Query\Expression\Expression;
-use ClickHouseDB\Type\StringValue;
+use ClickHouseDB\Type\StringableType;
 use ClickHouseDB\Type\Type;
 use DateTimeInterface;
 
@@ -32,7 +32,7 @@ class ValueFormatter
             return $value;
         }
 
-        if ($value instanceof StringValue) {
+        if ($value instanceof StringableType) {
             return self::formatValue($value->getValue(), $addQuotes);
         }
 

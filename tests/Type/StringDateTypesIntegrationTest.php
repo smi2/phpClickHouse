@@ -52,7 +52,7 @@ final class StringDateTypesIntegrationTest extends TestCase
     /** @return array<string, array{string, Type, string}> */
     public static function newValues(): array
     {
-        return array_filter(self::values(), static fn (array $row): bool => $row[1] instanceof \ClickHouseDB\Type\StringValue);
+        return array_filter(self::values(), static fn (array $row): bool => $row[1] instanceof \ClickHouseDB\Type\StringableType);
     }
 
     /** @return array<string, array{string, Type, string}> */
