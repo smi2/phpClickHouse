@@ -116,14 +116,23 @@ final class StructuredExceptionTest extends TestCase
 
     public function testLiveExceptionHasStructuredData(): void
     {
+        $version = $this->client->select('SELECT version() AS version')->fetchOne('version');
         try {
-            $this->client->select('SELECT * FROM non_existent_table_xyz_123')->rows();
+            $this->client->select('SELECT missing_function_xyz()', [], null, null, [
+                'stacktrace' => 1,
+                'query_id' => 'structured-exception-test',
+            ])->rows();
             $this->fail('Expected exception');
         } catch (DatabaseException $e) {
-            $this->assertGreaterThan(0, $e->getCode());
-        } catch (\ClickHouseDB\Exception\QueryException $e) {
-            // QueryException is also acceptable (wraps DatabaseException)
-            $this->assertGreaterThan(0, $e->getCode());
+            $this->assertSame(46, $e->getCode());
+            $this->assertSame('UNKNOWN_FUNCTION', $e->getClickHouseExceptionName());
+            // CH 21 omits this header for errors raised before query execution.
+            $expectedQueryId = version_compare($version, '22.0', '<') ? null : 'structured-exception-test';
+            $this->assertSame($expectedQueryId, $e->getQueryId());
+            $this->assertSame($version, $e->getServerVersion());
+            $this->assertNotNull($e->getServerStackTrace());
+            $this->assertStringContainsString('DB::', $e->getServerStackTrace());
+            $this->assertStringNotContainsString('(version', $e->getServerStackTrace());
         }
     }
 }
