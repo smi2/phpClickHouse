@@ -11,10 +11,20 @@ use ClickHouseDB\Query\Query;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
 
+use function preg_match;
+use function strpos;
+use function substr;
+use function trim;
+
+use const PREG_OFFSET_CAPTURE;
+
 class Statement implements \Iterator
 {
-    private const CLICKHOUSE_ERROR_REGEX = "%Code:\s(\d+)\.\s*DB::Exception\s*:\s*(.*)(?:,\s*e\.what|\(version).*%ius";
-    private const CLICKHOUSE_EXCEPTION_NAME_REGEX = "%\(([A-Z_]+)\)\s*(?:\(version|$)%i";
+    private const CLICKHOUSE_ERROR_REGEX          = '%Code:\s*(\d+)\.\s*DB::Exception\s*:\s*(.*)%is';
+    private const CLICKHOUSE_EXCEPTION_NAME_REGEX = '%\(([A-Z][A-Z0-9_]*)\)\s*$%';
+    private const CLICKHOUSE_VERSION_REGEX        = '%\s*\(version\s+([0-9]+(?:\.[0-9]+)+(?:[-\w.]*)?)'
+        . '(?:\s+\([^\r\n]*\))?\)\s*$%';
+    private const CLICKHOUSE_STACK_TRACE_REGEX    = '%,?\s*Stack trace(?:\s*\([^\r\n]*\))?:\s*\R(.*)$%s';
 
     private mixed $_rawData = null;
 
@@ -94,10 +104,37 @@ class Statement implements \Iterator
         $matches = [];
 
         if (preg_match(self::CLICKHOUSE_ERROR_REGEX, $body, $matches)) {
-            $result = ['code' => $matches[1], 'message' => $matches[2], 'exception_name' => null];
-            if (preg_match(self::CLICKHOUSE_EXCEPTION_NAME_REGEX, $body, $nameMatches)) {
+            $message = $matches[2];
+            $result  = [
+                'code' => $matches[1],
+                'message' => $message,
+                'exception_name' => null,
+                'server_version' => null,
+                'server_stack_trace' => null,
+            ];
+
+            if (preg_match(self::CLICKHOUSE_VERSION_REGEX, $message, $versionMatches, PREG_OFFSET_CAPTURE)) {
+                $result['server_version'] = $versionMatches[1][0];
+                $message                  = substr($message, 0, $versionMatches[0][1]);
+            }
+
+            if (preg_match(self::CLICKHOUSE_STACK_TRACE_REGEX, $message, $traceMatches, PREG_OFFSET_CAPTURE)) {
+                $result['server_stack_trace'] = trim($traceMatches[1][0]) ?: null;
+                $message                      = substr($message, 0, $traceMatches[0][1]);
+            }
+
+            $result['message'] = $message;
+
+            if (preg_match(self::CLICKHOUSE_EXCEPTION_NAME_REGEX, $message, $nameMatches)) {
                 $result['exception_name'] = $nameMatches[1];
             }
+
+            $legacySuffix = strpos($result['message'], ', e.what');
+
+            if ($legacySuffix !== false) {
+                $result['message'] = substr($result['message'], 0, $legacySuffix);
+            }
+
             return $result;
         }
 
@@ -155,7 +192,9 @@ class Statement implements \Iterator
                     $parse['message'] . "\nIN:" . $this->sql(),
                     (int) $parse['code'],
                     $parse['exception_name'] ?? null,
-                    $queryId
+                    $queryId,
+                    $parse['server_version'],
+                    $parse['server_stack_trace']
                 );
             } else {
                 $code = $this->response()->http_code();
