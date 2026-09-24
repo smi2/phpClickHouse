@@ -118,12 +118,12 @@ class Statement implements \Iterator
                 $message                  = substr($message, 0, $versionMatches[0][1]);
             }
 
-            $result['message'] = $message;
-
             if (preg_match(self::CLICKHOUSE_STACK_TRACE_REGEX, $message, $traceMatches, PREG_OFFSET_CAPTURE)) {
                 $result['server_stack_trace'] = trim($traceMatches[1][0]) ?: null;
                 $message                      = substr($message, 0, $traceMatches[0][1]);
             }
+
+            $result['message'] = $message;
 
             if (preg_match(self::CLICKHOUSE_EXCEPTION_NAME_REGEX, $message, $nameMatches)) {
                 $result['exception_name'] = $nameMatches[1];

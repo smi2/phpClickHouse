@@ -133,6 +133,7 @@ final class StructuredExceptionTest extends TestCase
             $this->assertNotNull($e->getServerStackTrace());
             $this->assertStringContainsString('DB::', $e->getServerStackTrace());
             $this->assertStringNotContainsString('(version', $e->getServerStackTrace());
+            $this->assertStringNotContainsString('Stack trace', $e->getMessage());
         }
     }
 }
