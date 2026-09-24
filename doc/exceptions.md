@@ -26,6 +26,8 @@ try {
     echo $e->getCode();                     // 60
     echo $e->getClickHouseExceptionName();  // 'UNKNOWN_TABLE' (CH 22+) or null (older versions)
     echo $e->getQueryId();                  // 'abc-123-def' (from X-ClickHouse-Query-Id header)
+    echo $e->getServerVersion();            // '26.3.3.20' or null
+    echo $e->getServerStackTrace();         // Server stack frames or null
 }
 ```
 
@@ -37,8 +39,15 @@ try {
 | `getCode()` | int | ClickHouse error code |
 | `getClickHouseExceptionName()` | ?string | e.g. `UNKNOWN_TABLE`, `SYNTAX_ERROR` (CH 22+) |
 | `getQueryId()` | ?string | Query ID from response header |
+| `getServerVersion()` | ?string | Server version from the error response |
+| `getServerStackTrace()` | ?string | Server stack frames, when returned by ClickHouse |
 | `getRequestDetails()` | array | Request metadata |
 | `getResponseDetails()` | array | Response metadata |
+
+Metadata that is absent from the response is `null`. To request a server stack trace,
+pass `['stacktrace' => 1]` as per-query settings. `getServerStackTrace()` returns the
+frames without the trace heading or version suffix; PHP's `getTrace()` remains unchanged.
+The standard exception constructor and existing `fromClickHouse()` calls remain compatible.
 
 ### Common Error Codes
 

@@ -46,6 +46,23 @@ $db->insert('table', [
 
 ## Date & Time Types
 
+### Date and DateTime
+
+```php
+use ClickHouseDB\Type\Date;
+use ClickHouseDB\Type\DateTime;
+
+Date::fromString('2024-02-29');
+Date::fromDateTime(new DateTimeImmutable('2024-02-29 12:00:00'));
+DateTime::fromString('2024-02-29 12:00:00');
+DateTime::fromDateTime(new DateTimeImmutable('2024-02-29 12:00:00+00:00'), 'Europe/Amsterdam');
+```
+
+The optional timezone converts PHP date/time objects before formatting, without
+mutating them. Use the timezone of the destination column (or native parameter).
+Without it, the object's timezone is preserved. String factories preserve the
+input exactly; ClickHouse validates date ranges and parses strings in the column's timezone.
+
 ### DateTime64
 
 Sub-second precision timestamps (milliseconds, microseconds, nanoseconds).
@@ -64,8 +81,10 @@ $db->insert('table', [
     [DateTime64::fromDateTime($dt, 3)],  // → '2024-06-15 12:00:00.456'
 ], ['created_at']);
 
-// Precision options: 1-9 (1=tenths, 3=ms, 6=μs, 9=ns)
+// Precision options: 0-9 (1=tenths, 3=ms, 6=μs, 9=ns)
 DateTime64::fromDateTime($dt, 6);  // → '2024-06-15 12:00:00.456789'
+// PHP date/time objects provide at most 6 fractional digits.
+// Use fromString() to preserve an existing nanosecond timestamp.
 ```
 
 ### Date32
@@ -111,6 +130,39 @@ $db->insert('table', [
 ```
 
 ## String Types
+
+### StringType and FixedString
+
+PHP reserves the name `String`, so the wrapper is named `StringType`.
+
+```php
+use ClickHouseDB\Type\StringType;
+use ClickHouseDB\Type\FixedString;
+
+StringType::fromString("it's a string");
+FixedString::fromString('a', 1);  // For a FixedString(1) column.
+FixedString::fromString('ab', 2); // For a FixedString(2) column.
+```
+
+`FixedString` requires a positive length in bytes and a value with exactly that
+byte length. Both shorter and longer values are rejected.
+These wrappers retain raw values in `getValue()`, `__toString()`, and `$value`;
+use bindings or `insert()` to escape them safely, rather than SQL interpolation.
+
+### Enum8 and Enum16
+
+```php
+use ClickHouseDB\Type\Enum8;
+use ClickHouseDB\Type\Enum16;
+
+Enum8::fromString('active');
+Enum16::fromString('pending');
+```
+
+These wrappers represent enum labels. Define the label-to-number mapping in the
+column or native parameter type, e.g. `Enum8('active' = 1, 'inactive' = 2)`.
+ClickHouse validates membership and the numeric range of that mapping.
+
 
 ### UUID
 

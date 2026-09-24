@@ -36,8 +36,9 @@ Extend `ValueFormatter` and add a type system for native parameters.
 
 ### Current state
 - `ValueFormatter`: int, float, bool, string, null, DateTimeInterface, Expression, Type
-- `UInt64` is the only custom type
-- Not supported: DateTime64, Date32, IPv4/IPv6, UUID, Map, Tuple, Enum, Decimal, Geo types
+- String types `String` (`StringType`), `FixedString(N)`, the dates `Date`, `Date32`, `DateTime`, `DateTime64`, plus `UUID`, `IPv4`, `IPv6`, `Enum8`, `Enum16` are implemented
+- Strings and dates are covered by unit tests and by integration tests for CH 21 and CH 26
+- The remaining type work is listed in the phases below
 
 ### Plan, Phase 1: Core types
 - [ ] `src/Type/`: extend the type system:
@@ -47,15 +48,6 @@ Extend `ValueFormatter` and add a type system for native parameters.
   - [ ] `Decimal(P, S)`, `Decimal32`, `Decimal64`, `Decimal128`, `Decimal256`
   - [ ] `Bool`
 - [ ] Tests for each type: insert + select + comparison
-
-### Plan, Phase 2: Strings and dates
-- [ ] `String`, `FixedString(N)`
-- [ ] `Date`, `Date32`
-- [ ] `DateTime`, `DateTime64(precision, timezone)`
-- [ ] `UUID`
-- [ ] `IPv4`, `IPv6`
-- [ ] `Enum8`, `Enum16`
-- [ ] Tests
 
 ### Plan, Phase 3: Composite types
 - [ ] `Array(T)`: already partially works, formalize it
@@ -211,7 +203,7 @@ $db->select('SELECT 1');
 | 3 | Structured exceptions | Low | None | **P0** |
 | 1 | Native Query Parameters | Medium | None (new methods) | **P1** |
 | 4 | PHPStan level max | Medium | None | **P1** |
-| 2 | 60+ types (phases 1-2) | Medium | None | **P2** |
+| 2 | 60+ types (phase 1) | Medium | None | **P2** |
 | 2 | 60+ types (phases 3-4) | High | None | **P3** |
 
 ## Constraints

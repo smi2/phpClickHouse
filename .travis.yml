@@ -66,18 +66,6 @@ jobs:
         - composer config minimum-stability dev
         - travis_retry composer update -n --prefer-dist
 
-    - stage: Test
-      env: COVERAGE
-      php: 7.3
-      before_script:
-        - mv ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini{.disabled,}
-        - if [[ ! $(php -m | grep -si xdebug) ]]; then echo "xdebug required for coverage"; exit 1; fi
-      script:
-        - ./vendor/bin/phpunit --coverage-clover ./build/logs/clover.xml
-      after_script:
-        - wget https://github.com/scrutinizer-ci/ocular/releases/download/1.5.2/ocular.phar
-        - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
-
     - stage: Code Quality
       if: type = pull_request
       env: PULL_REQUEST_CODING_STANDARD

@@ -35,7 +35,7 @@ PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, zero 
 composer require smi2/phpclickhouse
 ```
 
-Requires PHP 8.0+, ext-curl, ext-json.
+Requires PHP 8.1+, ext-curl, ext-json.
 
 ## Quick Start
 
@@ -130,8 +130,8 @@ foreach ($db->selectGenerator('SELECT * FROM huge_table') as $row) {
 | 5.6 | `<= 1.1.2` |
 | 7.2 | `<= 1.3.10` |
 | 7.3 | `1.4.x – 1.5.x` |
-| 8.0+ | `1.6.0 – 1.26.4` |
-| 8.1+ | `>= 1.24.406` |
+| 8.0 | `1.6.0 – 1.26.4` |
+| 8.1+ | `>= 1.24.406` (current) |
 
 ## Links
 
