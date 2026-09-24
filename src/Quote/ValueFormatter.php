@@ -6,8 +6,10 @@ namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\UnsupportedValueType;
 use ClickHouseDB\Query\Expression\Expression;
+use ClickHouseDB\Type\StringableType;
 use ClickHouseDB\Type\Type;
 use DateTimeInterface;
+
 use function addslashes;
 use function is_bool;
 use function is_callable;
@@ -15,6 +17,7 @@ use function is_float;
 use function is_int;
 use function is_object;
 use function is_string;
+use function property_exists;
 use function sprintf;
 
 class ValueFormatter
@@ -27,6 +30,10 @@ class ValueFormatter
 
         if (is_float($value) || is_int($value) || is_bool($value) || $value === null) {
             return $value;
+        }
+
+        if ($value instanceof StringableType) {
+            return self::formatValue($value->getValue(), $addQuotes);
         }
 
         if ($value instanceof Type) {
