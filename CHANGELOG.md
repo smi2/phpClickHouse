@@ -2,6 +2,20 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### Unreleased
+
+#### New Features
+
+* **Missing native param validation** (@sander-hash) — `selectWithParams()`, `writeWithParams()` and `readWithParams()` now check that every `{name:Type}` placeholder in the SQL has a matching param, and throw `MissingBindingParamsException` (extends `QueryException`) before the request is sent. The message lists the placeholders without a value, e.g. `Missing params for placeholders: {name:String}`. Covers parameterized types (`Array(UInt32)`, `Nullable(String)`, `DateTime64(3)`); a repeated placeholder needs one param; unused extra params are ignored. Legacy `select()` / `write()` are not validated client-side and keep reporting a missing value as `DatabaseException` from the server
+
+#### Testing
+
+* **`tests/NativeParamsValidationTest.php`** (12 cases, CH 21 + 26) — missing, misnamed, second/last-of-many and parameterized-type placeholders throw for all three `*WithParams` methods; repeated placeholders and param names containing `param_` pass
+
+#### Documentation
+
+* **Missing Parameters** section in `doc/native-params.md` and the Pages site; `MissingBindingParamsException` added to the exception hierarchy in `doc/exceptions.md`
+
 ### 2026-09-25 [Release 1.26.925]
 
 #### Breaking Changes

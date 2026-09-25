@@ -134,6 +134,29 @@ $db->readWithParams(
 );
 ```
 
+## Missing Parameters
+
+`selectWithParams()`, `writeWithParams()` and `readWithParams()` check that every `{name:Type}` placeholder in the SQL has a matching entry in `$params`. If one is missing, `MissingBindingParamsException` is thrown **before** the request is sent, and the message lists the placeholders without a value:
+
+```php
+use ClickHouseDB\Exception\MissingBindingParamsException;
+
+try {
+    $db->selectWithParams(
+        'SELECT {id:UInt32} AS id, {name:String} AS name',
+        ['id' => 1]
+    );
+} catch (MissingBindingParamsException $e) {
+    echo $e->getMessage(); // Missing params for placeholders: {name:String}
+}
+```
+
+- Every placeholder is checked, including parameterized types such as `Array(UInt32)`, `Nullable(String)` and `DateTime64(3)`.
+- A placeholder used more than once (`{n:UInt32} + {n:UInt32}`) needs one param.
+- Extra params that are not used in the SQL are ignored.
+- `MissingBindingParamsException` extends `QueryException`, so an existing `catch (QueryException $e)` or `catch (ClickHouseException $e)` still catches it.
+- `select()` / `write()` with `{name:Type}` placeholders are **not** checked client-side; a missing value is still reported by the server as a `DatabaseException`.
+
 ## Native Params vs Bindings
 
 | Feature | Native `{name:Type}` | Bindings `:name` |

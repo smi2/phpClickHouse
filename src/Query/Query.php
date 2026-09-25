@@ -7,7 +7,11 @@ namespace ClickHouseDB\Query;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Query\Degeneration\Conditions;
+
+use function preg_match_all;
 use function sizeof;
+
+use const PREG_SET_ORDER;
 
 class Query
 {
@@ -119,6 +123,22 @@ class Query
             }
         }
         return $out;
+    }
+
+    /**
+     * @return array<string, string> param name => full {name:Type} placeholder
+     */
+    public function getBindingParamNamesFromSql(): array
+    {
+        preg_match_all('/\{([^{}:]+):[^{}]+}/', $this->sql, $matches, PREG_SET_ORDER);
+
+        $outcome = [];
+
+        foreach ($matches as $match) {
+            $outcome[$match[1]] = $match[0];
+        }
+
+        return $outcome;
     }
 
     public function toSql(): string

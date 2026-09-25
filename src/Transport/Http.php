@@ -2,6 +2,7 @@
 
 namespace ClickHouseDB\Transport;
 
+use ClickHouseDB\Exception\MissingBindingParamsException;
 use ClickHouseDB\Exception\TransportException;
 use ClickHouseDB\Query\Degeneration;
 use ClickHouseDB\Query\Query;
@@ -9,6 +10,15 @@ use ClickHouseDB\Query\WhereInFile;
 use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Settings;
 use ClickHouseDB\Statement;
+
+use function array_keys;
+use function count;
+use function implode;
+use function sprintf;
+use function str_starts_with;
+use function strlen;
+use function substr;
+
 use const PHP_EOL;
 
 class Http
@@ -331,7 +341,7 @@ class Http
      * @return CurlerRequest
      * @throws \ClickHouseDB\Exception\TransportException
      */
-    private function makeRequest(Query $query, array $urlParams = [], bool $query_as_string = false, array $querySettings = []): CurlerRequest
+    private function makeRequest(Query $query, array $urlParams = [], bool $query_as_string = false, array $querySettings = [], bool $validateQueryParams = false): CurlerRequest
     {
         $sql = $query->toSql();
 
@@ -354,6 +364,10 @@ class Http
 
         if ($query->isUseInUrlBindingsParams()) {
             $urlParams = array_replace_recursive($urlParams, $query->getUrlBindingsParams());
+
+            if ($validateQueryParams) {
+                $this->validateParamOccurrence($query, $urlParams);
+            }
         }
 
         $url = $this->getUrl($urlParams, $querySettings);
@@ -365,6 +379,28 @@ class Http
         $new->httpCompression($this->settings()->isEnableHttpCompression());
 
         return $new;
+    }
+
+    /**
+     * @param array<string, mixed> $urlParams
+     */
+    private function validateParamOccurrence(Query $query, array $urlParams): void
+    {
+        $bindingParamNames = $query->getBindingParamNamesFromSql();
+
+        foreach (array_keys($urlParams) as $urlParam) {
+            if (! str_starts_with($urlParam, 'param_')) {
+                continue;
+            }
+
+            unset($bindingParamNames[substr($urlParam, strlen('param_'))]);
+        }
+
+        if (count($bindingParamNames) > 0) {
+            throw new MissingBindingParamsException(
+                sprintf('Missing params for placeholders: %s', implode(', ', $bindingParamNames))
+            );
+        }
     }
 
     /**
@@ -774,7 +810,7 @@ class Http
             $urlParams['param_' . $name] = $this->convertParamValue($value);
         }
 
-        $request = $this->makeRequest($query, $urlParams, true, $querySettings);
+        $request = $this->makeRequest($query, $urlParams, true, $querySettings, true);
         $this->_curler->execOne($request);
         return new Statement($request);
     }
@@ -788,7 +824,7 @@ class Http
             $urlParams['param_' . $name] = $this->convertParamValue($value);
         }
 
-        $request = $this->makeRequest($query, $urlParams, true, $querySettings);
+        $request = $this->makeRequest($query, $urlParams, true, $querySettings, true);
 
         return $this->streaming($streamRead, $request);
     }
@@ -811,7 +847,7 @@ class Http
             $urlParams['param_' . $name] = $this->convertParamValue($value);
         }
 
-        $request = $this->makeRequest($query, $urlParams, true, $querySettings);
+        $request = $this->makeRequest($query, $urlParams, true, $querySettings, true);
         $this->_curler->execOne($request);
         $response = new Statement($request);
         if ($exception) {
