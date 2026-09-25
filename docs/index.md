@@ -15,7 +15,7 @@ PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, zero 
 
 - Sync & async (parallel) SELECT queries
 - [Native query parameters](native-params) — server-side `{name:Type}` binding, SQL injection impossible
-- [Rich type system](types) — Boolean, Int64, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
+- [Rich type system](types) — Boolean, integer and floating-point types, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
 - Bulk inserts: arrays, CSV files, streams
 - [Generators](generators) — memory-efficient iteration for large resultsets
 - HTTP compression (gzip) for inserts
