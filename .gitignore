@@ -8,6 +8,10 @@ var/
 phpunit
 temp/
 /.phpunit.result.cache
+/tests/docker-clickhouse/
 /tests/docker-clickhouse-21/
 /tests/docker-clickhouse-latest/
 /tests/docker-clickhouse-26-9/
+.DS_Store
+.idea/
+*.swp
