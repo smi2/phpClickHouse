@@ -7,7 +7,17 @@ namespace ClickHouseDB\Query;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Query\Degeneration\Conditions;
+
+use function array_filter;
+use function count;
+use function implode;
+use function in_array;
+use function preg_match;
+use function preg_match_all;
 use function sizeof;
+use function str_ireplace;
+use function substr;
+use function trim;
 
 class Query
 {
@@ -20,31 +30,31 @@ class Query
     private array $degenerations = [];
 
     private array $supportFormats = [
-        "FORMAT\\s+TSVRaw",
-        "FORMAT\\s+TSVWithNamesAndTypes",
-        "FORMAT\\s+TSVWithNames",
-        "FORMAT\\s+TSV",
-        "FORMAT\\s+Vertical",
-        "FORMAT\\s+JSONCompact",
-        "FORMAT\\s+JSONEachRow",
-        "FORMAT\\s+TSKV",
-        "FORMAT\\s+TabSeparatedWithNames",
-        "FORMAT\\s+TabSeparatedWithNamesAndTypes",
-        "FORMAT\\s+TabSeparatedRaw",
-        "FORMAT\\s+BlockTabSeparated",
-        "FORMAT\\s+CSVWithNames",
-        "FORMAT\\s+CSV",
-        "FORMAT\\s+JSON",
-        "FORMAT\\s+TabSeparated"
+        'FORMAT\\s+TSVRaw',
+        'FORMAT\\s+TSVWithNamesAndTypes',
+        'FORMAT\\s+TSVWithNames',
+        'FORMAT\\s+TSV',
+        'FORMAT\\s+Vertical',
+        'FORMAT\\s+JSONCompact',
+        'FORMAT\\s+JSONEachRow',
+        'FORMAT\\s+TSKV',
+        'FORMAT\\s+TabSeparatedWithNames',
+        'FORMAT\\s+TabSeparatedWithNamesAndTypes',
+        'FORMAT\\s+TabSeparatedRaw',
+        'FORMAT\\s+BlockTabSeparated',
+        'FORMAT\\s+CSVWithNames',
+        'FORMAT\\s+CSV',
+        'FORMAT\\s+JSON',
+        'FORMAT\\s+TabSeparated',
     ];
 
     public function __construct(string $sql, array $degenerations = [])
     {
-        if (!trim($sql))
-        {
+        if (! trim($sql)) {
             throw new QueryException('Empty Query');
         }
-        $this->sql = $this->originalSql = $sql;
+
+        $this->sql           = $this->originalSql = $sql;
         $this->degenerations = $degenerations;
     }
 
@@ -53,32 +63,28 @@ class Query
         $this->format = $format;
     }
 
-
     private function applyFormatQuery()
     {
         // FORMAT\s(\w)*$
-        if (null === $this->format) {
+        if ($this->format === null) {
             return false;
         }
-        $supportFormats = implode("|",$this->supportFormats);
+
+        $supportFormats = implode('|', $this->supportFormats);
 
         $this->sql = trim($this->sql);
-        if (substr($this->sql, -1) == ';') {
+        if (substr($this->sql, -1) === ';') {
             $this->sql = substr($this->sql, 0, -1);
         }
 
         $matches = [];
         if (preg_match_all('%(' . $supportFormats . ')%ius', $this->sql, $matches)) {
-
             // skip add "format json"
-            if (isset($matches[0]))
-            {
-
+            if (isset($matches[0])) {
                 $this->format = trim(str_ireplace('format', '', $matches[0][0]));
-
             }
         } else {
-            $this->sql = $this->sql . ' FORMAT ' . $this->format;
+            $this->sql .= ' FORMAT ' . $this->format;
         }
     }
 
@@ -93,31 +99,32 @@ class Query
      * Check the original SQL before degeneration to prevent data that matches the same regex by accident causing adding bindings to the url
      * For backwards compatibility use the degenerated sql when custom degenerations are found
      */
-    public function isUseInUrlBindingsParams():bool
+    public function isUseInUrlBindingsParams(): bool
     {
         //  'query=select {p1:UInt8} + {p2:UInt8}' -F "param_p1=3" -F "param_p2=4"
         return preg_match('#{[\w+]+:[\w+()]+}#', $this->hasCustomDegenerations() ? $this->sql : $this->originalSql) === 1;
-
     }
-    public function getUrlBindingsParams():array
+
+    public function getUrlBindingsParams(): array
     {
-        $out=[];
-        $params=[];
+        $out    = [];
+        $params = [];
         if (sizeof($this->degenerations)) {
             foreach ($this->degenerations as $degeneration) {
                 if ($degeneration instanceof Degeneration) {
-                    $params=$degeneration->getBind();
+                    $params = $degeneration->getBind();
                     break;
                     // need first response
                 }
             }
         }
+
         if (sizeof($params)) {
-            foreach ($params as $key=>$value)
-            {
-                $out['param_'.$key]=$value;
+            foreach ($params as $key => $value) {
+                $out['param_' . $key] = $value;
             }
         }
+
         return $out;
     }
 
@@ -127,13 +134,13 @@ class Query
             $this->applyFormatQuery();
         }
 
-        if (sizeof($this->degenerations))
-        {
-            foreach ($this->degenerations as $degeneration)
-            {
-                if ($degeneration instanceof Degeneration) {
-                    $this->sql = $degeneration->process($this->sql);
+        if (sizeof($this->degenerations)) {
+            foreach ($this->degenerations as $degeneration) {
+                if (! ($degeneration instanceof Degeneration)) {
+                    continue;
                 }
+
+                $this->sql = $degeneration->process($this->sql);
             }
         }
 
@@ -147,8 +154,8 @@ class Query
 
     private function hasCustomDegenerations(): bool
     {
-        return count(array_filter($this->degenerations, function (Degeneration $degeneration) {
-            return !in_array($degeneration::class, [Conditions::class, Bindings::class]);
+        return count(array_filter($this->degenerations, static function (Degeneration $degeneration) {
+            return ! in_array($degeneration::class, [Conditions::class, Bindings::class]);
         })) > 0;
     }
 }

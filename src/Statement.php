@@ -7,18 +7,39 @@ namespace ClickHouseDB;
 use ClickHouseDB\Exception\ClickHouseUnavailableException;
 use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
-use ClickHouseDB\Query\Query;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
+use Exception;
+use Generator;
+use Iterator;
+use JsonException;
 
+use function array_pop;
+use function array_replace_recursive;
+use function array_shift;
+use function count;
+use function explode;
+use function func_get_args;
+use function function_exists;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function json_validate;
 use function preg_match;
+use function sizeof;
+use function stripos;
+use function strlen;
 use function strpos;
 use function substr;
 use function trim;
 
+use const CURLE_COULDNT_CONNECT;
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 use const PREG_OFFSET_CAPTURE;
 
-class Statement implements \Iterator
+class Statement implements Iterator
 {
     private const CLICKHOUSE_ERROR_REGEX          = '%Code:\s*(\d+)\.\s*DB::Exception\s*:\s*(.*)%is';
     private const CLICKHOUSE_EXCEPTION_NAME_REGEX = '%\(([A-Z][A-Z0-9_]*)\)\s*$%';
@@ -51,7 +72,7 @@ class Statement implements \Iterator
 
     private ?int $rows = null;
 
-    private int|false $rows_before_limit_at_least = false;
+    private int |false $rows_before_limit_at_least = false;
 
     private array $array_data = [];
 
@@ -59,14 +80,13 @@ class Statement implements \Iterator
 
     public int $iterator = 0;
 
-
     public function __construct(CurlerRequest $request)
     {
         $this->_request = $request;
-        $this->format = $this->_request->getRequestExtendedInfo('format');
-        $this->query = $this->_request->getRequestExtendedInfo('query');
-        $sql = $this->_request->getRequestExtendedInfo('sql');
-        $this->sql = is_string($sql) ? $sql : (string) ($sql ?: '');
+        $this->format   = $this->_request->getRequestExtendedInfo('format');
+        $this->query    = $this->_request->getRequestExtendedInfo('query');
+        $sql            = $this->_request->getRequestExtendedInfo('sql');
+        $this->sql      = is_string($sql) ? $sql : (string) ($sql ?: '');
     }
 
     public function getRequest(): CurlerRequest
@@ -100,7 +120,7 @@ class Statement implements \Iterator
      */
     private function parseErrorClickHouse(string $body): array|false
     {
-        $body = trim($body);
+        $body    = trim($body);
         $matches = [];
 
         if (preg_match(self::CLICKHOUSE_ERROR_REGEX, $body, $matches)) {
@@ -141,8 +161,9 @@ class Statement implements \Iterator
         return false;
     }
 
-    private function hasErrorClickhouse(string $body, ?string $contentType): bool {
-        if ($contentType === null || false === stripos($contentType, 'application/json')) {
+    private function hasErrorClickhouse(string $body, ?string $contentType): bool
+    {
+        if ($contentType === null || stripos($contentType, 'application/json') === false) {
             return preg_match(self::CLICKHOUSE_ERROR_REGEX, $body) === 1;
         }
 
@@ -152,16 +173,18 @@ class Statement implements \Iterator
                 // Regex also matches if the actual data contains a ClickHouse error
                 // string. Use json_validate() to confirm the response is truly broken.
                 if (function_exists('json_validate')) {
-                    return !json_validate($body);
+                    return ! json_validate($body);
                 }
+
                 return true;
             }
+
             return false;
         }
 
         try {
             json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             return true;
         }
 
@@ -170,24 +193,26 @@ class Statement implements \Iterator
 
     /**
      * @return false
+     *
      * @throws Exception\TransportException
      */
     public function error()
     {
-        if (!$this->isError()) {
+        if (! $this->isError()) {
             return false;
         }
 
-        $body = $this->response()->body();
+        $body     = $this->response()->body();
         $error_no = $this->response()->error_no();
-        $error = $this->response()->error();
+        $error    = $this->response()->error();
 
         $dumpStatement = false;
-        if (!$error_no && !$error) {
+        if (! $error_no && ! $error) {
             $parse = $this->parseErrorClickHouse($body);
 
             if ($parse) {
                 $queryId = $this->response()->headers('X-ClickHouse-Query-Id');
+
                 throw DatabaseException::fromClickHouse(
                     $parse['message'] . "\nIN:" . $this->sql(),
                     (int) $parse['code'],
@@ -196,13 +221,13 @@ class Statement implements \Iterator
                     $parse['server_version'],
                     $parse['server_stack_trace']
                 );
-            } else {
-                $code = $this->response()->http_code();
-                $message = "HttpCode:" . $this->response()->http_code() . " ; " . $this->response()->error() . " ;" . $body;
-                $dumpStatement = true;
             }
+
+            $code          = $this->response()->http_code();
+            $message       = 'HttpCode:' . $this->response()->http_code() . ' ; ' . $this->response()->error() . ' ;' . $body;
+            $dumpStatement = true;
         } else {
-            $code = $error_no;
+            $code    = $error_no;
             $message = $this->response()->error();
         }
 
@@ -241,7 +266,7 @@ class Statement implements \Iterator
 
     private function check(): bool
     {
-        if (!$this->_request->isResponseExists()) {
+        if (! $this->_request->isResponseExists()) {
             throw QueryException::noResponse();
         }
 
@@ -270,20 +295,22 @@ class Statement implements \Iterator
 
         $this->_rawData = $this->response()->rawDataOrJson($this->format);
 
-        if (!$this->_rawData) {
+        if (! $this->_rawData) {
             $this->_init = true;
+
             return false;
         }
 
         $data = [];
         foreach (['meta', 'data', 'totals', 'extremes', 'rows', 'rows_before_limit_at_least', 'statistics'] as $key) {
+            if (! isset($this->_rawData[$key])) {
+                continue;
+            }
 
-            if (isset($this->_rawData[$key])) {
-                if ($key=='data') {
-                    $data=$this->_rawData[$key];
-                } else {
-                    $this->{$key} = $this->_rawData[$key];
-                }
+            if ($key === 'data') {
+                $data = $this->_rawData[$key];
+            } else {
+                $this->{$key} = $this->_rawData[$key];
             }
         }
 
@@ -291,7 +318,7 @@ class Statement implements \Iterator
             throw new QueryException('Can`t find meta');
         }
 
-        $isJSONCompact=(stripos($this->format,'JSONCompact')!==false?true:false);
+        $isJSONCompact    = (stripos($this->format, 'JSONCompact') !== false);
         $this->array_data = [];
         foreach ($data as $rows) {
             $r = [];
@@ -313,11 +340,12 @@ class Statement implements \Iterator
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function extremes(): ?array
     {
         $this->init();
+
         return $this->extremes;
     }
 
@@ -327,11 +355,12 @@ class Statement implements \Iterator
     public function totalTimeRequest(): float
     {
         $this->check();
+
         return $this->response()->total_time();
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function extremesMin(): array
     {
@@ -345,7 +374,7 @@ class Statement implements \Iterator
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function extremesMax(): array
     {
@@ -364,6 +393,7 @@ class Statement implements \Iterator
     public function totals(): ?array
     {
         $this->init();
+
         return $this->totals;
     }
 
@@ -379,24 +409,28 @@ class Statement implements \Iterator
     public function countAll(): int|false
     {
         $this->init();
+
         return $this->rows_before_limit_at_least;
     }
 
     /**
      * @param bool|string $key
+     *
      * @throws Exception\TransportException
      */
     public function statistics(mixed $key = false): mixed
     {
         $this->init();
 
-        if (!is_array($this->statistics)) {
+        if (! is_array($this->statistics)) {
             return $this->summary($key);
         }
 
-        if (!$key) return $this->statistics;
+        if (! $key) {
+            return $this->statistics;
+        }
 
-        if (!isset($this->statistics[$key])) {
+        if (! isset($this->statistics[$key])) {
             return null;
         }
 
@@ -415,17 +449,17 @@ class Statement implements \Iterator
     {
         $raw = $this->response()->headers('X-ClickHouse-Summary');
 
-        if (!$raw) {
+        if (! $raw) {
             return null;
         }
 
         $summary = json_decode($raw, true);
 
-        if (!is_array($summary)) {
+        if (! is_array($summary)) {
             return null;
         }
 
-        if (!$key) {
+        if (! $key) {
             return $summary;
         }
 
@@ -438,6 +472,7 @@ class Statement implements \Iterator
     public function count(): int
     {
         $this->init();
+
         return $this->rows ?? 0;
     }
 
@@ -460,22 +495,23 @@ class Statement implements \Iterator
         $this->iterator = 0;
     }
 
-    public function fetchRow(mixed $key = null): mixed
+    public function fetchRow(?mixed $key = null): mixed
     {
         $this->init();
 
-        $position=$this->iterator;
+        $position = $this->iterator;
 
-        if (!isset($this->array_data[$position])) {
+        if (! isset($this->array_data[$position])) {
             return null;
         }
 
         $this->iterator++;
 
-        if (!$key) {
+        if (! $key) {
             return $this->array_data[$position];
         }
-        if (!isset($this->array_data[$position][$key])) {
+
+        if (! isset($this->array_data[$position][$key])) {
             return null;
         }
 
@@ -485,18 +521,18 @@ class Statement implements \Iterator
     /**
      * @throws Exception\TransportException
      */
-    public function fetchOne(mixed $key = null): mixed
+    public function fetchOne(?mixed $key = null): mixed
     {
         $this->init();
-        if (!isset($this->array_data[0])) {
+        if (! isset($this->array_data[0])) {
             return null;
         }
 
-        if (!$key) {
+        if (! $key) {
             return $this->array_data[0];
         }
 
-        if (!isset($this->array_data[0][$key])) {
+        if (! isset($this->array_data[0][$key])) {
             return null;
         }
 
@@ -505,6 +541,7 @@ class Statement implements \Iterator
 
     /**
      * @param string|array|null $path
+     *
      * @throws Exception\TransportException
      */
     public function rowsAsTree($path): array
@@ -513,7 +550,7 @@ class Statement implements \Iterator
 
         $out = [];
         foreach ($this->array_data as $row) {
-            $d = $this->array_to_tree($row, $path);
+            $d   = $this->array_to_tree($row, $path);
             $out = array_replace_recursive($d, $out);
         }
 
@@ -528,11 +565,12 @@ class Statement implements \Iterator
     public function info_upload(): array
     {
         $this->check();
+
         return [
             'size_upload'    => $this->response()->size_upload(),
             'upload_content' => $this->response()->upload_content_length(),
             'speed_upload'   => $this->response()->speed_upload(),
-            'time_request'   => $this->response()->total_time()
+            'time_request'   => $this->response()->total_time(),
         ];
     }
 
@@ -544,6 +582,7 @@ class Statement implements \Iterator
     public function info(): array
     {
         $this->check();
+
         return [
             'starttransfer_time'    => $this->response()->starttransfer_time(),
             'size_download'    => $this->response()->size_download(),
@@ -551,7 +590,7 @@ class Statement implements \Iterator
             'size_upload'    => $this->response()->size_upload(),
             'upload_content' => $this->response()->upload_content_length(),
             'speed_upload'   => $this->response()->speed_upload(),
-            'time_request'   => $this->response()->total_time()
+            'time_request'   => $this->response()->total_time(),
         ];
     }
 
@@ -566,6 +605,7 @@ class Statement implements \Iterator
     public function rows(): array
     {
         $this->init();
+
         return $this->array_data;
     }
 
@@ -575,7 +615,7 @@ class Statement implements \Iterator
      *
      * @throws Exception\TransportException
      */
-    public function rowsGenerator(): \Generator
+    public function rowsGenerator(): Generator
     {
         $this->init();
         foreach ($this->array_data as $key => $row) {
@@ -589,8 +629,8 @@ class Statement implements \Iterator
     }
 
     /**
-     * @param array|string $arr
-     * @param null|string|array $path
+     * @param array|string      $arr
+     * @param string|array|null $path
      */
     private function array_to_tree($arr, $path = null): array
     {
@@ -602,7 +642,7 @@ class Statement implements \Iterator
 
             if (sizeof($args) < 2) {
                 $separator = '.';
-                $keys = explode($separator, $path);
+                $keys      = explode($separator, $path);
             } else {
                 $keys = $args;
             }
@@ -618,36 +658,44 @@ class Statement implements \Iterator
                 $val = $key;
             }
 
-            $tree = array($val => $tree);
+            $tree = [$val => $tree];
         }
-        if (!is_array($tree)) {
+
+        if (! is_array($tree)) {
             return [];
         }
+
         return $tree;
     }
 
-
-    public function rewind(): void {
+    public function rewind(): void
+    {
         $this->iterator = 0;
     }
 
-    public function current(): mixed {
-        if (!isset($this->array_data[$this->iterator])) {
+    public function current(): mixed
+    {
+        if (! isset($this->array_data[$this->iterator])) {
             return null;
         }
+
         return $this->array_data[$this->iterator];
     }
 
-    public function key(): int {
+    public function key(): int
+    {
         return $this->iterator;
     }
 
-    public function next(): void {
+    public function next(): void
+    {
         ++$this->iterator;
     }
 
-    public function valid(): bool {
+    public function valid(): bool
+    {
         $this->init();
+
         return isset($this->array_data[$this->iterator]);
     }
 }

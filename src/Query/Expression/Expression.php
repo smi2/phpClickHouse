@@ -6,6 +6,7 @@ namespace ClickHouseDB\Query\Expression;
 
 interface Expression
 {
-    public function needsEncoding() : bool;
-    public function getValue() : string;
+    public function needsEncoding(): bool;
+
+    public function getValue(): string;
 }

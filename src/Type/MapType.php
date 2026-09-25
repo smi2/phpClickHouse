@@ -6,6 +6,10 @@ namespace ClickHouseDB\Type;
 
 use Stringable;
 
+use function addslashes;
+use function implode;
+use function is_string;
+
 final class MapType implements Type, Stringable
 {
     public array $value;
@@ -24,10 +28,11 @@ final class MapType implements Type, Stringable
     {
         $pairs = [];
         foreach ($this->value as $key => $val) {
-            $k = is_string($key) ? "'" . addslashes($key) . "'" : $key;
-            $v = is_string($val) ? "'" . addslashes($val) . "'" : $val;
+            $k       = is_string($key) ? "'" . addslashes($key) . "'" : $key;
+            $v       = is_string($val) ? "'" . addslashes($val) . "'" : $val;
             $pairs[] = $k . ',' . $v;
         }
+
         return 'map(' . implode(',', $pairs) . ')';
     }
 

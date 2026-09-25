@@ -6,26 +6,33 @@ namespace ClickHouseDB\Query;
 
 use ClickHouseDB\Exception\QueryException;
 
+use function implode;
+use function is_readable;
+use function realpath;
+use function sizeof;
+
 class WhereInFile
 {
-    const FORMAT_TabSeparated          = 'TabSeparated';
-    const FORMAT_TabSeparatedWithNames = 'TabSeparatedWithNames';
-    const FORMAT_CSV                   = 'CSV';
+    public const FORMAT_TabSeparated          = 'TabSeparated';
+    public const FORMAT_TabSeparatedWithNames = 'TabSeparatedWithNames';
+    public const FORMAT_CSV                   = 'CSV';
 
     private array $_files = [];
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     public function attachFile(string $file_name, string $table_name, string|array $structure, string $format = 'CSV'): void
     {
-        if (!is_readable($file_name)) {
+        if (! is_readable($file_name)) {
             throw new QueryException('Can`t read file: ' . $file_name);
         }
 
         $this->_files[$table_name] = [
             'filename'  => $file_name,
             'structure' => $structure,
-            'format'    => $format
+            'format'    => $format,
         ];
     }
 
@@ -61,10 +68,9 @@ class WhereInFile
         $out = [];
         foreach ($this->_files as $table => $data) {
             $out[$table . '_structure'] = $this->fetchStructure($table);
-            $out[$table . '_format'] = $data['format'];
+            $out[$table . '_format']    = $data['format'];
         }
 
         return $out;
     }
-
 }

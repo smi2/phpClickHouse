@@ -3,10 +3,42 @@
 namespace ClickHouseDB\Transport;
 
 use ClickHouseDB\Exception\TransportException;
+use CurlMultiHandle;
+use InvalidArgumentException;
+
+use function array_rand;
+use function count;
+use function curl_errno;
+use function curl_error;
+use function curl_exec;
+use function curl_getinfo;
+use function curl_multi_add_handle;
+use function curl_multi_close;
+use function curl_multi_exec;
+use function curl_multi_getcontent;
+use function curl_multi_info_read;
+use function curl_multi_init;
+use function curl_multi_remove_handle;
+use function curl_multi_select;
+use function curl_multi_setopt;
+use function explode;
+use function function_exists;
+use function is_array;
+use function is_int;
+use function is_object;
+use function sizeof;
+use function spl_object_id;
+use function substr;
+use function usleep;
+
+use const CURLINFO_HEADER_SIZE;
+use const CURLM_CALL_MULTI_PERFORM;
+use const CURLM_OK;
+use const CURLMOPT_MAXCONNECTS;
 
 class CurlerRolling
 {
-    const SLEEP_DELAY = 1000; // 1ms
+    public const SLEEP_DELAY = 1000; // 1ms
 
     /**
      * @var int
@@ -22,9 +54,7 @@ class CurlerRolling
      */
     private array $activeRequests = [];
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private int $runningRequests = 0;
 
     /**
@@ -34,41 +64,26 @@ class CurlerRolling
      */
     private array $pendingRequests = [];
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private int $completedRequestCount = 0;
 
-    /**
-     * @var \CurlMultiHandle|null
-     */
-    private ?\CurlMultiHandle $_pool_master = null;
+    /** @var CurlMultiHandle|null */
+    private ?CurlMultiHandle $_pool_master = null;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private int $waitRequests = 0;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private array $handleMapTasks = [];
 
-    /**
-     *
-     */
     public function __destruct()
     {
         $this->close();
     }
 
-
-    /**
-     * @return \CurlMultiHandle
-     */
-    private function handlerMulti(): \CurlMultiHandle
+    private function handlerMulti(): CurlMultiHandle
     {
-        if (!$this->_pool_master) {
+        if (! $this->_pool_master) {
             $this->_pool_master = curl_multi_init();
 
             if (function_exists('curl_multi_setopt')) {
@@ -79,34 +94,34 @@ class CurlerRolling
         return $this->_pool_master;
     }
 
-    /**
-     *
-     */
     public function close(): void
     {
-        if ($this->_pool_master) {
-            curl_multi_close($this->handlerMulti());
+        if (! $this->_pool_master) {
+            return;
         }
-    }
 
+        curl_multi_close($this->handlerMulti());
+    }
 
     /**
      * @param CurlerRequest $req
-     * @param bool $checkMultiAdd
-     * @param bool $force
+     * @param bool          $checkMultiAdd
+     * @param bool          $force
+     *
      * @return bool
+     *
      * @throws TransportException
      */
     public function addQueLoop(CurlerRequest $req, bool $checkMultiAdd = true, bool $force = false): bool
     {
         $id = $req->getId();
 
-        if (!$id) {
+        if (! $id) {
             $id = $req->getUniqHash($this->completedRequestCount);
         }
 
-        if (!$force && isset($this->pendingRequests[$id])) {
-            if (!$checkMultiAdd) {
+        if (! $force && isset($this->pendingRequests[$id])) {
+            if (! $checkMultiAdd) {
                 return false;
             }
 
@@ -114,25 +129,22 @@ class CurlerRolling
         }
 
         $this->pendingRequests[$id] = $req;
+
         return true;
     }
 
-    /**
-     * @param mixed $oneHandle
-     * @return CurlerResponse
-     */
     private function makeResponse(mixed $oneHandle): CurlerResponse
     {
-        $response = curl_multi_getcontent($oneHandle);
+        $response    = curl_multi_getcontent($oneHandle);
         $header_size = curl_getinfo($oneHandle, CURLINFO_HEADER_SIZE);
-        $header = substr($response ?? '', 0, $header_size);
-        $body = substr($response ?? '', $header_size);
+        $header      = substr($response ?? '', 0, $header_size);
+        $body        = substr($response ?? '', $header_size);
 
-        $n = new CurlerResponse();
+        $n           = new CurlerResponse();
         $n->_headers = $this->parse_headers_from_curl_response($header);
-        $n->_body = $body;
-        $n->_info = curl_getinfo($oneHandle);
-        $n->_error = curl_error($oneHandle);
+        $n->_body    = $body;
+        $n->_info    = curl_getinfo($oneHandle);
+        $n->_error   = curl_error($oneHandle);
         $n->_errorNo = curl_errno($oneHandle);
         $n->_useTime = 0;
 
@@ -141,6 +153,7 @@ class CurlerRolling
 
     /**
      * @return bool
+     *
      * @throws TransportException
      */
     public function execLoopWait(): bool
@@ -148,18 +161,19 @@ class CurlerRolling
         do {
             $this->exec();
             usleep(self::SLEEP_DELAY);
-        } while (($this->countActive() + $this->countPending()) > 0);
+        } while ($this->countActive() + $this->countPending() > 0);
 
         return true;
     }
 
     /**
      * @param string $response
+     *
      * @return array
      */
     private function parse_headers_from_curl_response(string $response): array
     {
-        $headers = [];
+        $headers     = [];
         $header_text = $response;
 
         foreach (explode("\r\n", $header_text) as $i => $line) {
@@ -167,7 +181,7 @@ class CurlerRolling
                 $headers['http_code'] = $line;
             } else {
                 $r = explode(': ', $line);
-                if (sizeof($r) == 2) {
+                if (sizeof($r) === 2) {
                     $headers[$r[0]] = $r[1];
                 }
             }
@@ -176,25 +190,16 @@ class CurlerRolling
         return $headers;
     }
 
-    /**
-     * @return int
-     */
     public function countPending(): int
     {
         return sizeof($this->pendingRequests);
     }
 
-    /**
-     * @return int
-     */
     public function countActive(): int
     {
         return count($this->activeRequests);
     }
 
-    /**
-     * @return int
-     */
     public function countCompleted(): int
     {
         return $this->completedRequestCount;
@@ -208,30 +213,27 @@ class CurlerRolling
      * automatically block further requests.
      *
      * @param int $count
-     * @throws \InvalidArgumentException
+     *
      * @return static
+     *
+     * @throws InvalidArgumentException
      */
     public function setSimultaneousLimit(int $count): static
     {
-        if (!is_int($count) || $count < 2) {
-            throw new \InvalidArgumentException("setSimultaneousLimit count must be an int >= 2");
+        if (! is_int($count) || $count < 2) {
+            throw new InvalidArgumentException('setSimultaneousLimit count must be an int >= 2');
         }
 
         $this->simultaneousLimit = $count;
+
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getSimultaneousLimit(): int
     {
         return $this->simultaneousLimit;
     }
 
-    /**
-     * @return int
-     */
     public function getRunningRequests(): int
     {
         return $this->runningRequests;
@@ -239,8 +241,10 @@ class CurlerRolling
 
     /**
      * @param CurlerRequest $request
-     * @param bool $auto_close
+     * @param bool          $auto_close
+     *
      * @return int
+     *
      * @throws TransportException
      */
     public function execOne(CurlerRequest $request, bool $auto_close = false): int
@@ -257,16 +261,14 @@ class CurlerRolling
         return $request->response()->http_code();
     }
 
-    /**
-     * @return string
-     */
     public function getInfo(): string
     {
-        return "runningRequests = {$this->runningRequests} , pending=" . sizeof($this->pendingRequests) . " ";
+        return "runningRequests = {$this->runningRequests} , pending=" . sizeof($this->pendingRequests) . ' ';
     }
 
     /**
      * @return int
+     *
      * @throws TransportException
      */
     public function exec(): int
@@ -276,10 +278,10 @@ class CurlerRolling
         // ensure we're running
         // a request was just completed -- find out which one
 
-        while (($execrun = curl_multi_exec($this->handlerMulti(), $running)) == CURLM_CALL_MULTI_PERFORM);
+        while (($execrun = curl_multi_exec($this->handlerMulti(), $running)) === CURLM_CALL_MULTI_PERFORM);
 
-        if ($execrun != CURLM_OK) {
-            throw new TransportException("[ NOT CURLM_OK ]");
+        if ($execrun !== CURLM_OK) {
+            throw new TransportException('[ NOT CURLM_OK ]');
         }
 
         $this->runningRequests = $running;
@@ -289,11 +291,10 @@ class CurlerRolling
 
             // send the return values to the callback function.
 
-
             if (is_object($done['handle'])) {
-                $key = spl_object_id( $done['handle'] );
+                $key = spl_object_id($done['handle']);
             } else {
-                $key = (string) $done['handle'] ;
+                $key = (string) $done['handle'];
             }
 
             $task_id = $this->handleMapTasks[$key];
@@ -305,8 +306,7 @@ class CurlerRolling
             $this->pendingRequests[$task_id]->setResponse($response);
             $this->pendingRequests[$task_id]->onCallback();
 
-
-            if (!$request->isPersistent()) {
+            if (! $request->isPersistent()) {
                 unset($this->pendingRequests[$task_id]);
             }
 
@@ -321,14 +321,14 @@ class CurlerRolling
 
         // see if there is anything to read
         curl_multi_select($this->handlerMulti(), 0.01);
+
         return $this->countActive();
     }
 
     public function makePendingRequestsQue(): void
     {
-        $max = $this->getSimultaneousLimit();
+        $max    = $this->getSimultaneousLimit();
         $active = $this->countActive();
-
 
         if ($active < $max) {
             $canAdd = $max - $active;
@@ -336,21 +336,21 @@ class CurlerRolling
 
             $add = [];
 
-
             foreach ($this->pendingRequests as $task_id => $params) {
-                if (empty($this->activeRequests[$task_id])) {
-                    $add[$task_id] = $task_id;
+                if (! empty($this->activeRequests[$task_id])) {
+                    continue;
                 }
-            }
 
+                $add[$task_id] = $task_id;
+            }
 
             if (sizeof($add)) {
                 if ($canAdd >= sizeof($add)) {
                     $ll = $add;
                 } else {
                     $ll = array_rand($add, $canAdd);
-                    if (!is_array($ll)) {
-                        $ll = array($ll => $ll);
+                    if (! is_array($ll)) {
+                        $ll = [$ll => $ll];
                     }
                 }
 
@@ -375,9 +375,9 @@ class CurlerRolling
         curl_multi_add_handle($this->handlerMulti(), $h);
 
         if (is_object($h)) {
-            $key = spl_object_id( $h );
+            $key = spl_object_id($h);
         } else {
-            $key = (string) $h ;
+            $key = (string) $h;
         }
 
         $this->handleMapTasks[$key] = $task_id;

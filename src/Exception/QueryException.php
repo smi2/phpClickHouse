@@ -8,15 +8,15 @@ use LogicException;
 
 class QueryException extends LogicException implements ClickHouseException
 {
-    protected array $requestDetails = [];
+    protected array $requestDetails  = [];
     protected array $responseDetails = [];
 
-    public static function cannotInsertEmptyValues() : self
+    public static function cannotInsertEmptyValues(): self
     {
         return new self('Inserting empty values array is not supported in ClickHouse');
     }
 
-    public static function noResponse() : self
+    public static function noResponse(): self
     {
         return new self('No response returned');
     }

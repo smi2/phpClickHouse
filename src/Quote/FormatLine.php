@@ -10,10 +10,10 @@ class FormatLine
 
     public static function strictQuote(string $format): StrictQuoteLine
     {
-        if (empty(self::$strict[$format]))
-        {
+        if (empty(self::$strict[$format])) {
             self::$strict[$format] = new StrictQuoteLine($format);
         }
+
         return self::$strict[$format];
     }
 
