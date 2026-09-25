@@ -842,6 +842,9 @@ class Http
         if ($value instanceof \ClickHouseDB\Type\IPv4 || $value instanceof \ClickHouseDB\Type\IPv6) {
             return $value->value;
         }
+        if ($value instanceof \ClickHouseDB\Type\StringableType) {
+            return $this->convertParamValue($value->getValue());
+        }
         if ($value instanceof \ClickHouseDB\Type\MapType) {
             return json_encode($value->value);
         }

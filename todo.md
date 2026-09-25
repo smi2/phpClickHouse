@@ -2,83 +2,76 @@
 
 ## 1. Native Query Parameters
 
-ClickHouse поддерживает типизированные параметры через HTTP: `{name:Type}` — сервер сам парсит значения, SQL injection невозможен на уровне протокола.
+ClickHouse supports typed parameters over HTTP: `{name:Type}`. The server parses the values itself, so SQL injection is impossible at the protocol level.
 
-### Текущее состояние
-- `Query::isUseInUrlBindingsParams()` уже детектит `{p1:UInt8}` синтаксис
-- `Query::getUrlBindingsParams()` извлекает params для URL
-- `Http::makeRequest()` передаёт их как `param_*` в query string
-- НО: нет удобного API в Client, нет валидации типов, нет документации
+### Current state
+- `Query::isUseInUrlBindingsParams()` already detects the `{p1:UInt8}` syntax
+- `Query::getUrlBindingsParams()` extracts params for the URL
+- `Http::makeRequest()` passes them as `param_*` in the query string
+- BUT: there is no convenient API in Client, no type validation, and no documentation
 
-### План
-- [ ] Добавить `Client::selectWithParams(string $sql, array $params, string $format = 'JSON')` 
+### Plan
+- [ ] Add `Client::selectWithParams(string $sql, array $params, string $format = 'JSON')`
   - `$params = ['p1' => ['value' => 42, 'type' => 'UInt32']]`
-  - Формирует `param_p1=42` в URL, тип уже в SQL: `{p1:UInt32}`
-- [ ] Добавить `Client::writeWithParams(string $sql, array $params)` — аналог для DDL/DML
-- [ ] Валидация: проверять что все `{name:Type}` из SQL имеют соответствующий param
-- [ ] Конвертация PHP-типов в CH-значения (DateTimeInterface → string, array → JSON и т.д.)
-- [ ] Не ломать существующий `select()` / `write()` — новые методы параллельно
-- [ ] Тесты: unit (без CH) + integration (с CH 21 и 26)
-- [ ] Документация: `doc/native-params.md`
+  - Builds `param_p1=42` in the URL; the type is already in the SQL: `{p1:UInt32}`
+- [ ] Add `Client::writeWithParams(string $sql, array $params)`: the equivalent for DDL/DML
+- [ ] Validation: check that every `{name:Type}` in the SQL has a matching param
+- [ ] Conversion of PHP types to CH values (DateTimeInterface → string, array → JSON, etc.)
+- [ ] Don't break the existing `select()` / `write()`; the new methods live alongside them
+- [ ] Tests: unit (without CH) + integration (with CH 21 and 26)
+- [ ] Documentation: `doc/native-params.md`
 
-### Файлы
-- `src/Client.php` — новые методы
-- `src/Query/Query.php` — валидация params vs SQL placeholders
-- `src/Query/ParamValueConverter.php` — новый: конвертация PHP → CH string
-- `tests/NativeParamsTest.php` — unit
-- `tests/ClickHouse26/NativeParamsTest.php` — integration (native params лучше тестить на 26.x)
+### Files
+- `src/Client.php`: new methods
+- `src/Query/Query.php`: validation of params vs SQL placeholders
+- `src/Query/ParamValueConverter.php`: new; converts PHP → CH string
+- `tests/NativeParamsTest.php`: unit
+- `tests/ClickHouse26/NativeParamsTest.php`: integration (native params are better tested on 26.x)
 
 ---
 
-## 2. Полная поддержка типов ClickHouse (60+)
+## 2. Full Support for ClickHouse Types (60+)
 
-Расширить `ValueFormatter` и добавить систему типов для native parameters.
+Extend `ValueFormatter` and add a type system for native parameters.
 
-### Текущее состояние
+### Current state
 - `ValueFormatter`: int, float, bool, string, null, DateTimeInterface, Expression, Type
-- Numeric scalar types and the existing date, network, decimal, map, and tuple types are supported
-- Remaining gaps are tracked in phases 2–4 below
+- String types `String` (`StringType`), `FixedString(N)`, the dates `Date`, `Date32`, `DateTime`, `DateTime64`, plus `UUID`, `IPv4`, `IPv6`, `Enum8`, `Enum16` are implemented
+- Strings and dates are covered by unit tests and by integration tests for CH 21 and CH 26
+- Numeric scalar types `Int8`–`Int256`, `UInt8`–`UInt256`, `Float32`/`Float64`, `Decimal32`–`Decimal256` are implemented (`Bool` is exposed via the existing `Boolean` class)
+- The remaining type work is listed in the phases below
 
-### План — Фаза 1: Основные типы
-- [x] `src/Type/` — расширить систему типов:
+### Plan, Phase 1: Core types
+- [x] `src/Type/`: extend the type system:
   - [x] `Int8`, `Int16`, `Int32`, `Int64`, `Int128`, `Int256`
-  - [x] `UInt8`, `UInt16`, `UInt32`, `UInt64` (уже есть), `UInt128`, `UInt256`
+  - [x] `UInt8`, `UInt16`, `UInt32`, `UInt64` (already exists), `UInt128`, `UInt256`
   - [x] `Float32`, `Float64`
   - [x] `Decimal(P, S)`, `Decimal32`, `Decimal64`, `Decimal128`, `Decimal256`
   - [x] `Bool` (exposed as the existing `Boolean` class; `Bool` is reserved by PHP)
-- [x] Тест coverage for every scalar type: insert, select, and comparison
+- [x] Tests for each type: insert + select + comparison
 
-### План — Фаза 2: Строки и даты
-- [ ] `String`, `FixedString(N)`
-- [ ] `Date`, `Date32`
-- [ ] `DateTime`, `DateTime64(precision, timezone)`
-- [ ] `UUID`
-- [ ] `IPv4`, `IPv6`
-- [ ] `Enum8`, `Enum16`
-- [ ] Тесты
-
-### План — Фаза 3: Составные типы
-- [ ] `Array(T)` — уже частично работает, формализовать
+### Plan, Phase 3: Composite types
+- [ ] `Array(T)`: already partially works, formalize it
 - [ ] `Tuple(T1, T2, ...)`
 - [ ] `Map(K, V)`
-- [ ] `Nullable(T)` — уже частично работает
+- [ ] `Nullable(T)`: already partially works
 - [ ] `LowCardinality(T)`
-- [ ] `Nested(name1 T1, name2 T2)` — уже частично, формализовать
-- [ ] Тесты
+- [ ] `Nested(name1 T1, name2 T2)`: already partial, formalize it
+- [ ] Tests
 
-### План — Фаза 4: Специализированные типы
+### Plan, Phase 4: Specialized types
 - [ ] `JSON` / `Object('json')`
 - [ ] Geo: `Point`, `Ring`, `LineString`, `Polygon`, `MultiPolygon`
 - [ ] `SimpleAggregateFunction`, `AggregateFunction`
-- [ ] Тесты
+- [ ] Tests
 
-### Архитектура
+### Architecture
 ```
 src/Type/
-├── Type.php (базовый интерфейс — уже есть)
-├── NumericType.php (уже есть)
-├── UInt64.php (уже есть)
-├── TypeRegistry.php — NEW: маппинг CH type name → PHP class
+├── Type.php (base interface, already exists)
+├── NumericType.php (already exists)
+├── UInt64.php (already exists)
+├── TypeRegistry.php (NEW: maps CH type name → PHP class)
 ├── Date32.php
 ├── DateTime64.php
 ├── IPv4.php
@@ -88,101 +81,101 @@ src/Type/
 └── TupleType.php
 ```
 
-### Принципы
-- Каждый тип реализует `Type` интерфейс (`getValue()`)
-- `TypeRegistry` — singleton с маппингом `'DateTime64' → DateTime64::class`
-- Обратная совместимость: существующий код без типов продолжает работать
-- Типы опциональны — можно передавать raw values как раньше
+### Principles
+- Every type implements the `Type` interface (`getValue()`)
+- `TypeRegistry` is a singleton with mappings like `'DateTime64' → DateTime64::class`
+- Backward compatibility: existing code without types keeps working
+- Types are optional; raw values can still be passed as before
 
 ---
 
 ## 3. Structured Exceptions
 
-Обогатить исключения информацией из ClickHouse: error code, exception name, stack trace.
+Enrich exceptions with information from ClickHouse: error code, exception name, stack trace.
 
-### Текущее состояние
-- `DatabaseException` — парсит `Code: N. DB::Exception: message`
-- `TransportException` — curl ошибки
-- `QueryException` — общие ошибки запросов
-- НЕТ: CH exception class name, query ID, stack trace от сервера
+### Current state
+- `DatabaseException`: parses `Code: N. DB::Exception: message`
+- `TransportException`: curl errors
+- `QueryException`: general query errors
+- MISSING: CH exception class name, query ID, server stack trace
 
-### План
-- [ ] `DatabaseException` — добавить поля:
-  - [ ] `getClickHouseExceptionName(): ?string` — `SYNTAX_ERROR`, `TABLE_NOT_FOUND` и т.д.
-  - [ ] `getQueryId(): ?string` — из заголовка `X-ClickHouse-Query-Id`
-  - [ ] `getServerVersion(): ?string` — из ответа
-- [ ] Парсить новый формат ошибок CH 22+: `(EXCEPTION_NAME) (version X.Y.Z)`
-- [ ] Расширить regex в Statement: `CLICKHOUSE_ERROR_REGEX`
-- [ ] НЕ менять конструктор `DatabaseException` — добавить сеттеры/фабрику
-- [ ] Тесты: unit с mock ответами + data provider с разными форматами ошибок
-- [ ] Тесты на CH 21 (старый формат) и CH 26 (новый формат)
+### Plan
+- [ ] `DatabaseException`: add fields:
+  - [ ] `getClickHouseExceptionName(): ?string`: `SYNTAX_ERROR`, `TABLE_NOT_FOUND`, etc.
+  - [ ] `getQueryId(): ?string`: from the `X-ClickHouse-Query-Id` header
+  - [ ] `getServerVersion(): ?string`: from the response
+- [ ] Parse the new CH 22+ error format: `(EXCEPTION_NAME) (version X.Y.Z)`
+- [ ] Extend the regex in Statement: `CLICKHOUSE_ERROR_REGEX`
+- [ ] DO NOT change the `DatabaseException` constructor; add setters/a factory instead
+- [ ] Tests: unit with mock responses + data provider covering different error formats
+- [ ] Tests on CH 21 (old format) and CH 26 (new format)
 
-### Файлы
-- `src/Exception/DatabaseException.php` — расширить
-- `src/Statement.php` — парсинг в `parseErrorClickHouse()`
-- `tests/ExceptionParsingTest.php` — unit тесты с data provider
+### Files
+- `src/Exception/DatabaseException.php`: extend
+- `src/Statement.php`: parsing in `parseErrorClickHouse()`
+- `tests/ExceptionParsingTest.php`: unit tests with data provider
 
 ---
 
 ## 4. PHPStan Level Max
 
-Поэтапно поднять PHPStan с level 1 до max.
+Gradually raise PHPStan from level 1 to max.
 
-### Текущее состояние
+### Current state
 - `phpstan.neon.dist`: level 1, phpVersion 80406
 - PHPStan 2.1, PHP 8.4.6
-- 0 ошибок на level 1
+- 0 errors at level 1
 
-### План — поэтапный подъём
-- [ ] Level 2 → исправить ошибки → коммит
-- [ ] Level 3 → исправить ошибки → коммит
-- [ ] Level 4 → исправить ошибки → коммит
-- [ ] Level 5 → исправить ошибки → коммит (основные type checks)
-- [ ] Level 6 → исправить ошибки → коммит (missing typehints)
-- [ ] Level 7 → исправить ошибки → коммит (union types)
-- [ ] Level 8 → исправить ошибки → коммит (nullability)
-- [ ] Level 9 → исправить ошибки → коммит (mixed type)
-- [ ] Level max → финальная проверка
+### Plan: step-by-step increase
+- [ ] Level 2 → fix errors → commit
+- [ ] Level 3 → fix errors → commit
+- [ ] Level 4 → fix errors → commit
+- [ ] Level 5 → fix errors → commit (core type checks)
+- [ ] Level 6 → fix errors → commit (missing typehints)
+- [ ] Level 7 → fix errors → commit (union types)
+- [ ] Level 8 → fix errors → commit (nullability)
+- [ ] Level 9 → fix errors → commit (mixed type)
+- [ ] Level max → final check
 
-### Принципы
-- Каждый уровень = отдельный коммит
-- НЕ менять публичные сигнатуры методов (обратная совместимость!)
-- Добавлять `@phpstan-*` аннотации только как крайняя мера
-- Предпочитать реальные фиксы типов, а не подавление ошибок
-- Прогонять тесты после каждого уровня
+### Principles
+- Each level = a separate commit
+- DO NOT change public method signatures (backward compatibility!)
+- Add `@phpstan-*` annotations only as a last resort
+- Prefer real type fixes over suppressing errors
+- Run the tests after each level
 
-### Оценка
-- Сейчас ~35 PHP файлов в src/ — масштаб управляемый
-- Основные проблемы ожидаются на level 5-6 (missing type hints)
-- Level 8+ может потребовать добавления `@phpstan-assert` / `@phpstan-param`
+### Estimate
+- Currently ~35 PHP files in src/, so the scope is manageable
+- Most problems are expected at levels 5-6 (missing type hints)
+- Level 8+ may require adding `@phpstan-assert` / `@phpstan-param`
 
 ---
 
 ## 5. Per-Query Settings Override
 
-Передавать настройки ClickHouse на уровне отдельного запроса.
+Pass ClickHouse settings at the level of an individual query.
 
-### Текущее состояние
-- `Settings` — глобальный объект, общий на все запросы
-- Для изменения надо: `$client->settings()->set(...)` → запрос → `$client->settings()->set(...)` обратно
-- Неудобно и не thread-safe (если делить client между goroutines/fibers)
+### Current state
+- `Settings` is a global object shared by all queries
+- To change something you have to: `$client->settings()->set(...)` → query → `$client->settings()->set(...)` back again
+- Inconvenient and not thread-safe (if the client is shared between goroutines/fibers)
 
-### План
-- [ ] Добавить `$settings` параметр в существующие методы (с default = `[]`):
+### Plan
+- [ ] Add a `$settings` parameter to existing methods (with default = `[]`):
   - [ ] `Client::select($sql, $bindings = [], $whereInFile = null, $writeToFile = null, array $settings = [])`
   - [ ] `Client::write($sql, $bindings = [], $exception = true, array $settings = [])`
-  - [ ] `Client::selectAsync(...)` — аналогично
-- [ ] `Http::select()` / `Http::write()` — пробросить settings в URL params
-- [ ] Settings мержатся: глобальные + per-query (per-query приоритет)
-- [ ] НЕ ломать обратную совместимость — новый параметр со значением по умолчанию `[]`
-- [ ] Тесты: проверить что per-query settings применяются, а глобальные не меняются
+  - [ ] `Client::selectAsync(...)`: same approach
+- [ ] `Http::select()` / `Http::write()`: pass settings through into URL params
+- [ ] Settings are merged: global + per-query (per-query takes priority)
+- [ ] DO NOT break backward compatibility; the new parameter defaults to `[]`
+- [ ] Tests: verify that per-query settings are applied and global ones are not changed
 
-### Пример использования
+### Usage example
 ```php
-// Глобальные настройки
+// Global settings
 $db->settings()->set('max_execution_time', 30);
 
-// Один тяжёлый запрос с увеличенным таймаутом
+// One heavy query with an increased timeout
 $result = $db->select(
     'SELECT * FROM huge_table',
     [],
@@ -191,33 +184,32 @@ $result = $db->select(
     ['max_execution_time' => 300, 'max_rows_to_read' => 1000000]
 );
 
-// Следующий запрос — снова 30 сек
+// The next query is back to 30 sec
 $db->select('SELECT 1');
 ```
 
-### Файлы
-- `src/Client.php` — добавить параметр
-- `src/Transport/Http.php` — merge settings
+### Files
+- `src/Client.php`: add the parameter
+- `src/Transport/Http.php`: merge settings
 - `tests/PerQuerySettingsTest.php`
 - `tests/ClickHouse26/PerQuerySettingsTest.php`
 
 ---
 
-## Приоритеты
+## Priorities
 
-| # | Задача | Сложность | Риск ломки API | Приоритет |
-|---|--------|-----------|----------------|-----------|
-| 5 | Per-query settings | Низкая | Нулевой | **P0** |
-| 3 | Structured exceptions | Низкая | Нулевой | **P0** |
-| 1 | Native Query Parameters | Средняя | Нулевой (новые методы) | **P1** |
-| 4 | PHPStan level max | Средняя | Нулевой | **P1** |
-| 2 | 60+ типов (фаза 1-2) | Средняя | Нулевой | **P2** |
-| 2 | 60+ типов (фаза 3-4) | Высокая | Нулевой | **P3** |
+| # | Task | Complexity | API breakage risk | Priority |
+|---|------|------------|-------------------|----------|
+| 5 | Per-query settings | Low | None | **P0** |
+| 3 | Structured exceptions | Low | None | **P0** |
+| 1 | Native Query Parameters | Medium | None (new methods) | **P1** |
+| 4 | PHPStan level max | Medium | None | **P1** |
+| 2 | 60+ types (phases 3-4) | High | None | **P3** |
 
-## Ограничения
+## Constraints
 
-- **НЕЛЬЗЯ** менять сигнатуры существующих публичных методов
-- **НЕЛЬЗЯ** менять существующие тесты
-- **НЕЛЬЗЯ** добавлять внешние зависимости в `require`
-- Новые параметры — **ТОЛЬКО** с default значениями
-- Каждая фича = отдельная ветка + PR + тесты для CH 21 и CH 26
+- **DO NOT** change signatures of existing public methods
+- **DO NOT** modify existing tests
+- **DO NOT** add external dependencies to `require`
+- New parameters **ONLY** with default values
+- Each feature = a separate branch + PR + tests for CH 21 and CH 26
