@@ -37,7 +37,7 @@ Client (API) → Http (transport) → CurlerRequest/CurlerRolling (curl) → Sta
 
 ### Running Tests
 
-Tests require a running ClickHouse server. Docker Compose starts **two versions**:
+Tests require a running ClickHouse server. Docker Compose starts **three versions**:
 
 ```bash
 docker-compose -f tests/docker-compose.yaml up -d
@@ -47,8 +47,9 @@ docker-compose -f tests/docker-compose.yaml up -d
 |-----------|---------|------|---------|
 | `clickhouse-21` | 21.9 | 8123 | Backward compatibility (old MergeTree syntax, strings in JSON) |
 | `clickhouse-latest` | 26.3.3.20 | 8124 | Modern CH (native types in JSON, HTTP 500 for mid-stream errors) |
+| `clickhouse-26-9` | 26.9.1.1629 | 8125 | Newest CH (same suite as 26.3, separate run) |
 
-**Two separate test suites:**
+**Three separate test suites:**
 
 ```bash
 # ClickHouse 21.9 — all original tests
@@ -56,6 +57,9 @@ docker-compose -f tests/docker-compose.yaml up -d
 
 # ClickHouse 26.3 — shared tests + CH26-adapted tests
 ./vendor/bin/phpunit -c phpunit-ch26.xml
+
+# ClickHouse 26.9 — same layout as 26.3, against the newest server
+./vendor/bin/phpunit -c phpunit-ch269.xml
 ```
 
 CH26-specific tests live in `tests/ClickHouse26/` and account for behavioral differences:
@@ -64,15 +68,15 @@ CH26-specific tests live in `tests/ClickHouse26/` and account for behavioral dif
 - Temporary tables work without sessions (`SessionsTest`)
 - Mid-stream errors return HTTP 500 instead of 200 (`StatementTest`)
 
-Environment variables (defaults in `phpunit-ch21.xml` / `phpunit-ch26.xml`):
+Environment variables (defaults in `phpunit-ch21.xml` / `phpunit-ch26.xml` / `phpunit-ch269.xml`):
 
-| Variable | CH 21 | CH 26 |
-|---|---|---|
-| `CLICKHOUSE_HOST` | `127.0.0.1` | `127.0.0.1` |
-| `CLICKHOUSE_PORT` | `8123` | `8124` |
-| `CLICKHOUSE_USER` | `default` | `default` |
-| `CLICKHOUSE_PASSWORD` | _(empty)_ | _(empty)_ |
-| `CLICKHOUSE_DATABASE` | `php_clickhouse` | `php_clickhouse` |
+| Variable | CH 21 | CH 26.3 | CH 26.9 |
+|---|---|---|---|
+| `CLICKHOUSE_HOST` | `127.0.0.1` | `127.0.0.1` | `127.0.0.1` |
+| `CLICKHOUSE_PORT` | `8123` | `8124` | `8125` |
+| `CLICKHOUSE_USER` | `default` | `default` | `default` |
+| `CLICKHOUSE_PASSWORD` | _(empty)_ | _(empty)_ | _(empty)_ |
+| `CLICKHOUSE_DATABASE` | `php_clickhouse` | `php_clickhouse` | `php_clickhouse` |
 
 **Important:** `CLICKHOUSE_DATABASE` must NOT be `default` — tests DROP and recreate the database.
 
@@ -169,7 +173,7 @@ How to release:
 
 ### CI
 
-GitHub Actions (`.github/workflows/tests.yml`): PHP 8.1–8.4 × ClickHouse 21.9 + 26.3, PHPStan, PHPCS.
+GitHub Actions (`.github/workflows/tests.yml`): PHP 8.1–8.4 × ClickHouse 21.9 + 26.3 + 26.9, PHPStan, PHPCS.
 
 Legacy Travis CI config (`.travis.yml`) still present.
 

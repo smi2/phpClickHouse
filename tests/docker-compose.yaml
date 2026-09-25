@@ -17,6 +17,28 @@ services:
                 soft: 262144
                 hard: 262144
 
+    clickhouse-26-9:
+        image: clickhouse/clickhouse-server:26.9.1.1629
+        hostname: clickhouse-26-9
+        container_name: clickhouse-26-9
+        environment:
+            CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+            CLICKHOUSE_PASSWORD: ""
+        ports:
+        - 19002:9000
+        - 8125:8123
+        sysctls:
+            net.core.somaxconn: 1024
+            net.ipv4.tcp_syncookies: 0
+        volumes:
+            - "./docker-clickhouse-26-9:/var/lib/clickhouse"
+            - "./clickhouse-latest-config/allow_deprecated.xml:/etc/clickhouse-server/users.d/allow_deprecated.xml:ro"
+            - "./clickhouse-latest-config/keeper.xml:/etc/clickhouse-server/config.d/keeper.xml:ro"
+        ulimits:
+            nofile:
+                soft: 262144
+                hard: 262144
+
     clickhouse-latest:
         image: clickhouse/clickhouse-server:26.3.3.20
         hostname: clickhouse-latest
