@@ -495,7 +495,7 @@ class Statement implements Iterator
         $this->iterator = 0;
     }
 
-    public function fetchRow(?mixed $key = null): mixed
+    public function fetchRow(mixed $key = null): mixed
     {
         $this->init();
 
@@ -521,7 +521,7 @@ class Statement implements Iterator
     /**
      * @throws Exception\TransportException
      */
-    public function fetchOne(?mixed $key = null): mixed
+    public function fetchOne(mixed $key = null): mixed
     {
         $this->init();
         if (! isset($this->array_data[0])) {
