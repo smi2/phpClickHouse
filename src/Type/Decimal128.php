@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
+use InvalidArgumentException;
+
+use function is_numeric;
+
 final class Decimal128 implements ScalarNumericType
 {
     public string $value;
@@ -15,6 +19,10 @@ final class Decimal128 implements ScalarNumericType
 
     public static function fromString(string $value): static
     {
+        if (! is_numeric($value)) {
+            throw new InvalidArgumentException('Decimal128 expects a numeric string, got: ' . $value);
+        }
+
         return new static($value);
     }
 

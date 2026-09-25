@@ -18,8 +18,8 @@ use ClickHouseDB\Type\Int128;
 use ClickHouseDB\Type\Int16;
 use ClickHouseDB\Type\Int256;
 use ClickHouseDB\Type\Int32;
-use ClickHouseDB\Type\Int8;
 use ClickHouseDB\Type\Int64;
+use ClickHouseDB\Type\Int8;
 use ClickHouseDB\Type\IPv4;
 use ClickHouseDB\Type\IPv6;
 use ClickHouseDB\Type\MapType;
@@ -28,10 +28,11 @@ use ClickHouseDB\Type\UInt128;
 use ClickHouseDB\Type\UInt16;
 use ClickHouseDB\Type\UInt256;
 use ClickHouseDB\Type\UInt32;
-use ClickHouseDB\Type\UInt8;
 use ClickHouseDB\Type\UInt64;
+use ClickHouseDB\Type\UInt8;
 use ClickHouseDB\Type\UUID;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class TypesTest extends TestCase
@@ -126,6 +127,33 @@ class TypesTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider invalidScalarNumericValues
+     */
+    public function testScalarNumericTypesRejectNonNumericInput(string $class, string $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $class::fromString($value);
+    }
+
+    /**
+     * @return array<string, array{class: class-string, value: string}>
+     */
+    public static function invalidScalarNumericValues(): array
+    {
+        return [
+            'int with sql injection' => ['class' => Int32::class, 'value' => '1; DROP TABLE users'],
+            'int with float' => ['class' => Int8::class, 'value' => '1.5'],
+            'int empty' => ['class' => UInt8::class, 'value' => ''],
+            'int with letters' => ['class' => UInt128::class, 'value' => '12abc'],
+            'int with parens' => ['class' => Int256::class, 'value' => '1) OR (1=1'],
+            'float with sql injection' => ['class' => Float64::class, 'value' => '1.1 OR 1=1'],
+            'float with letters' => ['class' => Float32::class, 'value' => 'abc'],
+            'decimal with sql injection' => ['class' => Decimal64::class, 'value' => "1.1'); DROP TABLE users;--"],
+            'decimal empty' => ['class' => Decimal32::class, 'value' => ''],
+        ];
+    }
+
     public function testDecimalFromStringGetValue(): void
     {
         $decimal = Decimal::fromString('123.456');
@@ -183,21 +211,21 @@ class TypesTest extends TestCase
     public function testDateTime64FromDateTimePrecision0(): void
     {
         $dateTime = new DateTimeImmutable('2024-01-15 10:30:00.123456');
-        $dt = DateTime64::fromDateTime($dateTime, 0);
+        $dt       = DateTime64::fromDateTime($dateTime, 0);
         self::assertSame('2024-01-15 10:30:00', $dt->getValue());
     }
 
     public function testDateTime64FromDateTimePrecision3(): void
     {
         $dateTime = new DateTimeImmutable('2024-01-15 10:30:00.123456');
-        $dt = DateTime64::fromDateTime($dateTime, 3);
+        $dt       = DateTime64::fromDateTime($dateTime, 3);
         self::assertSame('2024-01-15 10:30:00.123', $dt->getValue());
     }
 
     public function testDateTime64FromDateTimePrecision6(): void
     {
         $dateTime = new DateTimeImmutable('2024-01-15 10:30:00.123456');
-        $dt = DateTime64::fromDateTime($dateTime, 6);
+        $dt       = DateTime64::fromDateTime($dateTime, 6);
         self::assertSame('2024-01-15 10:30:00.123456', $dt->getValue());
     }
 
@@ -210,7 +238,7 @@ class TypesTest extends TestCase
     public function testDate32FromDateTimeFormatsAsYmd(): void
     {
         $dateTime = new DateTimeImmutable('2024-06-30 23:59:59');
-        $date = Date32::fromDateTime($dateTime);
+        $date     = Date32::fromDateTime($dateTime);
         self::assertSame('2024-06-30', $date->getValue());
     }
 

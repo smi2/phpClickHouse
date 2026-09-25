@@ -25,6 +25,7 @@ use ClickHouseDB\Type\UInt32;
 use ClickHouseDB\Type\UInt64;
 use ClickHouseDB\Type\UInt8;
 use PHPUnit\Framework\TestCase;
+
 use function sprintf;
 use function str_replace;
 use function strtolower;
@@ -58,10 +59,14 @@ final class ScalarNumericIntegrationTest extends TestCase
             [$className::fromString($higher)],
         ]);
 
+        // CAST the literal to the column type: Decimal vs Float comparison is
+        // unsupported on CH 21, and a bare Float64 literal 1.1 differs from the
+        // stored Float32 representation.
         $statement = $this->client->select(sprintf(
-            'SELECT value FROM %s WHERE value > %s',
+            'SELECT value FROM %s WHERE value > CAST(%s AS %s)',
             $table,
-            $className::fromString($lower)
+            $className::fromString($lower),
+            $typeName
         ));
 
         self::assertSame(1, $statement->count());
@@ -87,10 +92,10 @@ final class ScalarNumericIntegrationTest extends TestCase
             'UInt256' => ['typeName' => 'UInt256', 'className' => UInt256::class, 'lower' => '1', 'higher' => '2'],
             'Float32' => ['typeName' => 'Float32', 'className' => Float32::class, 'lower' => '1.1', 'higher' => '2.2'],
             'Float64' => ['typeName' => 'Float64', 'className' => Float64::class, 'lower' => '1.1', 'higher' => '2.2'],
-            'Decimal32' => ['typeName' => 'Decimal32(9)', 'className' => Decimal32::class, 'lower' => '1.1', 'higher' => '2.2'],
-            'Decimal64' => ['typeName' => 'Decimal64(9)', 'className' => Decimal64::class, 'lower' => '1.1', 'higher' => '2.2'],
-            'Decimal128' => ['typeName' => 'Decimal128(9)', 'className' => Decimal128::class, 'lower' => '1.1', 'higher' => '2.2'],
-            'Decimal256' => ['typeName' => 'Decimal256(9)', 'className' => Decimal256::class, 'lower' => '1.1', 'higher' => '2.2'],
+            'Decimal32' => ['typeName' => 'Decimal32(2)', 'className' => Decimal32::class, 'lower' => '1.1', 'higher' => '2.2'],
+            'Decimal64' => ['typeName' => 'Decimal64(2)', 'className' => Decimal64::class, 'lower' => '1.1', 'higher' => '2.2'],
+            'Decimal128' => ['typeName' => 'Decimal128(2)', 'className' => Decimal128::class, 'lower' => '1.1', 'higher' => '2.2'],
+            'Decimal256' => ['typeName' => 'Decimal256(2)', 'className' => Decimal256::class, 'lower' => '1.1', 'higher' => '2.2'],
             'Bool' => ['typeName' => 'Bool', 'className' => Boolean::class, 'lower' => '0', 'higher' => '1'],
         ];
     }

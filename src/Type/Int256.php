@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
+use InvalidArgumentException;
+
+use function preg_match;
+
 final class Int256 implements ScalarNumericType
 {
     public string $value;
@@ -15,6 +19,10 @@ final class Int256 implements ScalarNumericType
 
     public static function fromString(string $value): static
     {
+        if (preg_match('/^-?\d+$/', $value) !== 1) {
+            throw new InvalidArgumentException('Int256 expects an integer string, got: ' . $value);
+        }
+
         return new static($value);
     }
 
