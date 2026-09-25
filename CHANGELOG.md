@@ -2,15 +2,42 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
-### Unreleased
+### 2026-09-25 [Release 1.26.925]
 
 #### Breaking Changes
 
 * **Minimum PHP raised to 8.1** — `composer.json` now requires `php: ^8.1` and the CI matrix drops 8.0. PHP 8.0 users should pin `1.26.4` (last 8.0-compatible release); the typed `>= 1.24.406` line already targets 8.1+
 
+#### New Features
+
+* **String, date and enum type wrappers** (#269, @sander-hash) — `StringType` (PHP reserves `String`), `FixedString(N)` with strict byte-length validation, `Date`, `DateTime` (with optional non-mutating timezone conversion), `Enum8`, `Enum16`. All implement the new `StringableType` interface: unlike legacy `Type` objects, their values are **escaped** by `ValueFormatter`, bindings, and native parameters
+* **Full numeric scalar type coverage** (#271, @RemcoSmitsDev) — `Int8`–`Int256`, `UInt8`–`UInt256`, `Float32`/`Float64`, `Decimal32`–`Decimal256` via the new `ScalarNumericType` interface (`Bool` maps to the existing `Boolean` class). `fromString()` validates input — integers require `^-?\d+$`, floats/decimals require `is_numeric()` — closing an SQL-injection vector for untrusted input, since `Type` values are interpolated into SQL unescaped
+* **Structured exceptions enriched** (#270, @sander-hash) — `DatabaseException::getServerVersion()` and `getServerStackTrace()` (populate with per-query `['stacktrace' => 1]`); reworked error-response parsing in `Statement`. The server stack trace is kept **out of** `getMessage()` — it is available only via the dedicated getter
+
+#### Testing
+
+* **IEEE 754 mantissa test suite** (`tests/Type/Ieee754MantissaTest.php`, 31 cases) — significand limits and overflow collapse for `Float32` (2^24), `Float64` (2^53), `BFloat16` (2^8, CH 24.11+); `0.1 + 0.2 != 0.3` vs exact `Decimal` arithmetic; `inf`/`nan` → `null` in JSON; scale-0 truncation toward zero; `Decimal` arriving as an unquoted JSON number on every supported server; the `json_decode()` precision trap for >16-digit decimals (exact reads need `toString()`)
+* **ClickHouse 26.9 test matrix** — third container `clickhouse-26-9` (26.9.1.1629, port 8125), `phpunit-ch269.xml`, CI job PHP 8.1–8.4 × CH 26.9. Suites for 21.9 / 26.3 / 26.9 run separately
+* **Per-query settings integration test** for CH 26 (#272, @sander-hash) — verifies per-query `max_execution_time` is visible to `getSetting()` without touching global settings
+
 #### Documentation
 
+* **IEEE 754 references** — Float sections in `README.md`, `doc/types.md`, and the Pages site now link the [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) standard and the [ClickHouse Float reference](https://clickhouse.com/docs/reference/data-types/float), with a verified `0.1 + 0.2 != 0.3` example and the exact-`Decimal` counterpart
+* **`todo.md` translated to English** (#268, @sander-hash)
 * **Fixed the version-compatibility table** in `README.md` and the Pages site (`docs/index.md`) — the `8.0+` row was contradictory (it implied 8.0 supports the latest release while `>= 1.24.406` requires 8.1+). Now `8.0 → 1.6.0 – 1.26.4` and `8.1+ → >= 1.24.406 (current)`
+
+#### CI / Chore
+
+* **Scrutinizer integration removed** — the GitHub Actions matrix already covers tests, PHPStan, and PHPCS
+* `.gitignore` now covers `.DS_Store`, `.idea/`, vim swap files, and local ClickHouse data directories
+
+#### Merged PRs
+
+* #268 — Translate todo from russian to english (@sander-hash)
+* #269 — Add string and date type support (@sander-hash)
+* #270 — Added structuredExceptions (@sander-hash)
+* #271 — Add more numeric types (@RemcoSmitsDev)
+* #272 — Improve per query settings tests (@sander-hash)
 
 ---
 
