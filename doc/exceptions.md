@@ -7,7 +7,8 @@ The library provides detailed exception information from ClickHouse errors.
 ```
 ClickHouseException (interface)
 ├── QueryException (LogicException)
-│   └── DatabaseException (ClickHouse server errors)
+│   ├── DatabaseException (ClickHouse server errors)
+│   └── MissingBindingParamsException — missing {name:Type} param, thrown before the request
 ├── TransportException (RuntimeException) — curl/HTTP errors
 └── ClickHouseUnavailableException — connection refused
 ```
@@ -71,6 +72,20 @@ Code: 60. DB::Exception: Table default.xxx doesn't exist., e.what() = DB::Except
 
 # New format (CH 22+)
 Code: 60. DB::Exception: Table default.xxx doesn't exist. (UNKNOWN_TABLE) (version 24.3.2.23 (official build))
+```
+
+## MissingBindingParamsException
+
+Thrown by `selectWithParams()`, `writeWithParams()` and `readWithParams()` when a `{name:Type}` placeholder in the SQL has no matching param. The check runs client-side, before any request is sent. See [Native Query Parameters](native-params.md#missing-parameters).
+
+```php
+use ClickHouseDB\Exception\MissingBindingParamsException;
+
+try {
+    $db->selectWithParams('SELECT {id:UInt32} AS id', []);
+} catch (MissingBindingParamsException $e) {
+    echo $e->getMessage(); // Missing params for placeholders: {id:UInt32}
+}
 ```
 
 ## TransportException
