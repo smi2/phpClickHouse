@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace ClickHouseDB;
 
+use function intval;
+use function sha1;
+use function uniqid;
+
 class Settings
 {
     private array $settings = [];
@@ -25,9 +29,10 @@ class Settings
 
     public function get(string|int $key): mixed
     {
-        if (!$this->is($key)) {
+        if (! $this->is($key)) {
             return null;
         }
+
         return $this->settings[$key];
     }
 
@@ -39,6 +44,7 @@ class Settings
     public function set(string|int $key, mixed $value): static
     {
         $this->settings[$key] = $value;
+
         return $this;
     }
 
@@ -50,6 +56,7 @@ class Settings
     public function database(string $db): static
     {
         $this->set('database', $db);
+
         return $this;
     }
 
@@ -69,12 +76,14 @@ class Settings
     public function enableHttpCompression(bool|int $flag): static
     {
         $this->set('enable_http_compression', intval($flag));
+
         return $this;
     }
 
     public function https(bool $flag = true): static
     {
         $this->set('https', $flag);
+
         return $this;
     }
 
@@ -86,12 +95,14 @@ class Settings
     public function readonly(int|bool $flag): static
     {
         $this->set('readonly', $flag);
+
         return $this;
     }
 
     public function session_id(string $session_id): static
     {
         $this->set('session_id', $session_id);
+
         return $this;
     }
 
@@ -103,6 +114,7 @@ class Settings
         if (empty($this->settings['session_id'])) {
             return false;
         }
+
         return $this->get('session_id');
     }
 
@@ -112,6 +124,7 @@ class Settings
     public function makeSessionId(): string|false
     {
         $this->session_id(sha1(uniqid('', true)));
+
         return $this->getSessionId();
     }
 
@@ -121,6 +134,7 @@ class Settings
     public function max_execution_time(int $time): static
     {
         $this->set('max_execution_time', $time);
+
         return $this;
     }
 
@@ -153,7 +167,7 @@ class Settings
 
     public function getSetting(string $name): mixed
     {
-        if (!isset($this->settings[$name])) {
+        if (! isset($this->settings[$name])) {
             return null;
         }
 

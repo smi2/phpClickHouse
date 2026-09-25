@@ -3,67 +3,68 @@
 namespace ClickHouseDB\Transport;
 
 use ClickHouseDB\Statement;
+use Exception;
+use InvalidArgumentException;
+
+use function fclose;
+use function is_callable;
+use function is_resource;
 
 /**
- * Class StreamInsert
  * @deprecated
- * @package ClickHouseDB\Transport
  */
 class StreamInsert
 {
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     private mixed $source;
 
-    /**
-     * @var CurlerRequest
-     */
+    /** @var CurlerRequest */
     private CurlerRequest $request;
 
-    /**
-     * @var CurlerRolling
-     */
+    /** @var CurlerRolling */
     private CurlerRolling $curlerRolling;
 
     /**
-     * @param mixed $source
-     * @param CurlerRequest $request
+     * @param mixed              $source
+     * @param CurlerRequest      $request
      * @param CurlerRolling|null $curlerRolling
      */
-    public function __construct($source, CurlerRequest $request, $curlerRolling=null)
+    public function __construct($source, CurlerRequest $request, $curlerRolling = null)
     {
-        if (!is_resource($source)) {
-            throw new \InvalidArgumentException('Argument $source must be resource');
+        if (! is_resource($source)) {
+            throw new InvalidArgumentException('Argument $source must be resource');
         }
-        if ($curlerRolling instanceof CurlerRolling)
-        {
+
+        if ($curlerRolling instanceof CurlerRolling) {
             $this->curlerRolling = $curlerRolling;
         } else {
             $this->curlerRolling = new CurlerRolling();
         }
-        $this->source = $source;
+
+        $this->source  = $source;
         $this->request = $request;
     }
 
     /**
      * @param callable $callback function for stream read data
-     * @return \ClickHouseDB\Statement
-     * @throws \Exception
+     *
+     * @return Statement
+     *
+     * @throws Exception
      */
     public function insert($callback): Statement
     {
         try {
-            if (!is_callable($callback)) {
-                throw new \InvalidArgumentException('Argument $callback can not be called as a function');
+            if (! is_callable($callback)) {
+                throw new InvalidArgumentException('Argument $callback can not be called as a function');
             }
 
-            //
             $this->request->header('Transfer-Encoding', 'chunked');
             $this->request->setReadFunction($callback);
             $this->curlerRolling->execOne($this->request, true);
             $statement = new Statement($this->request);
             $statement->error();
+
             return $statement;
         } finally {
             fclose($this->source);

@@ -14,23 +14,36 @@ use ClickHouseDB\Query\WriteToFile;
 use ClickHouseDB\Quote\FormatLine;
 use ClickHouseDB\Transport\Http;
 use ClickHouseDB\Transport\Stream;
+use Exception;
+use Generator;
+use InvalidArgumentException;
+
+use function array_key_exists;
 use function array_keys;
 use function array_values;
 use function count;
+use function fclose;
+use function fgets;
+use function fopen;
 use function implode;
 use function in_array;
+use function intval;
 use function is_array;
 use function is_callable;
 use function is_file;
 use function is_readable;
 use function is_string;
+use function json_decode;
+use function json_encode;
+use function rewind;
 use function sprintf;
 use function stripos;
+use function strval;
 use function trim;
 
 class Client
 {
-    const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow','CSVWithNamesAndTypes','TSVWithNamesAndTypes'];
+    public const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow', 'CSVWithNamesAndTypes', 'TSVWithNamesAndTypes'];
 
     private Http $transport;
 
@@ -48,29 +61,30 @@ class Client
 
     public function __construct(array $connectParams, array $settings = [])
     {
-        if (!isset($connectParams['username'])) {
-            throw new \InvalidArgumentException('not set username');
+        if (! isset($connectParams['username'])) {
+            throw new InvalidArgumentException('not set username');
         }
 
-        if (!isset($connectParams['password'])) {
-            throw new \InvalidArgumentException('not set password');
+        if (! isset($connectParams['password'])) {
+            throw new InvalidArgumentException('not set password');
         }
 
-        if (!isset($connectParams['port'])) {
-            throw new \InvalidArgumentException('not set port');
+        if (! isset($connectParams['port'])) {
+            throw new InvalidArgumentException('not set port');
         }
 
-        if (!isset($connectParams['host'])) {
-            throw new \InvalidArgumentException('not set host');
+        if (! isset($connectParams['host'])) {
+            throw new InvalidArgumentException('not set host');
         }
 
         if (array_key_exists('auth_method', $connectParams)) {
-            if (false === in_array($connectParams['auth_method'], Http::AUTH_METHODS_LIST)) {
+            if (in_array($connectParams['auth_method'], Http::AUTH_METHODS_LIST) === false) {
                 $errorMessage = sprintf(
                     'Invalid value for "auth_method" param. Should be one of [%s].',
                     json_encode(Http::AUTH_METHODS_LIST)
                 );
-                throw new \InvalidArgumentException($errorMessage);
+
+                throw new InvalidArgumentException($errorMessage);
             }
 
             $this->authMethod = $connectParams['auth_method'];
@@ -78,8 +92,8 @@ class Client
 
         $this->connectUsername = $connectParams['username'];
         $this->connectPassword = $connectParams['password'];
-        $this->connectPort = intval($connectParams['port']);
-        $this->connectHost = $connectParams['host'];
+        $this->connectPort     = intval($connectParams['port']);
+        $this->connectHost     = $connectParams['host'];
 
         // init transport class
         $this->transport = new Http(
@@ -94,7 +108,7 @@ class Client
 
         // apply settings to transport class
         $this->settings()->database('default');
-        if (!empty($settings)) {
+        if (! empty($settings)) {
             $this->settings()->apply($settings);
         }
 
@@ -110,9 +124,11 @@ class Client
             $this->transport->setSslCa($connectParams['sslCA']);
         }
 
-        if (isset($connectParams['curl_options']) && is_array($connectParams['curl_options'])) {
-            $this->transport->setCurlOptions($connectParams['curl_options']);
+        if (! isset($connectParams['curl_options']) || ! is_array($connectParams['curl_options'])) {
+            return;
         }
+
+        $this->transport->setCurlOptions($connectParams['curl_options']);
     }
 
     /**
@@ -185,8 +201,8 @@ class Client
 
     public function transport(): Http
     {
-        if (!$this->transport) {
-            throw new \InvalidArgumentException('Empty transport class');
+        if (! $this->transport) {
+            throw new InvalidArgumentException('Empty transport class');
         }
 
         return $this->transport;
@@ -234,13 +250,14 @@ class Client
 
     public function useSession(string $useSessionId = ''): static
     {
-        if (!$this->settings()->getSessionId()) {
-            if (!$useSessionId) {
+        if (! $this->settings()->getSessionId()) {
+            if (! $useSessionId) {
                 $this->settings()->makeSessionId();
             } else {
                 $this->settings()->session_id($useSessionId);
             }
         }
+
         return $this;
     }
 
@@ -275,7 +292,7 @@ class Client
      */
     public function enableLogQueries(bool $flag = true): static
     {
-        $this->settings()->set('log_queries', (int)$flag);
+        $this->settings()->set('log_queries', (int) $flag);
 
         return $this;
     }
@@ -305,7 +322,7 @@ class Client
      */
     public function enableExtremes(bool $flag = true): static
     {
-        $this->settings()->set('extremes', (int)$flag);
+        $this->settings()->set('extremes', (int) $flag);
 
         return $this;
     }
@@ -316,8 +333,7 @@ class Client
         ?WhereInFile $whereInFile = null,
         ?WriteToFile $writeToFile = null,
         array $querySettings = []
-    ): Statement
-    {
+    ): Statement {
         return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile, $querySettings);
     }
 
@@ -328,7 +344,6 @@ class Client
 
     public function maxTimeExecutionAllAsync(): void
     {
-
     }
 
     /**
@@ -336,18 +351,20 @@ class Client
      */
     public function progressFunction(callable $callback): void
     {
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('Not is_callable progressFunction');
+        if (! is_callable($callback)) {
+            throw new InvalidArgumentException('Not is_callable progressFunction');
         }
 
-        if (!$this->settings()->is('send_progress_in_http_headers')) {
+        if (! $this->settings()->is('send_progress_in_http_headers')) {
             $this->settings()->set('send_progress_in_http_headers', 1);
         }
-        if (!$this->settings()->is('http_headers_progress_interval_ms')) {
+
+        if (! $this->settings()->is('http_headers_progress_interval_ms')) {
             $this->settings()->set('http_headers_progress_interval_ms', 100);
         }
+
         // Required for write operations to receive progress headers
-        if (!$this->settings()->is('wait_end_of_query')) {
+        if (! $this->settings()->is('wait_end_of_query')) {
             $this->settings()->set('wait_end_of_query', 1);
         }
 
@@ -363,8 +380,7 @@ class Client
         ?WhereInFile $whereInFile = null,
         ?WriteToFile $writeToFile = null,
         array $querySettings = []
-    ): Statement
-    {
+    ): Statement {
         return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile, $querySettings);
     }
 
@@ -374,9 +390,9 @@ class Client
      * Uses server-side parameter binding: {name:Type} in SQL + param_name in URL.
      * This is the safest way to pass parameters — SQL injection is impossible at protocol level.
      *
-     * @param string $sql SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32}'
-     * @param array<string, mixed> $params Parameter values, e.g. ['id' => 42]
-     * @param array $querySettings Per-query settings override
+     * @param string               $sql           SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32}'
+     * @param array<string, mixed> $params        Parameter values, e.g. ['id' => 42]
+     * @param array                $querySettings Per-query settings override
      */
     public function selectWithParams(string $sql, array $params, array $querySettings = []): Statement
     {
@@ -386,10 +402,10 @@ class Client
     /**
      * Execute write (DDL/DML) with native ClickHouse typed parameters.
      *
-     * @param string $sql SQL with {name:Type} placeholders
-     * @param array<string, mixed> $params Parameter values
-     * @param bool $exception Throw on error
-     * @param array $querySettings Per-query settings override
+     * @param string               $sql           SQL with {name:Type} placeholders
+     * @param array<string, mixed> $params        Parameter values
+     * @param bool                 $exception     Throw on error
+     * @param array                $querySettings Per-query settings override
      */
     public function writeWithParams(string $sql, array $params, bool $exception = true, array $querySettings = []): Statement
     {
@@ -402,10 +418,10 @@ class Client
      * Combines server-side parameter binding ({name:Type} syntax) with streaming output.
      * SQL injection is impossible at the protocol level.
      *
-     * @param Stream $streamRead Stream to write results into (use StreamRead)
-     * @param string $sql SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32} FORMAT JSONEachRow'
-     * @param array<string, mixed> $params Parameter values, e.g. ['id' => 42]
-     * @param array $querySettings Per-query settings override
+     * @param Stream               $streamRead    Stream to write results into (use StreamRead)
+     * @param string               $sql           SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32} FORMAT JSONEachRow'
+     * @param array<string, mixed> $params        Parameter values, e.g. ['id' => 42]
+     * @param array                $querySettings Per-query settings override
      */
     public function readWithParams(Stream $streamRead, string $sql, array $params, array $querySettings = []): Statement
     {
@@ -420,11 +436,12 @@ class Client
      * the entire resultset into memory.
      *
      * @param array $querySettings Per-query settings override
-     * @return \Generator yields associative arrays, one per row
+     *
+     * @return Generator yields associative arrays, one per row
      */
-    public function selectGenerator(string $sql, array $bindings = [], array $querySettings = []): \Generator
+    public function selectGenerator(string $sql, array $bindings = [], array $querySettings = []): Generator
     {
-        $stream = fopen('php://temp', 'r+');
+        $stream     = fopen('php://temp', 'r+');
         $streamRead = new Transport\StreamRead($stream);
 
         $this->transport()->streamRead($streamRead, $sql . ' FORMAT JSONEachRow', $bindings, $querySettings);
@@ -436,10 +453,13 @@ class Client
             if ($line === '') {
                 continue;
             }
+
             $row = json_decode($line, true);
-            if (is_array($row)) {
-                yield $row;
+            if (! is_array($row)) {
+                continue;
             }
+
+            yield $row;
         }
 
         fclose($stream);
@@ -487,7 +507,8 @@ class Client
 
     /**
      * @param mixed[][] $values
-     * @param string[] $columns
+     * @param string[]  $columns
+     *
      * @throws Exception\TransportException
      */
     public function insert(string $table, array $values, array $columns = []): Statement
@@ -499,6 +520,7 @@ class Client
         if (stripos($table, '`') === false && stripos($table, '.') === false) {
             $table = '`' . $table . '`'; //quote table name for dot names
         }
+
         $sql = 'INSERT INTO ' . $table;
 
         if (count($columns) !== 0) {
@@ -510,6 +532,7 @@ class Client
         foreach ($values as $row) {
             $sql .= ' (' . FormatLine::Insert($row) . '), ';
         }
+
         $sql = trim($sql, ', ');
 
         return $this->transport()->write($sql);
@@ -520,6 +543,7 @@ class Client
      * There may be one or more lines inserted, but then the keys inside the array list must match (including in the sequence)
      *
      * @param mixed[] $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+     *
      * @return mixed[][] - list of arrays - 0 => fields, 1 => list of value arrays for insertion
      **/
     public function prepareInsertAssocBulk(array $values): array
@@ -539,6 +563,7 @@ class Client
                         )
                     );
                 }
+
                 $preparedValues[] = array_values($row);
             }
         } else {
@@ -553,12 +578,12 @@ class Client
      * Inserts one or more rows from an associative array.
      * If there is a discrepancy between the keys of the value arrays (or their order) - throws an exception.
      *
-     * @param string $tableName - name table
-     * @param mixed[] $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+     * @param string  $tableName - name table
+     * @param mixed[] $values    - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
      */
     public function insertAssocBulk(string $tableName, array $values): Statement
     {
-        list($columns, $vals) = $this->prepareInsertAssocBulk($values);
+        [$columns, $vals] = $this->prepareInsertAssocBulk($values);
 
         return $this->insert($tableName, $vals, $columns);
     }
@@ -567,7 +592,7 @@ class Client
      * insert TabSeparated files
      *
      * @param string|string[] $fileNames
-     * @param string[] $columns
+     * @param string[]        $columns
      */
     public function insertBatchTSVFiles(string $tableName, $fileNames, array $columns = []): array
     {
@@ -578,9 +603,11 @@ class Client
      * insert Batch Files
      *
      * @param string|string[] $fileNames
-     * @param string[] $columns
-     * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     * @param string[]        $columns
+     * @param string          $format    ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     *
      * @return Statement[]
+     *
      * @throws Exception\TransportException
      */
     public function insertBatchFiles(string $tableName, $fileNames, array $columns = [], string $format = 'CSV'): array
@@ -588,18 +615,19 @@ class Client
         if (is_string($fileNames)) {
             $fileNames = [$fileNames];
         }
+
         if ($this->getCountPendingQueue() > 0) {
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
 
-        if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
+        if (! in_array($format, self::SUPPORTED_FORMATS, true)) {
             throw new QueryException('Format not support in insertBatchFiles');
         }
 
         $result = [];
 
         foreach ($fileNames as $fileName) {
-            if (!is_file($fileName) || !is_readable($fileName)) {
+            if (! is_file($fileName) || ! is_readable($fileName)) {
                 throw new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
@@ -608,6 +636,7 @@ class Client
             } else {
                 $sql = 'INSERT INTO ' . $tableName . ' ( ' . implode(',', $columns) . ' ) FORMAT ' . $format;
             }
+
             $result[$fileName] = $this->transport()->writeAsyncCSV($sql, $fileName);
         }
 
@@ -616,7 +645,7 @@ class Client
 
         // fetch resutl
         foreach ($fileNames as $fileName) {
-            if (!$result[$fileName]->isError()) {
+            if (! $result[$fileName]->isError()) {
                 continue;
             }
 
@@ -630,7 +659,7 @@ class Client
      * insert Batch Stream
      *
      * @param string[] $columns
-     * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     * @param string   $format  ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      */
     public function insertBatchStream(string $tableName, array $columns = [], string $format = 'CSV'): Transport\CurlerRequest
     {
@@ -638,7 +667,7 @@ class Client
             throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
         }
 
-        if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
+        if (! in_array($format, self::SUPPORTED_FORMATS, true)) {
             throw new QueryException('Format not support in insertBatchFiles');
         }
 
@@ -655,6 +684,7 @@ class Client
      * stream Write
      *
      * @param array<string, mixed> $bind
+     *
      * @throws Exception\TransportException
      */
     public function streamWrite(Stream $stream, string $sql, array $bind = []): Statement
@@ -683,7 +713,7 @@ class Client
     /**
      * Size of database
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function databaseSize(): mixed
     {
@@ -703,7 +733,7 @@ class Client
     /**
      * Size of tables
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function tableSize(string $tableName): mixed
     {
@@ -724,18 +754,22 @@ class Client
     public function ping(bool $throwException = false): bool
     {
         $result = $this->transport()->ping();
-        if ($throwException && !$result) throw new TransportException('Can`t ping server');
+        if ($throwException && ! $result) {
+            throw new TransportException('Can`t ping server');
+        }
+
         return $result;
     }
 
     /**
      * Tables sizes
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function tablesSize(bool $flatList = false): array
     {
-        $result = $this->select('
+        $result = $this->select(
+            '
         SELECT name as table,database,
             max(sizebytes) as sizebytes,
             max(size) as size,
@@ -756,7 +790,8 @@ class Client
             WHERE database=:database
             GROUP BY table,database
         ',
-            ['database' => $this->settings()->getDatabase()]);
+            ['database' => $this->settings()->getDatabase()]
+        );
 
         if ($flatList) {
             return $result->rows();
@@ -768,7 +803,7 @@ class Client
     /**
      * isExists
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function isExists(string $database, string $table): array
     {
@@ -783,15 +818,16 @@ class Client
     /**
      * List of partitions
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function partitions(string $table, int $limit = 0, ?bool $active = null): array
     {
-        $database = $this->settings()->getDatabase();
-        $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int)$active);
-        $limitClause = $limit > 0 ? ' LIMIT ' . $limit : '';
+        $database          = $this->settings()->getDatabase();
+        $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int) $active);
+        $limitClause       = $limit > 0 ? ' LIMIT ' . $limit : '';
 
-        return $this->select(<<<CLICKHOUSE
+        return $this->select(
+            <<<CLICKHOUSE
 SELECT *
 FROM system.parts
 WHERE table={tbl:String} AND database = {db:String}
@@ -799,41 +835,44 @@ $whereActiveClause
 ORDER BY max_date $limitClause
 CLICKHOUSE,
             [
-                'db'=>$database,
-                'tbl'=>$table
+                'db' => $database,
+                'tbl' => $table,
             ]
         )->rowsAsTree('name');
     }
 
     /**
      * dropPartition
+     *
      * @deprecated
      */
     public function dropPartition(string $dataBaseTableName, string $partition_id): Statement
     {
-
         $partition_id = trim($partition_id, '\'');
         $this->settings()->set('replication_alter_partitions_sync', 2);
-        $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id',
+
+        return $this->write(
+            'ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id',
             [
                 'dataBaseTableName' => $dataBaseTableName,
                 'partion_id' => $partition_id,
-            ]);
-
-        return $state;
+            ]
+        );
     }
 
     /**
      * Truncate ( drop all partitions )
-     * @throws \Exception
+     *
      * @deprecated
+     *
+     * @throws Exception
      */
     public function truncateTable(string $tableName): array
     {
         $partions = $this->partitions($tableName);
-        $out = [];
+        $out      = [];
         foreach ($partions as $part_key => $part) {
-            $part_id = $part['partition'];
+            $part_id       = $part['partition'];
             $out[$part_id] = $this->dropPartition($tableName, $part_id);
         }
 
@@ -844,7 +883,7 @@ CLICKHOUSE,
      * Returns the server's uptime in seconds.
      *
      * @throws Exception\TransportException
-     * @throws \Exception
+     * @throws Exception
      */
     public function getServerUptime(): mixed
     {
@@ -856,28 +895,31 @@ CLICKHOUSE,
      */
     public function getServerVersion(): string
     {
-        return (string)$this->select('SELECT version() as version')->fetchOne('version');
+        return (string) $this->select('SELECT version() as version')->fetchOne('version');
     }
 
     /**
      * Read system.settings table
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function getServerSystemSettings(string $like = ''): array
     {
-        $l = [];
-        $list = $this->select('SELECT * FROM system.settings' . ($like ? ' WHERE name LIKE :like' : ''),
-            ['like' => '%' . $like . '%'])->rows();
+        $l    = [];
+        $list = $this->select(
+            'SELECT * FROM system.settings' . ($like ? ' WHERE name LIKE :like' : ''),
+            ['like' => '%' . $like . '%']
+        )->rows();
         foreach ($list as $row) {
-            if (isset($row['name'])) {
-                $n = $row['name'];
-                unset($row['name']);
-                $l[$n] = $row;
+            if (! isset($row['name'])) {
+                continue;
             }
+
+            $n = $row['name'];
+            unset($row['name']);
+            $l[$n] = $row;
         }
 
         return $l;
     }
-
 }

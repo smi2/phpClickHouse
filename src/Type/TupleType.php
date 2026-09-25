@@ -6,6 +6,11 @@ namespace ClickHouseDB\Type;
 
 use Stringable;
 
+use function addslashes;
+use function implode;
+use function is_bool;
+use function is_string;
+
 final class TupleType implements Type, Stringable
 {
     public array $value;
@@ -34,6 +39,7 @@ final class TupleType implements Type, Stringable
                 $parts[] = $val;
             }
         }
+
         return '(' . implode(',', $parts) . ')';
     }
 

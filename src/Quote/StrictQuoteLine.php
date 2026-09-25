@@ -7,49 +7,52 @@ namespace ClickHouseDB\Quote;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Expression\Expression;
 use ClickHouseDB\Type\NumericType;
+
 use function array_map;
+use function implode;
 use function is_array;
+use function is_bool;
 use function is_float;
 use function is_int;
 use function is_string;
+use function preg_quote;
 use function preg_replace;
 use function str_replace;
 
 class StrictQuoteLine
 {
-    private array $preset = [
-        'CSV'=>[
-            'EnclosureArray'=>'"',
-            'EncodeEnclosure'=>'"',
-            'Enclosure'=>'"',
-            'Null'=>"\\N",
-            'Delimiter'=>",",
-            'TabEncode'=>false,
+    private array $preset   = [
+        'CSV' => [
+            'EnclosureArray' => '"',
+            'EncodeEnclosure' => '"',
+            'Enclosure' => '"',
+            'Null' => '\\N',
+            'Delimiter' => ',',
+            'TabEncode' => false,
         ],
-        'Insert'=>[
-            'EnclosureArray'=>'',
-            'EncodeEnclosure'=>'\\',
-            'Enclosure'=>'\'',
-            'Null'=>"NULL",
-            'Delimiter'=>",",
-            'TabEncode'=>false,
+        'Insert' => [
+            'EnclosureArray' => '',
+            'EncodeEnclosure' => '\\',
+            'Enclosure' => '\'',
+            'Null' => 'NULL',
+            'Delimiter' => ',',
+            'TabEncode' => false,
         ],
-        'TSV'=>[
-            'EnclosureArray'=>'',
-            'EncodeEnclosure'=>'',
-            'Enclosure'=>'\\',
-            'Null'=>" ",
-            'Delimiter'=>"\t",
-            'TabEncode'=>true,
+        'TSV' => [
+            'EnclosureArray' => '',
+            'EncodeEnclosure' => '',
+            'Enclosure' => '\\',
+            'Null' => ' ',
+            'Delimiter' => "\t",
+            'TabEncode' => true,
         ],
     ];
     private array $settings = [];
 
     public function __construct(string $format)
     {
-        if (empty($this->preset[$format]))
-        {
-            throw new QueryException("Unsupport format encode line:" . $format);
+        if (empty($this->preset[$format])) {
+            throw new QueryException('Unsupport format encode line:' . $format);
         }
 
         $this->settings = $this->preset[$format];
@@ -62,14 +65,14 @@ class StrictQuoteLine
 
     public function quoteValue(array $row, bool $skipEncode = false): array
     {
-        $enclosure = $this->settings['Enclosure'];
-        $delimiter = $this->settings['Delimiter'];
+        $enclosure       = $this->settings['Enclosure'];
+        $delimiter       = $this->settings['Delimiter'];
         $encodeEnclosure = $this->settings['EncodeEnclosure'];
-        $encodeArray = $this->settings['EnclosureArray'];
-        $null = $this->settings['Null'];
-        $tabEncode = $this->settings['TabEncode'];
+        $encodeArray     = $this->settings['EnclosureArray'];
+        $null            = $this->settings['Null'];
+        $tabEncode       = $this->settings['TabEncode'];
 
-        $quote = function($value) use ($enclosure, $delimiter, $encodeEnclosure, $encodeArray, $null, $tabEncode, $skipEncode) {
+        $quote = function ($value) use ($enclosure, $delimiter, $encodeEnclosure, $encodeArray, $null, $tabEncode, $skipEncode) {
             $delimiter_esc = preg_quote($delimiter, '/');
 
             $enclosure_esc = preg_quote($enclosure, '/');
@@ -80,6 +83,7 @@ class StrictQuoteLine
             if ($value instanceof NumericType) {
                 $encode = false;
             }
+
             if ($value instanceof Expression) {
                 $encode = $value->needsEncoding();
             }
@@ -96,7 +100,8 @@ class StrictQuoteLine
                     },
                     $value
                 );
-                $resultArray = FormatLine::Insert($value,($encodeEnclosure==='\\'?true:false));
+                $resultArray = FormatLine::Insert($value, ($encodeEnclosure === '\\'));
+
                 return $encodeArray . '[' . $resultArray . ']' . $encodeArray;
             }
 
@@ -113,8 +118,9 @@ class StrictQuoteLine
                     return str_replace(["\t", "\n"], ['\\t', '\\n'], $value);
                 }
 
-                if (!$skipEncode)
-                $value = $this->encodeString($value, $enclosure_esc, $encode_esc);
+                if (! $skipEncode) {
+                    $value = $this->encodeString($value, $enclosure_esc, $encode_esc);
+                }
 
                 return $enclosure . $value . $enclosure;
             }

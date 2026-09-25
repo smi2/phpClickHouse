@@ -7,6 +7,9 @@ namespace ClickHouseDB\Type;
 use DateTimeInterface;
 use Stringable;
 
+use function strpos;
+use function substr;
+
 final class DateTime64 implements Type, Stringable
 {
     public string $value;
@@ -24,12 +27,13 @@ final class DateTime64 implements Type, Stringable
     public static function fromDateTime(DateTimeInterface $dateTime, int $precision = 3): self
     {
         $formatted = $dateTime->format('Y-m-d H:i:s.u');
-        $dotPos = strpos($formatted, '.');
+        $dotPos    = strpos($formatted, '.');
         if ($dotPos !== false && $precision > 0) {
             $formatted = substr($formatted, 0, $dotPos + 1 + $precision);
         } elseif ($precision === 0) {
             $formatted = $dateTime->format('Y-m-d H:i:s');
         }
+
         return new self($formatted);
     }
 

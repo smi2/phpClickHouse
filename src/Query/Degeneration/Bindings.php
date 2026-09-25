@@ -6,9 +6,11 @@ namespace ClickHouseDB\Query\Degeneration;
 
 use ClickHouseDB\Query\Degeneration;
 use ClickHouseDB\Quote\ValueFormatter;
+
 use function array_map;
 use function implode;
 use function is_array;
+use function preg_replace_callback;
 
 class Bindings implements Degeneration
 {
@@ -37,8 +39,8 @@ class Bindings implements Degeneration
 
     public function compile_binds(string $sql, array $binds, string $pattern): string
     {
-        return preg_replace_callback($pattern, function($m) use ($binds){
-            if(isset($binds[$m[1]])){ // If it exists in our array
+        return preg_replace_callback($pattern, static function ($m) use ($binds) {
+            if (isset($binds[$m[1]])) { // If it exists in our array
                 return $binds[$m[1]]; // Then replace it from our array
             }
 
@@ -50,18 +52,19 @@ class Bindings implements Degeneration
      * Compile Bindings
      *
      * @param string $sql
+     *
      * @return mixed
      */
     public function process($sql)
     {
-        $bindFormatted=[];
-        $bindRaw=[];
+        $bindFormatted = [];
+        $bindRaw       = [];
         foreach ($this->bindings as $key => $value) {
             if (is_array($value)) {
                 $valueSet = implode(', ', $value);
 
                 $values = array_map(
-                    function ($value) {
+                    static function ($value) {
                         return ValueFormatter::formatValue($value);
                     },
                     $value
@@ -74,21 +77,23 @@ class Bindings implements Degeneration
             }
 
             if ($formattedParameter !== null) {
-                $bindFormatted[$key]=$formattedParameter;
+                $bindFormatted[$key] = $formattedParameter;
             }
 
-            if ($valueSet !== null) {
-                $bindRaw[$key]=$valueSet;
+            if ($valueSet === null) {
+                continue;
             }
+
+            $bindRaw[$key] = $valueSet;
         }
 
-        for ($loop=0;$loop<2;$loop++)
-        {
+        for ($loop = 0; $loop < 2; $loop++) {
             // dipping in binds
             // example ['A' => '{B}' , 'B'=>':C','C'=>123]
-            $sql=$this->compile_binds($sql,$bindRaw,'#{([\w+]+)}#');
+            $sql = $this->compile_binds($sql, $bindRaw, '#{([\w+]+)}#');
         }
-        $sql=$this->compile_binds($sql,$bindFormatted,'#:([\w+]+)#');
+
+        $sql = $this->compile_binds($sql, $bindFormatted, '#:([\w+]+)#');
 
         return $sql;
     }

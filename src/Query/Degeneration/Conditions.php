@@ -7,6 +7,17 @@ namespace ClickHouseDB\Query\Degeneration;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Degeneration;
 
+use function intval;
+use function is_bool;
+use function is_numeric;
+use function is_string;
+use function json_encode;
+use function preg_replace_callback;
+use function sizeof;
+use function strlen;
+use function strtolower;
+use function trim;
+
 class Conditions implements Degeneration
 {
     protected array $bindings = [];
@@ -29,39 +40,44 @@ class Conditions implements Degeneration
     static function __ifsets(array $matches, array $markers): string
     {
         $content_false = '';
-        $condition = '';
-        $flag_else = '';
+        $condition     = '';
+        $flag_else     = '';
 //print_r($matches);
-        if (sizeof($matches) == 4) {
-            list($condition, $preset, $variable, $content_true) = $matches;
-        } elseif (sizeof($matches) == 6) {
-            list($condition, $preset, $variable, $content_true, $flag_else, $content_false) = $matches;
+        if (sizeof($matches) === 4) {
+            [$condition, $preset, $variable, $content_true] = $matches;
+        } elseif (sizeof($matches) === 6) {
+            [$condition, $preset, $variable, $content_true, $flag_else, $content_false] = $matches;
         } else {
             throw new QueryException('Error in parse Conditions' . json_encode($matches));
         }
-        $variable = trim($variable);
-        $preset = strtolower(trim($preset));
 
-        if ($preset == '') {
-            return (isset($markers[$variable]) && ($markers[$variable] || is_numeric($markers[$variable])))
+        $variable = trim($variable);
+        $preset   = strtolower(trim($preset));
+
+        if ($preset === '') {
+            return isset($markers[$variable]) && ($markers[$variable] || is_numeric($markers[$variable]))
                 ? $content_true
                 : $content_false;
         }
-        if ($preset == 'set') {
-            return (isset($markers[$variable]) && !empty($markers[$variable])) ? $content_true : $content_false;
+
+        if ($preset === 'set') {
+            return isset($markers[$variable]) && ! empty($markers[$variable]) ? $content_true : $content_false;
         }
-        if ($preset == 'bool') {
-            return (isset($markers[$variable]) && is_bool($markers[$variable]) && $markers[$variable] == true)
+
+        if ($preset === 'bool') {
+            return isset($markers[$variable]) && is_bool($markers[$variable]) && $markers[$variable] === true
                 ? $content_true
                 : $content_false;
         }
-        if ($preset == 'string') {
-            return (isset($markers[$variable]) && is_string($markers[$variable]) && strlen($markers[$variable]))
+
+        if ($preset === 'string') {
+            return isset($markers[$variable]) && is_string($markers[$variable]) && strlen($markers[$variable])
                 ? $content_true
                 : $content_false;
         }
-        if ($preset == 'int') {
-            return (isset($markers[$variable]) && intval($markers[$variable]) <> 0)
+
+        if ($preset === 'int') {
+            return isset($markers[$variable]) && intval($markers[$variable]) !== 0
                 ? $content_true
                 : $content_false;
         }
@@ -71,6 +87,7 @@ class Conditions implements Degeneration
 
     /**
      * @param string $sql
+     *
      * @return mixed
      */
     public function process($sql)
@@ -78,10 +95,13 @@ class Conditions implements Degeneration
         $markers = $this->bindings;
 
         // ------ if/else conditions & if[set|int]/else conditions -----
-        $sql = preg_replace_callback('#\{if(.{0,}?)\s+([^\}]+?)\}(.+?)(\{else\}([^\{]+?)?)?\s*\{\/if}#sui', function ($matches) use ($markers) {
-            return self::__ifsets($matches, $markers);
-        }
-            , $sql);
+        $sql = preg_replace_callback(
+            '#\{if(.{0,}?)\s+([^\}]+?)\}(.+?)(\{else\}([^\{]+?)?)?\s*\{\/if}#sui',
+            static function ($matches) use ($markers) {
+                return self::__ifsets($matches, $markers);
+            },
+            $sql
+        );
 
         return $sql;
 
@@ -113,5 +133,4 @@ class Conditions implements Degeneration
         //        $sql = preg_replace_callback('#\{if(.{1,}?)\s(.+?)}(.+?)\{else}(.+?)\{/if}#sui', function($matches) use ($markers) {return  self::__ifsets($matches, $markers, true); }, $sql);
         //        $sql = preg_replace_callback('#\{if(.{1,}?)\s(.+?)}(.+?)\{/if}#sui', function($matches) use ($markers) { return self::__ifsets($matches, $markers, false); }, $sql);
     }
-
 }
