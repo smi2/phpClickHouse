@@ -19,6 +19,30 @@ use ClickHouseDB\Type\UInt128;
 $db->insert('table', [[UInt128::fromString('340282366920938463463374607431768211455')]], ['value']);
 ```
 
+### Float precision (IEEE 754)
+
+`Float32`, `Float64`, and `BFloat16` are [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)
+binary floating-point types ([ClickHouse Float docs](https://clickhouse.com/docs/reference/data-types/float)).
+Most decimal fractions have no exact binary representation, so arithmetic accumulates
+rounding errors:
+
+```php
+$db->select('SELECT 0.1 + 0.2 AS v')->fetchOne('v');         // 0.30000000000000004 — NOT 0.3
+$db->select('SELECT 0.1 + 0.2 = 0.3 AS eq')->fetchOne('eq'); // 0 (false)
+```
+
+Use the `Decimal` family when you need exact math — decimals store scaled integers
+and are not affected by IEEE 754 rounding:
+
+```php
+$db->select("SELECT toDecimal64('0.1', 1) + toDecimal64('0.2', 1) = toDecimal64('0.3', 1) AS eq")
+   ->fetchOne('eq'); // 1 (true)
+```
+
+See `tests/Type/Ieee754MantissaTest.php` for the full behavior matrix: significand
+limits (2^24 for Float32, 2^53 for Float64, 2^8 for BFloat16), JSON output rules,
+and the precision trap when wide decimals are decoded from JSON into PHP floats.
+
 ### UInt64
 
 Large unsigned integers that overflow PHP's `int` range.
@@ -46,7 +70,10 @@ $db->insert('table', [
 
 ### Decimal
 
-Exact decimal numbers — no floating-point rounding.
+Exact decimal numbers — no floating-point rounding. Unlike the
+[IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)
+[`Float*` types](https://clickhouse.com/docs/reference/data-types/float), where
+`0.1 + 0.2 != 0.3`, Decimal stores scaled integers and keeps every digit exact.
 
 ```php
 use ClickHouseDB\Type\Decimal;

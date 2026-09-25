@@ -12,7 +12,7 @@ PHP client for [ClickHouse](https://clickhouse.com) — fast, lightweight, no de
 
 - Sync & async (parallel) SELECT queries
 - [Native query parameters](doc/native-params.md) — server-side `{name:Type}` binding, SQL injection impossible
-- [Rich type system](doc/types.md) — Boolean, integer and floating-point types, Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
+- [Rich type system](doc/types.md) — Boolean, integer and [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) [floating-point](https://clickhouse.com/docs/reference/data-types/float) types (`0.1 + 0.2 != 0.3`), exact Decimal, UUID, IPv4/IPv6, DateTime64, Date32, Map, Tuple
 - Bulk inserts: arrays, CSV files, streams
 - [Generators](doc/generators.md) — memory-efficient iteration for large resultsets
 - HTTP compression (gzip) for inserts
