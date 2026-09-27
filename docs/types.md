@@ -95,7 +95,7 @@ $db->insert('table', [
     [DateTime64::fromDateTime($dt, 3)],  // → '2024-06-15 12:00:00.456'
 ], ['created_at']);
 
-// Precision options: 1-9 (1=tenths, 3=ms, 6=μs, 9=ns)
+// Precision options: 0-9 (1=tenths, 3=ms, 6=μs, 9=ns)
 DateTime64::fromDateTime($dt, 6);  // → '2024-06-15 12:00:00.456789'
 ```
 

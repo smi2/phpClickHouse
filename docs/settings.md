@@ -9,7 +9,7 @@ title: Settings & Configuration
 
 ## Setting values
 
-Three ways to configure settings:
+Four ways to configure settings:
 
 ```php
 // 1. In config array

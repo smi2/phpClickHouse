@@ -50,7 +50,7 @@ Extend `ValueFormatter` and add a type system for native parameters.
   - [x] `Bool` (exposed as the existing `Boolean` class; `Bool` is reserved by PHP)
 - [x] Tests for each type: insert + select + comparison
 
-### Plan, Phase 3: Composite types
+### Plan, Phase 2: Composite types
 - [ ] `Array(T)`: already partially works, formalize it
 - [ ] `Tuple(T1, T2, ...)`
 - [ ] `Map(K, V)`
@@ -59,7 +59,7 @@ Extend `ValueFormatter` and add a type system for native parameters.
 - [ ] `Nested(name1 T1, name2 T2)`: already partial, formalize it
 - [ ] Tests
 
-### Plan, Phase 4: Specialized types
+### Plan, Phase 3: Specialized types
 - [ ] `JSON` / `Object('json')`
 - [ ] Geo: `Point`, `Ring`, `LineString`, `Polygon`, `MultiPolygon`
 - [ ] `SimpleAggregateFunction`, `AggregateFunction`
