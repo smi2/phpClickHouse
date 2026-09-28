@@ -33,8 +33,8 @@ final class StatementTest extends TestCase
      * @link https://github.com/smi2/phpClickHouse/issues/144
      * @link https://clickhouse.com/docs/en/interfaces/http#http_response_codes_caveats
      *
-     * During execution of query it is possible to get ExceptionWhileProcessing in Clickhouse
-     * In that case HTTP status code of Clickhouse interface would be 200
+     * During execution of query it is possible to get ExceptionWhileProcessing in ClickHouse
+     * In that case HTTP status code of ClickHouse interface would be 200
      * and it is kind of "expected" behaviour of CH
      */
     public function testIsErrorWithOkStatusCode()
