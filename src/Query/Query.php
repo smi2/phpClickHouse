@@ -90,16 +90,16 @@ class Query
     /**
      * Check if the sql contains bindings like {p1:UInt8}.
      *
-     * Check the original SQL before degeneration to prevent data that matches the same regex by accident causing adding bindings to the url
+     * Check the original SQL before degeneration to prevent data that accidentally matches the same regex from adding bindings to the URL
      * For backwards compatibility use the degenerated sql when custom degenerations are found
      */
-    public function isUseInUrlBindingsParams():bool
+    public function isUseInUrlBindingsParams(): bool
     {
         //  'query=select {p1:UInt8} + {p2:UInt8}' -F "param_p1=3" -F "param_p2=4"
         return preg_match('#{[\w+]+:[\w+()]+}#', $this->hasCustomDegenerations() ? $this->sql : $this->originalSql) === 1;
 
     }
-    public function getUrlBindingsParams():array
+    public function getUrlBindingsParams(): array
     {
         $out=[];
         $params=[];
