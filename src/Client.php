@@ -30,7 +30,7 @@ use function trim;
 
 class Client
 {
-    const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow','CSVWithNamesAndTypes','TSVWithNamesAndTypes'];
+    const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow', 'CSVWithNamesAndTypes', 'TSVWithNamesAndTypes'];
 
     private Http $transport;
 
@@ -49,19 +49,19 @@ class Client
     public function __construct(array $connectParams, array $settings = [])
     {
         if (!isset($connectParams['username'])) {
-            throw new \InvalidArgumentException('not set username');
+            throw new \InvalidArgumentException('username is not set');
         }
 
         if (!isset($connectParams['password'])) {
-            throw new \InvalidArgumentException('not set password');
+            throw new \InvalidArgumentException('password is not set');
         }
 
         if (!isset($connectParams['port'])) {
-            throw new \InvalidArgumentException('not set port');
+            throw new \InvalidArgumentException('port is not set');
         }
 
         if (!isset($connectParams['host'])) {
-            throw new \InvalidArgumentException('not set host');
+            throw new \InvalidArgumentException('host is not set');
         }
 
         if (array_key_exists('auth_method', $connectParams)) {
@@ -116,7 +116,7 @@ class Client
     }
 
     /**
-     * if the user has only read in the config file
+     * if the user is read-only in the config file
      */
     public function setReadOnlyUser(bool $flag): void
     {
@@ -125,7 +125,7 @@ class Client
     }
 
     /**
-     * Clear Degeneration processing request [template ]
+     * Clear Degeneration processing request [template]
      */
     public function cleanQueryDegeneration(): bool
     {
@@ -158,7 +158,7 @@ class Client
     }
 
     /**
-     * max_execution_time , in int value (seconds)
+     * max_execution_time, in int value (seconds)
      */
     public function setTimeout(mixed $timeout): Settings
     {
@@ -171,7 +171,7 @@ class Client
     }
 
     /**
-     * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
+     * ConnectTimeOut in seconds (supports 1.5 = 1500ms)
      */
     public function setConnectTimeOut(float $connectTimeOut): void
     {
@@ -261,7 +261,7 @@ class Client
     }
 
     /**
-     * set db name
+     * set DB name
      */
     public function database(string $db): static
     {
@@ -337,7 +337,7 @@ class Client
     public function progressFunction(callable $callback): void
     {
         if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('Not is_callable progressFunction');
+            throw new \InvalidArgumentException('progressFunction is not callable');
         }
 
         if (!$this->settings()->is('send_progress_in_http_headers')) {
@@ -497,7 +497,7 @@ class Client
         }
 
         if (stripos($table, '`') === false && stripos($table, '.') === false) {
-            $table = '`' . $table . '`'; //quote table name for dot names
+            $table = '`' . $table . '`'; // quote table name for dot names
         }
         $sql = 'INSERT INTO ' . $table;
 
@@ -524,7 +524,7 @@ class Client
      **/
     public function prepareInsertAssocBulk(array $values): array
     {
-        if (isset($values[0]) && is_array($values[0])) { //случай, когда много строк вставляется
+        if (isset($values[0]) && is_array($values[0])) { // case when multiple rows are inserted
             $preparedFields = array_keys($values[0]);
             $preparedValues = [];
             foreach ($values as $idx => $row) {
@@ -532,7 +532,7 @@ class Client
                 if ($_fields !== $preparedFields) {
                     throw new QueryException(
                         sprintf(
-                            'Fields not match: %s and %s on element %s',
+                            'Fields do not match: %s and %s on element %s',
                             implode(',', $_fields),
                             implode(',', $preparedFields),
                             $idx
@@ -589,18 +589,18 @@ class Client
             $fileNames = [$fileNames];
         }
         if ($this->getCountPendingQueue() > 0) {
-            throw new QueryException('Queue must be empty, before insertBatch, need executeAsync');
+            throw new QueryException('Queue must be empty before insertBatch; call executeAsync first');
         }
 
         if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
-            throw new QueryException('Format not support in insertBatchFiles');
+            throw new QueryException('Format is not supported in insertBatchFiles');
         }
 
         $result = [];
 
         foreach ($fileNames as $fileName) {
             if (!is_file($fileName) || !is_readable($fileName)) {
-                throw new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
+                throw new QueryException('Can\'t read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
             if (empty($columns)) {
@@ -614,7 +614,7 @@ class Client
         // exec
         $this->executeAsync();
 
-        // fetch resutl
+        // fetch resutlt
         foreach ($fileNames as $fileName) {
             if (!$result[$fileName]->isError()) {
                 continue;
@@ -724,7 +724,7 @@ class Client
     public function ping(bool $throwException = false): bool
     {
         $result = $this->transport()->ping();
-        if ($throwException && !$result) throw new TransportException('Can`t ping server');
+        if ($throwException && !$result) throw new TransportException('Can\'t ping server');
         return $result;
     }
 
@@ -814,10 +814,10 @@ CLICKHOUSE,
 
         $partition_id = trim($partition_id, '\'');
         $this->settings()->set('replication_alter_partitions_sync', 2);
-        $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :partion_id',
+        $state = $this->write('ALTER TABLE {dataBaseTableName} DROP PARTITION :$partition_id',
             [
                 'dataBaseTableName' => $dataBaseTableName,
-                'partion_id' => $partition_id,
+                'partition_id' => $partition_id,
             ]);
 
         return $state;
@@ -830,9 +830,9 @@ CLICKHOUSE,
      */
     public function truncateTable(string $tableName): array
     {
-        $partions = $this->partitions($tableName);
+        $partitions = $this->partitions($tableName);
         $out = [];
-        foreach ($partions as $part_key => $part) {
+        foreach ($partitions as $part_key => $part) {
             $part_id = $part['partition'];
             $out[$part_id] = $this->dropPartition($tableName, $part_id);
         }
