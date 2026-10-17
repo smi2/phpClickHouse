@@ -58,7 +58,7 @@ final class InsertAssocTest extends TestCase
         $toInsert = [$oneRow, $oneRow, $failRow];
 
         $this->expectException(QueryException::class);
-        $this->expectExceptionMessage("Fields not match: two,one,thr and one,two,thr on element 2");
+        $this->expectExceptionMessage("Fields do not match: two,one,thr and one,two,thr on element 2");
 
         list($_, $__) = $this->client->prepareInsertAssocBulk($toInsert);
     }
