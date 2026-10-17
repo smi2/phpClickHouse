@@ -37,9 +37,9 @@ trait WithClient
         $this->client = new Client($config);
         $databaseName = getenv('CLICKHOUSE_DATABASE');
         if (!$databaseName || $databaseName==='default') {
-            throw new \Exception('Change CLICKHOUSE_DATABASE, not use default');
+            throw new \Exception('Change CLICKHOUSE_DATABASE, do not use default');
         }
-        if (empty($GLOBALS['phpCH_needFirstCreateDB'])) { // hack use Global VAR, for once create DB
+        if (empty($GLOBALS['phpCH_needFirstCreateDB'])) { // Hack: Use global VAR to ensure the DB is created only once
             $GLOBALS['phpCH_needFirstCreateDB']=true;
             $this->client->write(sprintf('DROP DATABASE IF EXISTS "%s"', $databaseName));
             $this->client->write(sprintf('CREATE DATABASE "%s"', $databaseName));

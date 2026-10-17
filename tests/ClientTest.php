@@ -408,7 +408,7 @@ class ClientTest extends TestCase
     public function testConnectTimeout()
     {
         $config = [
-            'host'     => '8.8.8.8', // fake ip , use googlde DNS )
+            'host'     => '8.8.8.8', // fake ip, use google DNS
             'port'     => 8123,
             'username' => '',
             'password' => ''
@@ -809,7 +809,7 @@ class ClientTest extends TestCase
     public function testExceptionSelect()
     {
         $this->expectException(QueryException::class);
-        $this->expectExceptionCode(60); // Table not exists
+        $this->expectExceptionCode(60); // Table does not exist
 
         $this->client->select("SELECT * FROM XXXXX_SSS")->rows();
     }
@@ -1010,7 +1010,7 @@ class ClientTest extends TestCase
         };
         $streamInsert->insert($callable);
 
-        // check the resource was close after insert method
+        // check the resource was closed after the insert method
         $this->assertEquals(false, is_resource($source));
 
         $statement = $this->client->select('SELECT * FROM summing_url_views');
@@ -1020,7 +1020,7 @@ class ClientTest extends TestCase
     /**
      *
      */
-    public function testStreamInsertExeption()
+    public function testStreamInsertException()
     {
         $file_name = $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data';
         $this->create_fake_csv_file($file_name, 1);
@@ -1047,7 +1047,7 @@ class ClientTest extends TestCase
             $streamInsert->insert([]);
         } catch (\Exception $e) {}
 
-        // check the resource was close after insert method
+        // check the resource was closed after the insert method
         $this->assertEquals(false, is_resource($source));
     }
 
