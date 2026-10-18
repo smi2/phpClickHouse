@@ -1,7 +1,7 @@
 .*                  export-ignore
 /doc                export-ignore
 /docs               export-ignore
-/examples           export-ignore
+/example            export-ignore
 phpunit-*.xml       export-ignore
 *.neon              export-ignore
 /tests              export-ignore
