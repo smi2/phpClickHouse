@@ -6,11 +6,10 @@ namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
 use ClickHouseDB\Transport\Http;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group CurlOptionsTest
- */
+#[Group('CurlOptionsTest')]
 final class CurlOptionsTest extends TestCase
 {
     public function testCurlOptionsPassedViaConfig(): void

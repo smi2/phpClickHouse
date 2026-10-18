@@ -7,6 +7,7 @@ namespace ClickHouseDB\Tests\ClickHouse26\Type;
 use ClickHouseDB\Tests\WithClient;
 use ClickHouseDB\Type\UInt64;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use function array_column;
 use function implode;
@@ -15,9 +16,8 @@ use function sprintf;
 /**
  * UInt64Test adapted for ClickHouse 26.x
  * CH 26.x returns numbers as native JSON types (int/float) instead of strings.
- *
- * @group ClickHouse26
  */
+#[Group('ClickHouse26')]
 final class UInt64Test extends TestCase
 {
     use WithClient;

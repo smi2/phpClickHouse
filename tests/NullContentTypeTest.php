@@ -7,12 +7,13 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Statement;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @group NullContentTypeTest
  * @link https://github.com/smi2/phpClickHouse/pull/243
  */
+#[Group('NullContentTypeTest')]
 final class NullContentTypeTest extends TestCase
 {
     /**

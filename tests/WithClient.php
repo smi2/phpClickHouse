@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
+use Exception;
+use PHPUnit\Framework\Attributes\Before;
 use function getenv;
 use function sprintf;
 
@@ -15,9 +17,7 @@ trait WithClient
 
     private $tmpPath;
 
-    /**
-     * @before
-     */
+    #[Before]
     public function setupClickHouseClient()
     {
         $this->restartClickHouseClient();
@@ -37,7 +37,7 @@ trait WithClient
         $this->client = new Client($config);
         $databaseName = getenv('CLICKHOUSE_DATABASE');
         if (!$databaseName || $databaseName==='default') {
-            throw new \Exception('Change CLICKHOUSE_DATABASE, do not use default');
+            throw new Exception('Change CLICKHOUSE_DATABASE, do not use default');
         }
         if (empty($GLOBALS['phpCH_needFirstCreateDB'])) { // Hack: Use global VAR to ensure the DB is created only once
             $GLOBALS['phpCH_needFirstCreateDB']=true;

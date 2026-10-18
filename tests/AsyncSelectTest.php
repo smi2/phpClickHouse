@@ -2,14 +2,14 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class AsyncSelectTest
- * @group AsyncSelect
  * @package ClickHouseDB\Tests
  */
+#[Group('AsyncSelect')]
 final class AsyncSelectTest extends TestCase
 {
     use WithClient;

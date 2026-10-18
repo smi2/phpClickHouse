@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Transport\StreamRead;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group NativeParamsTest
- */
+#[Group('NativeParamsTest')]
 final class NativeParamsTest extends TestCase
 {
     use WithClient;

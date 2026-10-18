@@ -24,22 +24,19 @@ use ClickHouseDB\Type\UInt256;
 use ClickHouseDB\Type\UInt32;
 use ClickHouseDB\Type\UInt64;
 use ClickHouseDB\Type\UInt8;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 use function sprintf;
 use function str_replace;
 use function strtolower;
 
-/**
- * @group integration
- */
+#[Group('integration')]
 final class ScalarNumericIntegrationTest extends TestCase
 {
     use WithClient;
 
-    /**
-     * @dataProvider scalarTypes
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('scalarTypes')]
     public function testInsertSelectAndComparison(
         string $typeName,
         string $className,

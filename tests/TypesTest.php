@@ -33,6 +33,7 @@ use ClickHouseDB\Type\UInt8;
 use ClickHouseDB\Type\UUID;
 use DateTimeImmutable;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class TypesTest extends TestCase
@@ -91,9 +92,7 @@ class TypesTest extends TestCase
         self::assertSame('-42', (string) $int);
     }
 
-    /**
-     * @dataProvider scalarNumericTypes
-     */
+    #[DataProvider('scalarNumericTypes')]
     public function testScalarNumericTypesPreserveTheirValue(string $class, string $value): void
     {
         $type = $class::fromString($value);
@@ -127,9 +126,7 @@ class TypesTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidScalarNumericValues
-     */
+    #[DataProvider('invalidScalarNumericValues')]
     public function testScalarNumericTypesRejectNonNumericInput(string $class, string $value): void
     {
         $this->expectException(InvalidArgumentException::class);

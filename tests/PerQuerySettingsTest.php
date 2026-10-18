@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group PerQuerySettingsTest
- */
+#[Group('PerQuerySettingsTest')]
 final class PerQuerySettingsTest extends TestCase
 {
     use WithClient;

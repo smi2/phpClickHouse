@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests\ClickHouse26;
 
 use ClickHouseDB\Tests\WithClient;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Sessions test for ClickHouse 26.x
  * In CH 26.x, temporary tables work without sessions (no exception).
- *
- * @group ClickHouse26
  */
+#[Group('ClickHouse26')]
 final class SessionsTest extends TestCase
 {
     use WithClient;
