@@ -2,13 +2,14 @@
 
 namespace ClickHouseDB\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class FetchTest
- * @group FetchTest
  * @package ClickHouseDB\Tests
  */
+#[Group('FetchTest')]
 final class FetchTest extends TestCase
 {
     use WithClient;

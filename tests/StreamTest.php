@@ -2,14 +2,14 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class StreamTest
- * @group Stream
  * @package ClickHouseDB\Tests
  */
+#[Group('Stream')]
 final class StreamTest extends TestCase
 {
     use WithClient;

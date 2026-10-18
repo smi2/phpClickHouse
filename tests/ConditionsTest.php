@@ -1,11 +1,10 @@
 <?php
 
 namespace ClickHouseDB\Tests;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group ConditionsTest
- */
+#[Group('ConditionsTest')]
 final class ConditionsTest extends TestCase
 {
     use WithClient;
@@ -58,8 +57,8 @@ final class ConditionsTest extends TestCase
             9: {ifint s_empty}NOT_SHOW{/if}
             0: {ifint s_null}NOT_SHOW{/if}
             1: {ifset null} NOT_SHOW {/if}
-            
-            
+
+
             CHECK_INT: 
             0: {ifint zero} NOT_SHOW {/if}
             1: {ifint int1} OK {/if}
@@ -70,7 +69,7 @@ final class ConditionsTest extends TestCase
             6: {ifint int30} OK_22 {else} NOT_SHOW {/if}
             7: {ifint s_empty} NOT_SHOW {else} OK {/if}
             8: {ifint true} OK_33 {else} NOT_SHOW {/if}
-            
+
             CHECK_STRING:
             0: {ifstring s_empty}NOT_SHOW{else}OK{/if}
             1: {ifstring s_null}OK{else}NOT_SHOW{/if}
@@ -84,23 +83,23 @@ final class ConditionsTest extends TestCase
             5: {ifbool true}OK{/if}
             6: {ifbool false}OK{/if}
             0: s_empty_check:{if s_empty}
-            
+
             SHOW
-            
+
             {/if}
             CHECL_IFINT:
             {ifint lastdays}
-            
-            
+
+
                 event_date>=today()-{lastdays}
-            
-            
+
+
             {else}
-            
-            
+
+
                 event_date>=today()
-           
-            
+
+
             {/if} LAST_LINE_2
             {ifint lastdays}
         event_date>=today()-{lastdays}
@@ -113,12 +112,12 @@ final class ConditionsTest extends TestCase
             {ifset topSites}
              AND  site_id in ( {->Sites->Top(topSites)} )
             {/if}
-            
+
 
              {if topSites}
                     AND  site_id in ( {->Sites->Top(topSites)} )
              {/if}
-              
+
 
         ";
 

@@ -3,19 +3,25 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          beStrictAboutChangesToGlobalState="true"
          beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true"
+         displayDetailsOnAllIssues="true"
          colors="true"
-         verbose="true"
 >
+    <coverage>
+        <report>
+            <clover outputFile="temp/clover.xml" />
+            <text outputFile="php://stdout" showUncoveredFiles="true" showOnlySummary="true" />
+        </report>
+    </coverage>
+
     <testsuite name="Diff">
         <directory>tests</directory>
     </testsuite>
 
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
 
     <php>
         <env name="CLICKHOUSE_HOST" value="127.0.0.1" />
@@ -25,14 +31,4 @@
         <env name="CLICKHOUSE_DATABASE" value="php_clickhouse" />
         <env name="CLICKHOUSE_TMPPATH" value="/tmp" />
     </php>
-
-    <logging>
-        <log
-                showOnlySummary="true"
-                showUncoveredFiles="true"
-                target="php://stdout"
-                type="coverage-text"
-        />
-        <log type="coverage-clover" target="temp/clover.xml"/>
-    </logging>
 </phpunit>

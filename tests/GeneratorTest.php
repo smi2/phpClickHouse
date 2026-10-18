@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for generator-based row iteration.
  *
- * @group GeneratorTest
  * @link https://github.com/smi2/phpClickHouse/issues/166
  */
+#[Group('GeneratorTest')]
 final class GeneratorTest extends TestCase
 {
     use WithClient;

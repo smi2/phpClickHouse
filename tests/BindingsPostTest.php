@@ -1,11 +1,10 @@
 <?php
 
 namespace ClickHouseDB\Tests;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group BindingsPost
- */
+#[Group('BindingsPost')]
 final class BindingsPostTest extends TestCase
 {
     use WithClient;

@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Transport\Http;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group IPv6UriTest
- */
+#[Group('IPv6UriTest')]
 final class IPv6UriTest extends TestCase
 {
     private function createHttp(string $host, int $port = 8123): Http
