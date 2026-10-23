@@ -254,6 +254,8 @@ class Client
 
     /**
      * Query CREATE/DROP
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function write(string $sql, array $bindings = [], bool $exception = true, array $querySettings = []): Statement
     {
@@ -310,6 +312,9 @@ class Client
         return $this;
     }
 
+    /**
+     * @psalm-taint-sink sql $sql
+     */
     public function select(
         string $sql,
         array $bindings = [],
@@ -356,6 +361,8 @@ class Client
 
     /**
      * prepare select
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function selectAsync(
         string $sql,
@@ -377,6 +384,8 @@ class Client
      * @param string $sql SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32}'
      * @param array<string, mixed> $params Parameter values, e.g. ['id' => 42]
      * @param array $querySettings Per-query settings override
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function selectWithParams(string $sql, array $params, array $querySettings = []): Statement
     {
@@ -390,6 +399,8 @@ class Client
      * @param array<string, mixed> $params Parameter values
      * @param bool $exception Throw on error
      * @param array $querySettings Per-query settings override
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function writeWithParams(string $sql, array $params, bool $exception = true, array $querySettings = []): Statement
     {
@@ -406,6 +417,8 @@ class Client
      * @param string $sql SQL with {name:Type} placeholders, e.g. 'SELECT * FROM t WHERE id = {id:UInt32} FORMAT JSONEachRow'
      * @param array<string, mixed> $params Parameter values, e.g. ['id' => 42]
      * @param array $querySettings Per-query settings override
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function readWithParams(Stream $streamRead, string $sql, array $params, array $querySettings = []): Statement
     {
@@ -421,6 +434,8 @@ class Client
      *
      * @param array $querySettings Per-query settings override
      * @return \Generator yields associative arrays, one per row
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function selectGenerator(string $sql, array $bindings = [], array $querySettings = []): \Generator
     {
@@ -463,6 +478,8 @@ class Client
 
     /**
      * statement = SHOW CREATE TABLE
+     *
+     * @psalm-taint-sink sql $table
      */
     public function showCreateTable(string $table): mixed
     {
@@ -489,6 +506,9 @@ class Client
      * @param mixed[][] $values
      * @param string[] $columns
      * @throws Exception\TransportException
+     *
+     * @psalm-taint-sink sql $table
+     * @psalm-taint-sink sql $columns
      */
     public function insert(string $table, array $values, array $columns = []): Statement
     {
@@ -555,6 +575,8 @@ class Client
      *
      * @param string $tableName - name table
      * @param mixed[] $values - array column_name => value (if we insert one row) or array list column_name => value if we insert many lines
+     *
+     * @psalm-taint-sink sql $tableName
      */
     public function insertAssocBulk(string $tableName, array $values): Statement
     {
@@ -568,6 +590,10 @@ class Client
      *
      * @param string|string[] $fileNames
      * @param string[] $columns
+     *
+     * @psalm-taint-sink sql $tableName
+     * @psalm-taint-sink sql $columns
+     * @psalm-taint-sink file $fileNames
      */
     public function insertBatchTSVFiles(string $tableName, $fileNames, array $columns = []): array
     {
@@ -582,6 +608,11 @@ class Client
      * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
      * @return Statement[]
      * @throws Exception\TransportException
+     *
+     * @psalm-taint-sink sql $tableName
+     * @psalm-taint-sink sql $columns
+     * @psalm-taint-sink sql $format
+     * @psalm-taint-sink file $fileNames
      */
     public function insertBatchFiles(string $tableName, $fileNames, array $columns = [], string $format = 'CSV'): array
     {
@@ -631,6 +662,10 @@ class Client
      *
      * @param string[] $columns
      * @param string $format ['TabSeparated','TabSeparatedWithNames','CSV','CSVWithNames']
+     *
+     * @psalm-taint-sink sql $tableName
+     * @psalm-taint-sink sql $columns
+     * @psalm-taint-sink sql $format
      */
     public function insertBatchStream(string $tableName, array $columns = [], string $format = 'CSV'): Transport\CurlerRequest
     {
@@ -656,6 +691,8 @@ class Client
      *
      * @param array<string, mixed> $bind
      * @throws Exception\TransportException
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function streamWrite(Stream $stream, string $sql, array $bind = []): Statement
     {
@@ -670,6 +707,8 @@ class Client
      * stream Read
      *
      * @param array<string, mixed> $bind
+     *
+     * @psalm-taint-sink sql $sql
      */
     public function streamRead(Stream $streamRead, string $sql, array $bind = []): Statement
     {
@@ -769,6 +808,9 @@ class Client
      * isExists
      *
      * @throws \Exception
+     *
+     * @psalm-taint-sink sql $database
+     * @psalm-taint-sink sql $table
      */
     public function isExists(string $database, string $table): array
     {
@@ -808,6 +850,8 @@ CLICKHOUSE,
     /**
      * dropPartition
      * @deprecated
+     *
+     * @psalm-taint-sink sql $dataBaseTableName
      */
     public function dropPartition(string $dataBaseTableName, string $partition_id): Statement
     {
@@ -827,6 +871,8 @@ CLICKHOUSE,
      * Truncate ( drop all partitions )
      * @throws \Exception
      * @deprecated
+     *
+     * @psalm-taint-sink sql $tableName
      */
     public function truncateTable(string $tableName): array
     {
