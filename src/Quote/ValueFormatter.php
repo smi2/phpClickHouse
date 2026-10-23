@@ -24,7 +24,9 @@ class ValueFormatter
 {
     /**
      * @psalm-taint-specialize
+     *
      * @psalm-flow ($value) -> return
+     *
      * @psalm-taint-escape ($addQuotes is true ? 'sql' : null)
      */
     public static function formatValue(mixed $value, bool $addQuotes = true): mixed
