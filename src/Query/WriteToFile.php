@@ -22,6 +22,9 @@ class WriteToFile
 
     private bool $gzip = false;
 
+    /**
+     * @psalm-taint-sink file $file_name
+     */
     public function __construct(string $file_name, bool $overwrite = true, ?string $format = null) {
 
 
