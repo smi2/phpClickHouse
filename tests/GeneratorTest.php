@@ -86,4 +86,17 @@ final class GeneratorTest extends TestCase
 
         $this->assertEquals(0, $count);
     }
+
+    public function testSelectGeneratorWithArrayNativeParam(): void
+    {
+        $rows = [];
+        foreach ($this->client->selectGenerator(
+            'SELECT number FROM numbers(10) WHERE number IN {ids:Array(UInt32)}',
+            ['ids' => [1, 2]]
+        ) as $row) {
+            $rows[] = (int) $row['number'];
+        }
+
+        $this->assertEquals([1, 2], $rows);
+    }
 }

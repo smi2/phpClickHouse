@@ -353,7 +353,11 @@ class Http
          */
 
         if ($query->isUseInUrlBindingsParams()) {
-            $urlParams = array_replace_recursive($urlParams, $query->getUrlBindingsParams());
+            $bindingParams = array_map(
+                fn($value) => is_array($value) || is_object($value) ? $this->convertParamValue($value) : $value,
+                $query->getUrlBindingsParams()
+            );
+            $urlParams = array_replace_recursive($urlParams, $bindingParams);
         }
 
         $url = $this->getUrl($urlParams, $querySettings);
