@@ -91,7 +91,7 @@ final class GeneratorTest extends TestCase
     {
         $rows = [];
         foreach ($this->client->selectGenerator(
-            'SELECT number FROM system.numbers WHERE number IN {ids:Array(UInt32)} LIMIT 10',
+            'SELECT number FROM numbers(10) WHERE number IN {ids:Array(UInt32)}',
             ['ids' => [1, 2]]
         ) as $row) {
             $rows[] = (int) $row['number'];
