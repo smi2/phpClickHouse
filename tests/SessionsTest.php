@@ -3,12 +3,13 @@
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientTest
- * @group SessionsTest
  */
+#[Group('SessionsTest')]
 final class SessionsTest extends TestCase
 {
     use WithClient;

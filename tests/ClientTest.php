@@ -3,7 +3,6 @@
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
-use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Exception\TransportException;
 use ClickHouseDB\Query\WhereInFile;
@@ -13,13 +12,14 @@ use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerRolling;
 use ClickHouseDB\Transport\StreamInsert;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientTest
  * @package ClickHouseDB\Tests
- * @group ClientTest
  */
+#[Group('ClientTest')]
 class ClientTest extends TestCase
 {
     use WithClient;
@@ -402,9 +402,7 @@ class ClientTest extends TestCase
         unlink($fileName);
         return true;
     }
-    /**
-     * @group flaky
-     */
+    #[Group('flaky')]
     public function testConnectTimeout()
     {
         $config = [
@@ -519,12 +517,9 @@ class ClientTest extends TestCase
 //        var_dump($stat->response()->body());
 //        echo "-----\n";
 // }
-    /**
-     * @expectedException \ClickHouseDB\Exception\QueryException
-     */
     public function testInsertCSVError()
     {
-        $this->expectException(\ClickHouseDB\Exception\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $file_data_names = [
             $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data'

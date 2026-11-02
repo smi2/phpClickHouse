@@ -17,14 +17,16 @@ use ClickHouseDB\Type\IPv6;
 use ClickHouseDB\Type\StringType;
 use ClickHouseDB\Type\Type;
 use ClickHouseDB\Type\UUID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/** @group integration */
+#[Group('integration')]
 final class StringDateTypesIntegrationTest extends TestCase
 {
     use WithClient;
 
-    /** @dataProvider newValues */
+    #[DataProvider('newValues')]
     public function testInsertAndBindingsRoundTrip(string $type, Type $value, string $expected): void
     {
         $this->client->write('DROP TABLE IF EXISTS string_date_types');
@@ -40,7 +42,7 @@ final class StringDateTypesIntegrationTest extends TestCase
         }
     }
 
-    /** @dataProvider values */
+    #[DataProvider('values')]
     public function testNativeParametersRoundTrip(string $type, Type $value, string $expected): void
     {
         self::assertSame($expected, $this->client->selectWithParams(

@@ -1,6 +1,9 @@
 .*                  export-ignore
 /doc                export-ignore
-/examples           export-ignore
+/docs               export-ignore
+/example            export-ignore
+phpunit-*.xml       export-ignore
+*.neon              export-ignore
 /tests              export-ignore
 *.dist              export-ignore
 include.php         export-ignore

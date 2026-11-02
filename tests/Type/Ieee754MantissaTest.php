@@ -9,6 +9,8 @@ use ClickHouseDB\Type\Decimal128;
 use ClickHouseDB\Type\Decimal32;
 use ClickHouseDB\Type\Decimal64;
 use ClickHouseDB\Type\Float32;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 use function is_float;
@@ -23,9 +25,8 @@ use function version_compare;
  * Significand sizes: Float32 — 24 bits (integers exact up to 2^24 = 16777216),
  * Float64 — 53 bits (up to 2^53 = 9007199254740992), BFloat16 — 8 bits (up to
  * 2^8 = 256). Decimal stores scaled integers and has no mantissa at all.
- *
- * @group integration
  */
+#[Group('integration')]
 final class Ieee754MantissaTest extends TestCase
 {
     use WithClient;
@@ -79,9 +80,7 @@ final class Ieee754MantissaTest extends TestCase
         self::assertSame(1.1, $this->client->select('SELECT toFloat32(1.1) AS v')->fetchOne('v'));
     }
 
-    /**
-     * @dataProvider dyadicFractions
-     */
+    #[DataProvider('dyadicFractions')]
     public function testFloat32DyadicFractionRoundTripsExactly(string $literal, float $expected): void
     {
         $this->client->write('DROP TABLE IF EXISTS ieee754_f32');
@@ -305,9 +304,7 @@ final class Ieee754MantissaTest extends TestCase
         self::assertSame(1.2345678901234568E+18, $value);
     }
 
-    /**
-     * @dataProvider decimalWrapperColumns
-     */
+    #[DataProvider('decimalWrapperColumns')]
     public function testDecimalWrapperRoundTripPreservesExactString(
         string $columnType,
         string $className,

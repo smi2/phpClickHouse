@@ -7,12 +7,13 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Statement;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @group SummaryTest
  * @link https://github.com/smi2/phpClickHouse/issues/233
  */
+#[Group('SummaryTest')]
 final class SummaryTest extends TestCase
 {
     use WithClient;
