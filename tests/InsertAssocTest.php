@@ -3,13 +3,14 @@
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class InsertAssocTest
- * @group InsertAssocTest
  * @package ClickHouseDB\Tests
  */
+#[Group('InsertAssocTest')]
 final class InsertAssocTest extends TestCase
 {
     use WithClient;

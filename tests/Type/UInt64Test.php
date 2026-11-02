@@ -7,14 +7,13 @@ namespace ClickHouseDB\Tests\Type;
 use ClickHouseDB\Tests\WithClient;
 use ClickHouseDB\Type\UInt64;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use function array_column;
 use function implode;
 use function sprintf;
 
-/**
- * @group integration
- */
+#[Group('integration')]
 final class UInt64Test extends TestCase
 {
     use WithClient;
