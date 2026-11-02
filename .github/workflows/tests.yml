@@ -10,6 +10,8 @@ jobs:
   tests-ch21:
     name: PHP ${{ matrix.php }} / ClickHouse 21.9
     runs-on: ubuntu-latest
+    # PHP 8.6 is a pre-release (8.6.0-dev) — its failures must not block merges
+    continue-on-error: ${{ matrix.php == '8.6' }}
     strategy:
       fail-fast: false
       matrix:
@@ -51,6 +53,7 @@ jobs:
   tests-ch26:
     name: PHP ${{ matrix.php }} / ClickHouse 26.3
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.php == '8.6' }}
     strategy:
       fail-fast: false
       matrix:
@@ -110,6 +113,7 @@ jobs:
   tests-ch269:
     name: PHP ${{ matrix.php }} / ClickHouse 26.9
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.php == '8.6' }}
     strategy:
       fail-fast: false
       matrix:
