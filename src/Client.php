@@ -341,10 +341,6 @@ class Client
      */
     public function progressFunction(callable $callback): void
     {
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('progressFunction is not callable');
-        }
-
         if (!$this->settings()->is('send_progress_in_http_headers')) {
             $this->settings()->set('send_progress_in_http_headers', 1);
         }
@@ -645,7 +641,7 @@ class Client
         // exec
         $this->executeAsync();
 
-        // fetch resutlt
+        // fetch result
         foreach ($fileNames as $fileName) {
             if (!$result[$fileName]->isError()) {
                 continue;
