@@ -110,7 +110,7 @@ class CurlerRolling
                 return false;
             }
 
-            throw new TransportException("Cant add exists que - cant overwrite : $id!\n");
+            throw new TransportException("Can't add existing queue item - can't overwrite : $id!\n");
         }
 
         $this->pendingRequests[$id] = $req;
@@ -201,10 +201,10 @@ class CurlerRolling
     }
 
     /**
-     * Set the limit for how many cURL requests will be execute simultaneously.
+     * Set the limit for how many cURL requests will be executed simultaneously.
      *
      * Please be mindful that if you set this too high, requests are likely to fail
-     * more frequently or automated software may perceive you as a DOS attack and
+     * more frequently or automated software may perceive you as a DoS attack and
      * automatically block further requests.
      *
      * @param int $count
