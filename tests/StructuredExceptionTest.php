@@ -9,18 +9,16 @@ use ClickHouseDB\Statement;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group StructuredExceptionTest
- */
+#[Group('StructuredExceptionTest')]
 final class StructuredExceptionTest extends TestCase
 {
     use WithClient;
 
-    /**
-     * @dataProvider exceptionNameProvider
-     */
+    #[DataProvider('exceptionNameProvider')]
     public function testExceptionNameParsing(string $errorBody, int $expectedCode, ?string $expectedName): void
     {
         $responseMock = $this->createMock(CurlerResponse::class);
@@ -43,7 +41,7 @@ final class StructuredExceptionTest extends TestCase
         }
     }
 
-    public function exceptionNameProvider(): Generator
+    public static function exceptionNameProvider(): Generator
     {
         yield 'CH 22+ format with exception name' => [
             'Code: 60. DB::Exception: Table default.xxx doesn\'t exist. (UNKNOWN_TABLE) (version 24.3.2.23 (official build))',

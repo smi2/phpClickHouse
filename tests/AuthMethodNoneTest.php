@@ -6,11 +6,10 @@ namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
 use ClickHouseDB\Transport\Http;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group AuthMethodNoneTest
- */
+#[Group('AuthMethodNoneTest')]
 final class AuthMethodNoneTest extends TestCase
 {
     public function testAuthMethodNoneIsAccepted(): void

@@ -7,14 +7,15 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Statement;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for #234 — hasErrorClickhouse must not json_decode large bodies.
  *
- * @group LargeStreamTest
  * @link https://github.com/smi2/phpClickHouse/issues/234
  */
+#[Group('LargeStreamTest')]
 final class LargeStreamTest extends TestCase
 {
     /**

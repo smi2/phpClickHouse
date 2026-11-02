@@ -3,9 +3,8 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          beStrictAboutChangesToGlobalState="true"
          beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true"
+         displayDetailsOnAllIssues="true"
          colors="true"
-         verbose="true"
 >
     <testsuite name="ClickHouse 21.x">
         <directory>tests</directory>
@@ -18,11 +17,11 @@
         </exclude>
     </groups>
 
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
 
     <php>
         <env name="CLICKHOUSE_HOST" value="127.0.0.1" />

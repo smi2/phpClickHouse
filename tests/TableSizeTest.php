@@ -2,14 +2,14 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class TableSizeTest
- * @group TableSize
  * @package ClickHouseDB\Tests
  */
+#[Group('TableSize')]
 final class TableSizeTest extends TestCase
 {
     use WithClient;

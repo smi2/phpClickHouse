@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @group ProgressWriteTest
  * @link https://github.com/smi2/phpClickHouse/issues/191
  */
+#[Group('ProgressWriteTest')]
 final class ProgressWriteTest extends TestCase
 {
     use WithClient;
