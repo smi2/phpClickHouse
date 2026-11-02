@@ -10,14 +10,15 @@ use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
 use ClickHouseDB\Tests\WithClient;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * StatementTest adapted for ClickHouse 26.x
  * CH 26.x returns HTTP 500 for mid-stream errors (unlike 200 in CH 21.x).
- *
- * @group ClickHouse26
  */
+#[Group('ClickHouse26')]
 final class StatementTest extends TestCase
 {
     use WithClient;
@@ -61,9 +62,7 @@ final class StatementTest extends TestCase
         $this->assertFalse($result->isError());
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testParseErrorClickHouse(
         string $errorMessage,
         string $exceptionMessage,
@@ -87,7 +86,7 @@ final class StatementTest extends TestCase
         $statement->error();
     }
 
-    public function dataProvider(): Generator
+    public static function dataProvider(): Generator
     {
         yield 'Unknown setting readonly' => [
             'Code: 115. DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception',

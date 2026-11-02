@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests\ClickHouse26;
 
 use ClickHouseDB\Tests\WithClient;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,9 +25,8 @@ use PHPUnit\Framework\TestCase;
  * Requires a ClickHouse Keeper / ZooKeeper backend (see
  * tests/clickhouse-latest-config/keeper.xml). When distributed DDL is not
  * configured the whole test is skipped gracefully.
- *
- * @group ClickHouse26
  */
+#[Group('ClickHouse26')]
 final class OnClusterTest extends TestCase
 {
     use WithClient;

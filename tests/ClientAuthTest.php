@@ -4,13 +4,14 @@ namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
 use ClickHouseDB\Transport;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientAuthTest
  * @package ClickHouseDB\Tests
- * @group ClientAuthTest
  */
+#[Group('ClientAuthTest')]
 class ClientAuthTest extends TestCase
 {
 

@@ -3,7 +3,6 @@
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
-use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Exception\TransportException;
 use ClickHouseDB\Query\WhereInFile;
@@ -13,13 +12,14 @@ use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerRolling;
 use ClickHouseDB\Transport\StreamInsert;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ClientTest
  * @package ClickHouseDB\Tests
- * @group ClientTest
  */
+#[Group('ClientTest')]
 class ClientTest extends TestCase
 {
     use WithClient;
@@ -402,13 +402,11 @@ class ClientTest extends TestCase
         unlink($fileName);
         return true;
     }
-    /**
-     * @group flaky
-     */
+    #[Group('flaky')]
     public function testConnectTimeout()
     {
         $config = [
-            'host'     => '8.8.8.8', // fake ip , use googlde DNS )
+            'host'     => '8.8.8.8', // fake ip, use google DNS
             'port'     => 8123,
             'username' => '',
             'password' => ''
@@ -519,12 +517,9 @@ class ClientTest extends TestCase
 //        var_dump($stat->response()->body());
 //        echo "-----\n";
 // }
-    /**
-     * @expectedException \ClickHouseDB\Exception\QueryException
-     */
     public function testInsertCSVError()
     {
-        $this->expectException(\ClickHouseDB\Exception\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $file_data_names = [
             $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data'
@@ -809,7 +804,7 @@ class ClientTest extends TestCase
     public function testExceptionSelect()
     {
         $this->expectException(QueryException::class);
-        $this->expectExceptionCode(60); // Table not exists
+        $this->expectExceptionCode(60); // Table does not exist
 
         $this->client->select("SELECT * FROM XXXXX_SSS")->rows();
     }
@@ -1010,7 +1005,7 @@ class ClientTest extends TestCase
         };
         $streamInsert->insert($callable);
 
-        // check the resource was close after insert method
+        // check the resource was closed after the insert method
         $this->assertEquals(false, is_resource($source));
 
         $statement = $this->client->select('SELECT * FROM summing_url_views');
@@ -1020,7 +1015,7 @@ class ClientTest extends TestCase
     /**
      *
      */
-    public function testStreamInsertExeption()
+    public function testStreamInsertException()
     {
         $file_name = $this->tmpPath . '_testInsertCSV_clickHouseDB_test.1.data';
         $this->create_fake_csv_file($file_name, 1);
@@ -1047,7 +1042,7 @@ class ClientTest extends TestCase
             $streamInsert->insert([]);
         } catch (\Exception $e) {}
 
-        // check the resource was close after insert method
+        // check the resource was closed after the insert method
         $this->assertEquals(false, is_resource($source));
     }
 

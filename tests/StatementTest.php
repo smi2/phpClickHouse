@@ -9,12 +9,14 @@ use ClickHouseDB\Statement;
 use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerResponse;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class StatementTest
- * @group StatementTest
  */
+#[Group('StatementTest')]
 final class StatementTest extends TestCase
 {
     use WithClient;
@@ -33,8 +35,8 @@ final class StatementTest extends TestCase
      * @link https://github.com/smi2/phpClickHouse/issues/144
      * @link https://clickhouse.com/docs/en/interfaces/http#http_response_codes_caveats
      *
-     * During execution of query it is possible to get ExceptionWhileProcessing in Clickhouse
-     * In that case HTTP status code of Clickhouse interface would be 200
+     * During execution of query it is possible to get ExceptionWhileProcessing in ClickHouse
+     * In that case HTTP status code of ClickHouse interface would be 200
      * and it is kind of "expected" behaviour of CH
      */
     public function testIsErrorWithOkStatusCode()
@@ -70,9 +72,7 @@ final class StatementTest extends TestCase
         $this->assertFalse($result->isError());
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testParseErrorClickHouse(
         string $errorMessage,
         string $exceptionMessage,
@@ -100,7 +100,7 @@ final class StatementTest extends TestCase
     /**
      * @return Generator
      */
-    public function dataProvider(): Generator
+    public static function dataProvider(): Generator
     {
         yield 'Unknown setting readonly' => [
             'Code: 115. DB::Exception: Unknown setting readonly[0], e.what() = DB::Exception',

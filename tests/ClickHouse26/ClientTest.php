@@ -5,24 +5,18 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests\ClickHouse26;
 
 use ClickHouseDB\Client;
-use ClickHouseDB\Exception\DatabaseException;
 use ClickHouseDB\Exception\QueryException;
-use ClickHouseDB\Exception\TransportException;
-use ClickHouseDB\Query\WhereInFile;
-use ClickHouseDB\Query\WriteToFile;
-use ClickHouseDB\Quote\FormatLine;
-use ClickHouseDB\Transport\CurlerRequest;
 use ClickHouseDB\Transport\CurlerRolling;
 use ClickHouseDB\Transport\StreamInsert;
 use ClickHouseDB\Tests\WithClient;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * ClientTest adapted for ClickHouse 26.x
  * Uses modern MergeTree syntax and accounts for behavioral changes.
- *
- * @group ClickHouse26
  */
+#[Group('ClickHouse26')]
 final class ClientTest extends TestCase
 {
     use WithClient;
@@ -328,9 +322,7 @@ final class ClientTest extends TestCase
         }
     }
 
-    /**
-     * @group flaky
-     */
+    #[Group('flaky')]
     public function testStreamInsert(): void
     {
         $this->create_table_summing_url_views();
@@ -357,9 +349,7 @@ final class ClientTest extends TestCase
         unlink($file);
     }
 
-    /**
-     * @group flaky
-     */
+    #[Group('flaky')]
     public function testStreamInsertFormatJSONEachRow(): void
     {
         $this->create_table_summing_url_views();

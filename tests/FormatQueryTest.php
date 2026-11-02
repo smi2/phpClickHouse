@@ -2,13 +2,14 @@
 
 namespace ClickHouseDB\Tests;
  
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class FormatQueryTest
  * @package ClickHouseDB\Tests
- * @group FormatQueryTest
  */
+#[Group('FormatQueryTest')]
 final class FormatQueryTest extends TestCase
 {
     use WithClient;

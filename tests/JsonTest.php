@@ -2,14 +2,14 @@
 
 namespace ClickHouseDB\Tests;
 
-use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class JsonTest
- * @group Json
  * @package ClickHouseDB\Tests
  */
+#[Group('Json')]
 final class JsonTest extends TestCase
 {
     use WithClient;
