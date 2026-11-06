@@ -6,6 +6,7 @@ namespace ClickHouseDB\Quote;
 
 use ClickHouseDB\Exception\QueryException;
 use ClickHouseDB\Query\Expression\Expression;
+use ClickHouseDB\Type\MapType;
 use ClickHouseDB\Type\NumericType;
 use ClickHouseDB\Type\TupleType;
 use function array_map;
@@ -78,7 +79,13 @@ class StrictQuoteLine
             $encode_esc = preg_quote($encodeEnclosure, '/');
 
             $encode = true;
-            if ($value instanceof NumericType || $value instanceof TupleType) {
+            if ($value instanceof NumericType) {
+                $encode = false;
+            }
+            // Tuple/Map literals ((1,'a') / map('k',1)) must stay unquoted in VALUES — notably
+            // inside arrays, whose elements are always rendered with the Insert preset.
+            // In CSV/TSV they remain enclosed: a bare tuple with commas would split the row.
+            if (($value instanceof TupleType || $value instanceof MapType) && $enclosure === '\'') {
                 $encode = false;
             }
             if ($value instanceof Expression) {
