@@ -130,7 +130,9 @@ final class ValueFormatterTest extends TestCase
         $obj = new class {
             public string $value = 'object_value';
         };
-        self::assertSame('object_value', ValueFormatter::formatValue($obj));
+        // ->value is escaped like any scalar (it used to be returned raw — an SQL injection path)
+        self::assertSame("'object_value'", ValueFormatter::formatValue($obj));
+        self::assertSame('object_value', ValueFormatter::formatValue($obj, false));
     }
 
     public function testObjectWithToString(): void

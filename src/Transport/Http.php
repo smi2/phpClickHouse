@@ -867,6 +867,9 @@ class Http
         if (is_array($value)) {
             $arrayValues = [];
             foreach ($value as $val) {
+                if ($val instanceof \BackedEnum) {
+                    $val = $val->value;
+                }
                 if (is_string($val)) {
                     $escaped = $this->convertParamValue($val);
                     $arrayValues[] = sprintf("'%s'", $escaped);
@@ -881,6 +884,9 @@ class Http
         }
         if (is_string($value)) {
             return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+        }
+        if ($value instanceof \BackedEnum) {
+            return $this->convertParamValue($value->value);
         }
         return (string) $value;
     }

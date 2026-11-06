@@ -13,6 +13,11 @@ class Raw implements Expression
     /** @var string */
     private $expression;
 
+    /**
+     * The value is emitted into SQL without escaping — pass trusted data only.
+     *
+     * @psalm-taint-sink sql $expression
+     */
     public function __construct(string $expression)
     {
         $this->expression = $expression;

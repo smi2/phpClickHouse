@@ -15,6 +15,11 @@ final class UInt64 implements NumericType, Stringable
         $this->value = $uint64Value;
     }
 
+    /**
+     * The value is emitted into SQL without escaping — pass trusted data only.
+     *
+     * @psalm-taint-sink sql $uint64Value
+     */
     public static function fromString(string $uint64Value): self
     {
         return new self($uint64Value);

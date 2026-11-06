@@ -58,7 +58,10 @@ class Bindings implements Degeneration
         $bindRaw=[];
         foreach ($this->bindings as $key => $value) {
             if (is_array($value)) {
-                $valueSet = implode(', ', $value);
+                $valueSet = implode(', ', array_map(
+                    static fn ($v) => $v instanceof \BackedEnum ? $v->value : $v,
+                    $value
+                ));
 
                 $values = array_map(
                     function ($value) {
@@ -69,7 +72,7 @@ class Bindings implements Degeneration
 
                 $formattedParameter = implode(',', $values);
             } else {
-                $valueSet           = $value;
+                $valueSet           = $value instanceof \BackedEnum ? $value->value : $value;
                 $formattedParameter = ValueFormatter::formatValue($value);
             }
 

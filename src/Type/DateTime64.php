@@ -16,6 +16,11 @@ final class DateTime64 implements Type, Stringable
         $this->value = $value;
     }
 
+    /**
+     * The value is emitted into SQL without escaping — pass trusted data only.
+     *
+     * @psalm-taint-sink sql $value
+     */
     public static function fromString(string $value): self
     {
         return new self($value);

@@ -51,8 +51,11 @@ class ValueFormatter
             return $value->getValue();
         }
 
+        // Backed enums (and other objects exposing ->value): the inner value must be
+        // escaped like any scalar — returning it raw broke string enums (unquoted
+        // identifiers) and let e.g. a json_decode() stdClass inject raw SQL.
         if (is_object($value) && property_exists($value, 'value')) {
-            return $value->value;
+            return self::formatValue($value->value, $addQuotes);
         }
 
         if (is_object($value) && is_callable([$value, '__toString'])) {
