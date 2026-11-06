@@ -100,6 +100,12 @@ class StrictQuoteLine
 
                 $value       = array_map(
                     function ($v) use ($enclosure_esc, $encode_esc) {
+                        // String-like objects (StringType, Date*, UUID, IPv*, enums, Stringable…) must be
+                        // escaped exactly like plain strings; literal-producing types stay as objects.
+                        if (is_object($v) && !$v instanceof NumericType && !$v instanceof TupleType
+                            && !$v instanceof MapType && !$v instanceof Expression) {
+                            $v = ValueFormatter::formatValue($v, false);
+                        }
                         return is_string($v) ? $this->encodeString($v, $enclosure_esc, $encode_esc) : $v;
                     },
                     $value
@@ -118,7 +124,8 @@ class StrictQuoteLine
 
             if (is_string($value) && $encode) {
                 if ($tabEncode) {
-                    return str_replace(["\t", "\n"], ['\\t', '\\n'], $value);
+                    // Backslash first, so the escapes added for \t / \n are not doubled.
+                    return str_replace(['\\', "\t", "\n"], ['\\\\', '\\t', '\\n'], $value);
                 }
 
                 if (!$skipEncode)

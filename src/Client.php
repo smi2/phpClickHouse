@@ -224,7 +224,7 @@ class Client
 
     public function verbose(bool $flag = true): bool
     {
-        return $this->transport()->verbose(true);
+        return $this->transport()->verbose($flag);
     }
 
     public function settings(): Settings
@@ -513,12 +513,12 @@ class Client
         }
 
         if (stripos($table, '`') === false && stripos($table, '.') === false) {
-            $table = '`' . $table . '`'; // quote table name for dot names
+            $table = self::quoteIdentifier($table); // quote table name for dot names
         }
         $sql = 'INSERT INTO ' . $table;
 
         if (count($columns) !== 0) {
-            $sql .= ' (`' . implode('`,`', $columns) . '`) ';
+            $sql .= ' (' . implode(',', array_map(static fn ($column): string => self::quoteIdentifier((string) $column), $columns)) . ') ';
         }
 
         $sql .= ' VALUES ';
@@ -814,7 +814,8 @@ class Client
             '
             SELECT *
             FROM system.tables
-            WHERE name=\'' . $table . '\' AND database=\'' . $database . '\''
+            WHERE name=:table AND database=:database',
+            ['table' => $table, 'database' => $database]
         )->rowsAsTree('name');
     }
 
@@ -922,4 +923,12 @@ CLICKHOUSE,
         return $l;
     }
 
+    /**
+     * Wrap an identifier in backticks, escaping backslashes and backticks inside it,
+     * so a name like "a`) SELECT ..." cannot break out of the identifier.
+     */
+    private static function quoteIdentifier(string $name): string
+    {
+        return '`' . str_replace(['\\', '`'], ['\\\\', '\\`'], $name) . '`';
+    }
 }

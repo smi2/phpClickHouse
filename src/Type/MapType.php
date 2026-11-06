@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
+use ClickHouseDB\Quote\ValueFormatter;
 use Stringable;
 
 final class MapType implements Type, Stringable
@@ -25,7 +26,7 @@ final class MapType implements Type, Stringable
         $pairs = [];
         foreach ($this->value as $key => $val) {
             $k = is_string($key) ? "'" . addslashes($key) . "'" : $key;
-            $v = is_string($val) ? "'" . addslashes($val) . "'" : $val;
+            $v = is_string($val) ? "'" . addslashes($val) . "'" : (is_object($val) ? ValueFormatter::formatValue($val) : $val);
             $pairs[] = $k . ',' . $v;
         }
         return 'map(' . implode(',', $pairs) . ')';

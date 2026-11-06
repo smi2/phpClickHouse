@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ClickHouseDB\Query\Expression\Func;
 
 use ClickHouseDB\Query\Expression\Expression;
+use function addslashes;
 use function sprintf;
 
 /**
@@ -28,6 +29,6 @@ class UUIDStringToNum implements Expression
 
     public function getValue() : string
     {
-        return sprintf("UUIDStringToNum('%s')", $this->uuid);
+        return sprintf("UUIDStringToNum('%s')", addslashes($this->uuid));
     }
 }

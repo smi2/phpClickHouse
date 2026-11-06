@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Type;
 
+use ClickHouseDB\Quote\ValueFormatter;
 use Stringable;
 
 final class TupleType implements Type, Stringable
@@ -30,6 +31,8 @@ final class TupleType implements Type, Stringable
                 $parts[] = 'NULL';
             } elseif (is_bool($val)) {
                 $parts[] = $val ? '1' : '0';
+            } elseif (is_object($val)) {
+                $parts[] = ValueFormatter::formatValue($val); // escaped/quoted like a binding
             } else {
                 $parts[] = $val;
             }
