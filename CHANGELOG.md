@@ -2,6 +2,54 @@ PHP ClickHouse wrapper - Changelog
 
 ======================
 
+### 2026-11-06 [Release 1.26.1106]
+
+#### Security
+
+* **Escaping fixes in insert and binding paths** — upgrading is recommended. Values without special characters produce byte-identical SQL:
+  * `insert()` / `insertAssocBulk()` — column names (and the auto-quoted table name) now escape `` ` `` and `\` inside backticks, so a column name taken from user data (e.g. array keys in `insertAssocBulk()`) can no longer break out of the identifier
+  * objects inside arrays — `StringType`, `Date*`, `UUID`, `IPv4/6`, enums, any `Stringable` — are escaped like plain strings in `INSERT` and CSV rows; objects inside `TupleType` / `MapType` are formatted via `ValueFormatter`
+  * `isExists()` uses bindings instead of string concatenation
+  * `ValueFormatter` escapes the `->value` of backed enums and other objects exposing it (previously returned raw — e.g. a `json_decode()` `stdClass` could inject SQL)
+  * `Expression\Func\UUIDStringToNum` escapes its argument
+* **`verbose(false)` no longer enables verbose mode** — the flag was ignored, so calling it turned on curl verbose output (request headers, including `X-ClickHouse-Key`, on stderr)
+* **Psalm taint analysis** (#282, @danog) — `@psalm-taint-sink` / `@psalm-taint-escape` annotations; additionally the entry points that intentionally bypass escaping (`UInt64`, `Int64`, `Decimal`, `Boolean`, `UUID`, `IPv4`, `IPv6`, `Date32`, `DateTime64` `::fromString()` and `Expression\Raw`) are marked as SQL sinks — pass trusted data only
+
+#### Behavior change
+
+* An object exposing a public `$value` (other than `Type`/`Expression`) bound as `:param` is now **quoted and escaped** like a scalar: `'object_value'` instead of raw `object_value`. Integer-backed enums are unchanged (`3`)
+
+#### Bug Fixes
+
+* **Backed enums work in every binding path** — string enums were emitted unquoted (`status = active` → `UNKNOWN_IDENTIFIER`); arrays of enums crashed in `Bindings`; native params (`selectWithParams()` etc.) crashed with `could not be converted to string`, and string enums inside `Array(...)` params were unquoted
+* **Arrays of tuples and maps in `INSERT`** (#284, @mjpvandenberg; #283) — `Array(Tuple(...))` and `Array(Map(...))` failed with `Cannot parse expression`; tuple/map literals are now emitted unquoted in the Insert preset, top-level tuples in CSV stay enclosed
+* **`selectGenerator()` / `streamRead()` with array native params** (#278, @sidz) — `{ids:Array(UInt32)}` produced `param_ids[0]=…` instead of `param_ids=[1,2]` (`UNKNOWN_QUERY_PARAMETER`)
+* **`FormatLine::TSV` escapes backslashes** — `C:\new` was turned into a newline, a trailing `\` swallowed the delimiter
+* **`dropPartition()` / `truncateTable()`** — placeholder regression from the typo fix (#277) caught in review and fixed before merge; now covered by tests
+
+#### Testing
+
+* **PHPUnit 10.5** (#281, @sidz) — attributes instead of docblock annotations; run `composer update` locally (`composer.lock` is not committed)
+* **PHP 8.5 and 8.6 in CI** (#280, @sidz) — 8.6 is a pre-release (`8.6.0-dev`) and runs with `continue-on-error`
+* New: `InjectionRegressionTest`, `EnumBindingsTest`, `TupleMapArrayInsertTest`, `DropPartitionTest`, `ErrorMessagesTest`; every executable `src/` line changed in this release is covered
+
+#### Chore
+
+* Typos, grammar and docblocks in `src/`, `tests/` and docs (#275, #276, #277, @peter279k); clearer exception messages (`'host is not set'`, `'progressFunction is not callable'` check removed as unreachable)
+* `.gitattributes` export-ignore for `docs/`, `example/`, `phpunit-*.xml`, `*.neon` (#279, @sidz) — smaller Composer dist package
+
+#### Merged PRs
+
+* #275, #276, #277 — Fix typos, grammars and docblocks (@peter279k)
+* #278 — Fix selectGenerator() failing with array query parameters (@sidz)
+* #279 — Gitattributes export ignore (@sidz)
+* #280 — Add PHP 8.5 and PHP 8.6 to the pipeline (@sidz)
+* #281 — Update PHPUnit to 10.5 (@sidz)
+* #282 — Add Psalm taint analysis annotations (@danog)
+* #284 — don't encode tuples (@mjpvandenberg)
+
+---
+
 ### 2026-09-25 [Release 1.26.925]
 
 #### Breaking Changes
