@@ -5,12 +5,11 @@ namespace ClickHouseDB\Tests;
 use ClickHouseDB\Exception\UnsupportedValueType;
 use ClickHouseDB\Query\Degeneration\Bindings;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use function curl_init;
 
-/**
- * @group BindingsTest
- */
+#[Group('BindingsTest')]
 final class BindingsTest extends TestCase
 {
     use WithClient;
@@ -18,7 +17,7 @@ final class BindingsTest extends TestCase
     /**
      * @return array
      */
-    public function escapeDataProvider()
+    public static function escapeDataProvider()
     {
         return [
             [
@@ -170,8 +169,8 @@ final class BindingsTest extends TestCase
      * @param string $sql Given SQL
      * @param array $params Params
      * @param string $expectedSql Expected SQL
-     * @dataProvider escapeDataProvider
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('escapeDataProvider')]
     public function testEscape($sql, $params, $expectedSql)
     {
         $bindings = new Bindings();

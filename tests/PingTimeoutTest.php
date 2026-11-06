@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Client;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Standalone tests for ping() timeout behaviour that do not require a live
  * ClickHouse server.
- *
- * @group PingTimeoutTest
  */
+#[Group('PingTimeoutTest')]
 class PingTimeoutTest extends TestCase
 {
     /**

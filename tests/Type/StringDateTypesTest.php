@@ -6,6 +6,7 @@ namespace ClickHouseDB\Tests\Type;
 
 use ClickHouseDB\Query\Degeneration\Bindings;
 use ClickHouseDB\Quote\ValueFormatter;
+use ClickHouseDB\Transport\Http;
 use ClickHouseDB\Type\Date;
 use ClickHouseDB\Type\Date32;
 use ClickHouseDB\Type\DateTime;
@@ -20,14 +21,17 @@ use ClickHouseDB\Type\Type;
 use ClickHouseDB\Type\UUID;
 use DateTimeImmutable;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionMethod;
 use Stringable;
 
 use function array_map;
 
 final class StringDateTypesTest extends TestCase
 {
-    /** @dataProvider stringTypes */
+    #[DataProvider('stringTypes')]
     public function testValuesAreQuotedInBindings(string $class): void
     {
         $value = $class::fromString("a'b\\c\0");
@@ -54,7 +58,7 @@ final class StringDateTypesTest extends TestCase
         ]);
     }
 
-    /** @dataProvider legacyStringTypes */
+    #[DataProvider('legacyStringTypes')]
     public function testExistingTypesPreserveRawBindings(string $class): void
     {
         $value = $class::fromString("'already quoted'");
@@ -65,11 +69,11 @@ final class StringDateTypesTest extends TestCase
         self::assertSame("SELECT 'already quoted'", $bindings->process('SELECT :value'));
     }
 
-    /** @dataProvider legacyStringTypes */
+    #[DataProvider('legacyStringTypes')]
     public function testExistingTypesPreserveNativeParameterValues(string $class): void
     {
-        $transport = (new \ReflectionClass(\ClickHouseDB\Transport\Http::class))->newInstanceWithoutConstructor();
-        $convert = new \ReflectionMethod($transport, 'convertParamValue');
+        $transport = (new ReflectionClass(Http::class))->newInstanceWithoutConstructor();
+        $convert = new ReflectionMethod($transport, 'convertParamValue');
         $convert->setAccessible(true);
         self::assertSame("'raw'", $convert->invoke($transport, $class::fromString("'raw'")));
     }
@@ -88,7 +92,7 @@ final class StringDateTypesTest extends TestCase
         self::assertSame("'a\\'b'", ValueFormatter::formatValue(FixedString::fromString("a'b", 3)));
     }
 
-    /** @dataProvider invalidFixedStrings */
+    #[DataProvider('invalidFixedStrings')]
     public function testFixedStringRejectsInvalidLength(string $value, int $length): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -109,7 +113,7 @@ final class StringDateTypesTest extends TestCase
         self::assertSame('2024-02-29 23:45:12', DateTime::fromDateTime($date)->getValue());
     }
 
-    /** @dataProvider precisions */
+    #[DataProvider('precisions')]
     public function testDateTime64Precision(int $precision, string $expected): void
     {
         $date = new DateTimeImmutable('2024-02-29 23:45:12.123456+00:00');

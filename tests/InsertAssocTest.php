@@ -3,13 +3,14 @@
 namespace ClickHouseDB\Tests;
 
 use ClickHouseDB\Exception\QueryException;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class InsertAssocTest
- * @group InsertAssocTest
  * @package ClickHouseDB\Tests
  */
+#[Group('InsertAssocTest')]
 final class InsertAssocTest extends TestCase
 {
     use WithClient;
@@ -58,7 +59,7 @@ final class InsertAssocTest extends TestCase
         $toInsert = [$oneRow, $oneRow, $failRow];
 
         $this->expectException(QueryException::class);
-        $this->expectExceptionMessage("Fields not match: two,one,thr and one,two,thr on element 2");
+        $this->expectExceptionMessage("Fields do not match: two,one,thr and one,two,thr on element 2");
 
         list($_, $__) = $this->client->prepareInsertAssocBulk($toInsert);
     }

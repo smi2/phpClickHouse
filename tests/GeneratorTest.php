@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace ClickHouseDB\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for generator-based row iteration.
  *
- * @group GeneratorTest
  * @link https://github.com/smi2/phpClickHouse/issues/166
  */
+#[Group('GeneratorTest')]
 final class GeneratorTest extends TestCase
 {
     use WithClient;
@@ -84,5 +85,18 @@ final class GeneratorTest extends TestCase
         }
 
         $this->assertEquals(0, $count);
+    }
+
+    public function testSelectGeneratorWithArrayNativeParam(): void
+    {
+        $rows = [];
+        foreach ($this->client->selectGenerator(
+            'SELECT number FROM numbers(10) WHERE number IN {ids:Array(UInt32)}',
+            ['ids' => [1, 2]]
+        ) as $row) {
+            $rows[] = (int) $row['number'];
+        }
+
+        $this->assertEquals([1, 2], $rows);
     }
 }
