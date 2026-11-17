@@ -883,7 +883,7 @@ class Http
             return '\\N';
         }
         if (is_string($value)) {
-            return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+            return str_replace(['\\', "'", "\t", "\n"], ['\\\\', "\\'", '\\t', '\\n'], $value);
         }
         if ($value instanceof \BackedEnum) {
             return $this->convertParamValue($value->value);
