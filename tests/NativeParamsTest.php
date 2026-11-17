@@ -144,6 +144,16 @@ final class NativeParamsTest extends TestCase
         $this->assertEquals(['a\\b', 'c\\\\d'], $result->fetchOne('arr'));
     }
 
+    public function testSelectWithStringArrayParamTabAndNewline(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {arr:Array(String)} as arr',
+            ['arr' => ["a\tb", "c\nd"]]
+        );
+
+        $this->assertEquals(["a\tb", "c\nd"], $result->fetchOne('arr'));
+    }
+
     public function testSelectWithStringArrayParamInjectionAttempt(): void
     {
         $result = $this->client->selectWithParams(
@@ -172,6 +182,26 @@ final class NativeParamsTest extends TestCase
         );
 
         $this->assertEquals('a\\b\\c', $result->fetchOne('search'));
+    }
+
+    public function testSelectWithStringParamTab(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {search:String} as search',
+            ['search' => "a\tb"]
+        );
+
+        $this->assertEquals("a\tb", $result->fetchOne('search'));
+    }
+
+    public function testSelectWithStringParamNewline(): void
+    {
+        $result = $this->client->selectWithParams(
+            'SELECT {search:String} as search',
+            ['search' => "a\nb"]
+        );
+
+        $this->assertEquals("a\nb", $result->fetchOne('search'));
     }
 
     public function testSelectWithStringParamSingleQuote(): void
