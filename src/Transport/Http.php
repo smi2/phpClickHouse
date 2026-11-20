@@ -311,14 +311,14 @@ class Http
             $new->setSslCa($this->sslCA);
         }
 
-        foreach ($this->curlOptions as $key => $value) {
-            $new->option($key, $value);
-        }
-
         $new->timeOut($this->settings()->getTimeOut());
         $new->connectTimeOut($this->_connectTimeOut);
         $new->keepAlive();
         $new->verbose(boolval($this->_verbose));
+
+        foreach ($this->curlOptions as $key => $value) {
+            $new->option($key, $value);
+        }
 
         return $new;
     }
